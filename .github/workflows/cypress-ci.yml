@@ -4,6 +4,7 @@ on:
   pull_request:
     branch:
       - 'main'
+      - 'feature/upgrade-cypress'
 
 jobs:
   cypress-run:
