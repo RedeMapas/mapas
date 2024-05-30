@@ -18,5 +18,8 @@ jobs:
       - name: Instala as dependências
         run: cd src/ && npm install
 
+      - name: Abre o Cypress pela primeira vez para adicionar configs
+        run: cd src/ && npx cypress open
+
       - name: Executa os testes do Cypress
         run: npx cypress run --spec "src/cypress/e2e/opportunityPage/*.js"
