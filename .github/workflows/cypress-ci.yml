@@ -18,6 +18,9 @@ jobs:
       - name: Ir para src/
         run: cd src/
 
+      - name: Ver o diretório onde está o workflow
+        run: ls -al
+
       - name: Instala as dependências
         run: npm install
 
