@@ -1,0 +1,16 @@
+name: cypress-ci
+
+on:
+  pull_request:
+    branch:
+      - 'main'
+
+jobs:
+  cypress-run:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Git Checkout
+        uses: actions/checkout@v4
+
+      - name: Instala as dependências, cria configs e executa testes
+        run: cd src/ && npm install && ls -al && npx cypress run --spec "cypress/e2e/**/*.js"
