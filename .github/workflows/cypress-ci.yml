@@ -16,8 +16,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Instala as dependências
-        run: cd src/
-        run: npm install
+        run: cd src/ && npm install
 
       - name: Executa os testes do Cypress
         run: npx cypress run --spec "src/opportunityPage/*.js"
