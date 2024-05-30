@@ -1,0 +1,25 @@
+name: cypress-ci
+
+on:
+  push:
+    branch:
+      - '*'
+  pull_request:
+    branch:
+      - '*'
+
+jobs:
+  cypress-run:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Git Checkout
+        uses: actions/checkout@v6
+
+      - name: Ir para src/
+        uses: cd src/
+
+      - name: Instala as dependências
+        run: npm install
+
+      - name: Executa os testes do Cypress
+        run: npx cypress run --spec "src/opportunityPage/*.js"
