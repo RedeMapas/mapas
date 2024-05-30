@@ -3,10 +3,10 @@ name: cypress-ci
 on:
   push:
     branch:
-      - '*'
+      - 'main'
   pull_request:
     branch:
-      - '*'
+      - 'main'
 
 jobs:
   cypress-run:
