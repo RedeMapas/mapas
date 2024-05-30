@@ -15,13 +15,8 @@ jobs:
       - name: Git Checkout
         uses: actions/checkout@v4
 
-      - name: Ir para src/
-        run: cd src/
-
-      - name: Ver o diretório onde está o workflow
-        run: ls -al
-
       - name: Instala as dependências
+        run: cd src/
         run: npm install
 
       - name: Executa os testes do Cypress
