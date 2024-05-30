@@ -16,4 +16,4 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Instala as dependências, cria configs e executa testes
-        run: cd src/ && npm install && cd .. && npx cypress run --spec "src/cypress/e2e/opportunityPage/*.js"
+        run: cd src/ && npm install && cd .. && ls -al && npx cypress run --spec "/src/cypress/e2e/opportunityPage/*.js"
