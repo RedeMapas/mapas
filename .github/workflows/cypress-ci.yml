@@ -19,4 +19,4 @@ jobs:
         run: cd src/ && npm install
 
       - name: Executa os testes do Cypress
-        run: npx cypress run --spec "src/opportunityPage/*.js"
+        run: npx cypress run --spec "src/cypress/e2e/opportunityPage/*.js"
