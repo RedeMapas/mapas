@@ -12,5 +12,5 @@ jobs:
       - name: Git Checkout
         uses: actions/checkout@v4
 
-      - name: Instala as dependências, cria configs e executa testes
+      - name: Instala as dependências e executa testes
         run: cd src/ && npm install && npx cypress run --spec "cypress/e2e/**/*.js"
