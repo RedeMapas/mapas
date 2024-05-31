@@ -4,6 +4,7 @@ on:
   pull_request:
     branch:
       - 'main'
+      - 'feature/upgrade-cypress'
 
 jobs:
   cypress-run:
@@ -12,5 +13,8 @@ jobs:
       - name: Git Checkout
         uses: actions/checkout@v4
 
-      - name: Instala as dependências e executa testes
-        run: cd src/ && npm install && npx cypress run --spec "cypress/e2e/**/*.js"
+      - name: Instala as dependências
+        run: cd src/ && npm install
+
+      - name: Executa todos os testes do Cypress
+        run: npx cypress run --spec src/cypress/e2e/**/*.js
