@@ -1,9 +1,11 @@
 <?php
-require_once 'bootstrap.php';
+namespace MapasCulturaisTests;
 
-class WorkflowTest extends MapasCulturais_TestCase{
+class WorkflowTest extends TestCase
+{
 
-    function testEnableAndDisableWorkflow(){
+    function testEnableAndDisableWorkflow()
+    {
         $this->assertTrue($this->app->isWorkflowEnabled(), 'Asserting that workflow is enabled by default.');
 
         $this->app->disableWorkflow();
@@ -14,20 +16,21 @@ class WorkflowTest extends MapasCulturais_TestCase{
 
     }
 
-    function testAuthorityRequestCreation(){
+    function testAuthorityRequestCreation()
+    {
         $this->app->enableWorkflow();
 
         // asserting that the request authority is created when user tries to TAKE ownership of an entity
-        foreach($this->entities as $class => $e){
+        foreach ($this->entities as $class => $e) {
             $this->resetTransactions();
 
-            $user1 = $this->getUser('normal',0);
-            $user2 = $this->getUser('normal',1);
+            $user1 = $this->getUser('normal', 0);
+            $user2 = $this->getUser('normal', 1);
 
             $entities = $user1->$e;
             $entity = $entities[0];
 
-            $this->assertAuthorizationRequestCreated(function() use($user2, $entity){
+            $this->assertAuthorizationRequestCreated(function () use ($user2, $entity) {
                 $this->user = $user2;
                 $entity->owner = $user2->profile;
                 $entity->save();
@@ -35,48 +38,48 @@ class WorkflowTest extends MapasCulturais_TestCase{
         }
 
         // asserting that the request authority is created when user tries to TAKE ownership of an entity to another user agent that he has control
-        foreach($this->entities as $class => $e){
+        foreach ($this->entities as $class => $e) {
             $this->resetTransactions();
-            
-            
+
+
             $admin = $this->getUser('admin');
             $this->user = $admin;
-            
+
             $newAgent = $this->getNewEntity('Agent', $admin);
             $newAgent->owner = $admin->profile;
             $newAgent->save(true);
-            
-            $user1 = $this->getUser('normal',0);
-            $user2 = $this->getUser('normal',1);
-            
+
+            $user1 = $this->getUser('normal', 0);
+            $user2 = $this->getUser('normal', 1);
+
             $newAgent->createAgentRelation($user2->profile, 'CONTROL', true, true, true);
-            
+
             $this->user = $user2;
-            
+
             $this->app->em->refresh($newAgent);
-            
+
             $entities = $user1->$e;
             $entity = $entities[0];
-            
-            
-            $this->assertAuthorizationRequestCreated(function() use($newAgent, $entity){
+
+
+            $this->assertAuthorizationRequestCreated(function () use ($newAgent, $entity) {
                 $entity->owner = $newAgent;
                 $entity->save();
             }, "Asserting that AuthorityRequest is created when an user tries to take ownership of a {$class}. to another user agent that he has control");
-            
+
         }
 
         // asserting that the request authority is created when user tries to GIVE ownership of an entity
-        foreach($this->entities as $class => $e){
+        foreach ($this->entities as $class => $e) {
             $this->resetTransactions();
 
-            $user1 = $this->getUser('normal',0);
-            $user2 = $this->getUser('normal',1);
+            $user1 = $this->getUser('normal', 0);
+            $user2 = $this->getUser('normal', 1);
 
             $entities = $user1->$e;
             $entity = $entities[0];
 
-            $this->assertAuthorizationRequestCreated(function() use($user1, $user2, $entity){
+            $this->assertAuthorizationRequestCreated(function () use ($user1, $user2, $entity) {
                 $this->user = $user1;
                 $entity->owner = $user2->profile;
                 $entity->save();
@@ -84,17 +87,17 @@ class WorkflowTest extends MapasCulturais_TestCase{
         }
 
         // asserting that a user CANNOT create authority requests to another user
-        foreach($this->entities as $class => $e){
+        foreach ($this->entities as $class => $e) {
             $this->resetTransactions();
 
-            $user1 = $this->getUser('admin',0);
-            $user2 = $this->getUser('normal',1);
-            $user3 = $this->getUser('normal',0);
+            $user1 = $this->getUser('admin', 0);
+            $user2 = $this->getUser('normal', 1);
+            $user3 = $this->getUser('normal', 0);
 
             $entities = $user1->$e;
             $entity = $entities[0];
 
-            $this->assertPermissionDenied(function() use($user2, $user3, $entity){
+            $this->assertPermissionDenied(function () use ($user2, $user3, $entity) {
                 $this->user = $user3;
 
                 $entity->owner = $user2->profile;
@@ -104,15 +107,16 @@ class WorkflowTest extends MapasCulturais_TestCase{
         }
     }
 
-    function testAuthorityRequestAprove(){
+    function testAuthorityRequestAprove()
+    {
         $this->app->enableWorkflow();
 
         // asserting that authority workflow works
-        foreach($this->entities as $class => $e){
+        foreach ($this->entities as $class => $e) {
             $this->resetTransactions();
 
-            $user1 = $this->getUser('normal',0);
-            $user2 = $this->getUser('normal',1);
+            $user1 = $this->getUser('normal', 0);
+            $user2 = $this->getUser('normal', 1);
 
             $this->user = $user1;
 
@@ -124,7 +128,7 @@ class WorkflowTest extends MapasCulturais_TestCase{
             $request = null;
 
             // create the request
-            try{
+            try {
                 $entity->owner = $user2->profile;
                 $entity->save();
 
@@ -136,14 +140,14 @@ class WorkflowTest extends MapasCulturais_TestCase{
 
             $this->assertInstanceOf('MapasCulturais\Entities\RequestChangeOwnership', $request, "asserting that the request was created");
 
-            $this->assertEquals ($user1->id, $entity->ownerUser->id, "Asserting that BEFORE the request is approved, de owner was NOT changed");
+            $this->assertEquals($user1->id, $entity->ownerUser->id, "Asserting that BEFORE the request is approved, de owner was NOT changed");
 
             $this->user = $user2;
 
             $this->assertFalse($entity->canUser('remove'), "Asserting that the user that will receive the $class CANNOT remove it BEFORE the request is approved");
             $this->assertFalse($entity->canUser('modify'), "Asserting that the user that will receive the $class CANNOT modify it BEFORE the request is approved");
 
-            $this->assertPermissionGranted(function() use($request){
+            $this->assertPermissionGranted(function () use ($request) {
 
                 $request->approve();
             }, 'Asserting that the user that was requested CAN approve the request');
@@ -171,7 +175,7 @@ class WorkflowTest extends MapasCulturais_TestCase{
     //  Who can Approve: users that control the ORIGIN entity owner agent
     //  Who can Reject: users that can create or approve the request
 
-//     function testRequestChangeOwnershipRequest(){
+    //     function testRequestChangeOwnershipRequest(){
 //         $this->app->enableWorkflow();
 //     }
 
@@ -211,9 +215,9 @@ class WorkflowTest extends MapasCulturais_TestCase{
     //    $this->app->enableWorkflow();
     // }
 
-    
 
-//    RequestEventOccurrence,
 
-//    RequestEventProject
+    //    RequestEventOccurrence,
+
+    //    RequestEventProject
 }

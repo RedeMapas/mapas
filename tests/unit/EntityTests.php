@@ -1,12 +1,12 @@
 <?php
 
-require_once 'bootstrap.php';
+namespace MapasCulturaisTests;
 
-require 'Entity.inc.TestEntities.php';
+class EntityTests extends TestCase
+{
 
-class EntityTests extends MapasCulturais_TestCase {
-
-    function testValidations() {
+    function testValidations()
+    {
         $entity = new TestEntity;
 
 
@@ -33,7 +33,8 @@ class EntityTests extends MapasCulturais_TestCase {
         $this->assertEmpty($entity->validationErrors, print_r($entity->validationErrors, true));
     }
 
-    function testDirectCircularReference() {
+    function testDirectCircularReference()
+    {
         $entities = ['Agent', 'Space', 'Project'];
 
         foreach ($entities as $class) {
@@ -54,7 +55,8 @@ class EntityTests extends MapasCulturais_TestCase {
         }
     }
 
-    function testIndirectCircularReference() {
+    function testIndirectCircularReference()
+    {
         $entities = ['Agent', 'Space', 'Project'];
         foreach ($entities as $class) {
             $this->user = 'normal';
@@ -78,7 +80,8 @@ class EntityTests extends MapasCulturais_TestCase {
         }
     }
 
-    function testParentType() {
+    function testParentType()
+    {
         $entities = ['Space', 'Project'];
         foreach ($entities as $class) {
             $this->user = 'normal';
@@ -93,7 +96,8 @@ class EntityTests extends MapasCulturais_TestCase {
         }
     }
 
-    function testParentIsNotChild() {
+    function testParentIsNotChild()
+    {
         $entities = ['Space', 'Project'];
         foreach ($entities as $class) {
             $this->user = 'normal';
@@ -108,15 +112,16 @@ class EntityTests extends MapasCulturais_TestCase {
         }
     }
 
-    function testUpdateTimestamp(){
+    function testUpdateTimestamp()
+    {
         $classes = ['Space', 'Project', 'Event', 'Agent'];
-        
+
         $this->user = 'admin';
 
-        foreach($classes as $class){
+        foreach ($classes as $class) {
             $entities = $this->app->repo($class)->findAll();
-            
-            foreach($entities as $entity){
+
+            foreach ($entities as $entity) {
                 $timestamp = $entity->updateTimestamp;
 
                 $entity->name = $entity->name . ' changed';

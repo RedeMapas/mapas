@@ -1,35 +1,40 @@
 <?php
-require_once __DIR__ . '/bootstrap.php';
 
-class APITest extends MapasCulturais_TestCase {
-    
-    function api($entity, $_params){
-        if(is_string($_params)){
-            parse_str($_params,$params);
+class APITest extends MapasCulturaisTests\TestCase
+{
+
+    function api($entity, $_params)
+    {
+        if (is_string($_params)) {
+            parse_str($_params, $params);
         } else {
             $params = $_params;
         }
         $rs = new MapasCulturais\ApiQuery("MapasCulturais\Entities\\$entity", $params);
         return $rs;
     }
-    
-    function apiFind($entity, $_params){
+
+    function apiFind($entity, $_params)
+    {
         $rs = $this->api($entity, $_params);
         return $rs->find();
     }
-    
-    function apiFindOne($entity, $_params){
+
+    function apiFindOne($entity, $_params)
+    {
         $rs = $this->api($entity, $_params);
         return $rs->findOne();
     }
-    
-    function apiCount($entity, $_params){
+
+    function apiCount($entity, $_params)
+    {
         $rs = $this->api($entity, $_params);
         return $rs->count();
     }
 
-    function testFindOneMethod() {
-        $simplify = function($entity, $props){
+    function testFindOneMethod()
+    {
+        $simplify = function ($entity, $props) {
             return (array) $entity->simplify($props);
         };
 
@@ -37,7 +42,7 @@ class APITest extends MapasCulturais_TestCase {
             'id' => $simplify,
             'id,singleUrl,editUrl,deleteUrl,destroyUrl,endereco,En_CEP' => $simplify,
 
-            'id,name,user.id' => function($entity){
+            'id,name,user.id' => function ($entity) {
                 $user = $entity->ownerUser;
                 return [
                     'id' => $entity->id,
@@ -45,7 +50,7 @@ class APITest extends MapasCulturais_TestCase {
                     'user' => $user->id
                 ];
             },
-            'id,name,owner' => function($entity){
+            'id,name,owner' => function ($entity) {
                 return [
                     'id' => $entity->id,
                     'name' => $entity->name,
@@ -54,19 +59,22 @@ class APITest extends MapasCulturais_TestCase {
             },
         ];
 
-        foreach([null,'superAdmin','admin','normal'] as $user){
+        foreach ([null, 'superAdmin', 'admin', 'normal'] as $user) {
             $this->user = $user;
 
             // agente nao tem owner, tem parent...
-            foreach(['Space', 'Project', 'Event'] as $class){
+            foreach (['Space', 'Project', 'Event'] as $class) {
                 $entities = $this->app->repo($class)->findAll();
 
-                foreach($entities as $entity){
-                    if($entity->status < 1) continue;
+                foreach ($entities as $entity) {
+                    if ($entity->status < 1)
+                        continue;
 
-                    foreach($cps as $props => $proc){
+                    foreach ($cps as $props => $proc) {
                         $response = $this->apiFindOne($class, "@select={$props}&id=EQ({$entity->id})");
                         $_entity = $proc($entity, $props);
+                        $_entity['@entityType'] = strtolower($class);
+
 
                         $this->assertEquals($_entity, $response, "asserting {$class} api findOne to \$user");
                     }
@@ -75,7 +83,8 @@ class APITest extends MapasCulturais_TestCase {
         }
     }
 
-    function testQuerySintax(){
+    function testQuerySintax()
+    {
         $this->user = 'admin';
 
         $s1 = 'id,name,owner';
@@ -83,7 +92,7 @@ class APITest extends MapasCulturais_TestCase {
         $s3 = 'id,name,owner.{id}';
 
         $entities = $this->app->repo('Event')->findAll();
-        foreach($entities as $entity){
+        foreach ($entities as $entity) {
             $r1 = $this->apiFind('event', "id=EQ($entity->id)&@select=$s1");
             $r2 = $this->apiFind('event', "id=EQ($entity->id)&@select=$s2");
             $r3 = $this->apiFind('event', "id=EQ($entity->id)&@select=$s3");
@@ -93,14 +102,15 @@ class APITest extends MapasCulturais_TestCase {
         }
     }
 
-    function testSelectWildcard(){
+    function testSelectWildcard()
+    {
         $occurrences = $this->apiFindOne('event', "id=EQ(3)&@limit=1&@select=id,name,occurrences.{*}");
         $spaces = $this->apiFindOne('event', "id=EQ(3)&@limit=1&@select=id,name,occurrences.{space.*}");
         $occ_space = $this->apiFindOne('event', "id=EQ(3)&@limit=1&@select=id,name,occurrences.{*, space.*}");
 
         $expected = $occurrences;
 
-        foreach($expected['occurrences'] as $i => &$occ){
+        foreach ($expected['occurrences'] as $i => &$occ) {
             $occ['space'] = $spaces['occurrences'][$i]['space'];
         }
 
@@ -108,7 +118,8 @@ class APITest extends MapasCulturais_TestCase {
 
     }
 
-    function testJsonOutput(){
+    function testJsonOutput()
+    {
         $event_id = 522;
 
         $s1 = 'id,name,user.{id,email,profile.{id,name,singleUrl,endereco,spaces.{id,name,singleUrl,endereco}}}';
@@ -124,7 +135,8 @@ class APITest extends MapasCulturais_TestCase {
 
     }
 
-    function testEventsOfProject(){
+    function testEventsOfProject()
+    {
         $this->resetTransactions();
         // assert that users WITHOUT control of a project CANNOT create events to this project
         $user1 = $this->getUser('normal', 0);
@@ -164,10 +176,11 @@ class APITest extends MapasCulturais_TestCase {
         ], $r1[0], 'verify the returned event');
     }
 
-    function testSelectPropertiesOrder() {
+    function testSelectPropertiesOrder()
+    {
         $r1 = $this->apiFindOne('agent', "@select=id,name,location,shortDescription");
         $r2 = $this->apiFindOne('agent', "@select=id,shortDescription,name,location");
-        
+
         $this->assertEquals(json_encode($r1), json_encode($r2), "Certificando que o resultado da api é o mesmo independente da ordem das propriedades no @select");
     }
 }

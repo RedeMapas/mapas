@@ -1,10 +1,16 @@
 <?php
+namespace MapasCulturaisTests;
+
+$config = require_once (__DIR__ . "/../../config.php");
 use Curl\Curl;
 use MapasCulturais\App;
 use MapasCulturais\Entities;
+use CrEOF\Spatial\Tests;
 
+$app = App::i();
+$app->init($config);
 
-abstract class MapasCulturais_TestCase extends \PHPUnit\Framework\TestCase
+abstract class TestCase extends \PHPUnit\Framework\TestCase
 {
     /**
      *
@@ -22,13 +28,14 @@ abstract class MapasCulturais_TestCase extends \PHPUnit\Framework\TestCase
     /**
      * Test Factory
      *
-     * @var MapasCulturais_TestFactory
+     * @var TestFactory
      */
     protected $factory;
 
-    public function __construct($name = NULL, array $data = array(), $dataName = '') {
+    public function __construct($name = NULL, array $data = array(), $dataName = '')
+    {
         $this->app = App::i();
-        $this->factory = new MapasCulturais_TestFactory($this->app);
+        $this->factory = new TestFactory($this->app);
 
         $this->backupGlobals = false;
         $this->backupStaticAttributes = false;
@@ -36,12 +43,13 @@ abstract class MapasCulturais_TestCase extends \PHPUnit\Framework\TestCase
         parent::__construct($name, $data, $dataName);
     }
 
-    public function __set($name, $value) {
-        if($name === 'user'){
-            if(is_object($value) && $value instanceof Entities\User)
+    public function __set($name, $value)
+    {
+        if ($name === 'user') {
+            if (is_object($value) && $value instanceof Entities\User)
                 $this->app->auth->authenticatedUser = $value;
             else
-                $this->setUserId ($value);
+                $this->setUserId($value);
         }
     }
 
@@ -51,10 +59,11 @@ abstract class MapasCulturais_TestCase extends \PHPUnit\Framework\TestCase
      * @param mixed $user
      * @return \MapasCulturais\Entity
      */
-    function getNewEntity($class, $user = null, $owner = null){
+    function getNewEntity($class, $user = null, $owner = null)
+    {
         $app = $this->app;
 
-        if(!is_null($user)){
+        if (!is_null($user)) {
             $_user = $app->user->is('guest') ? null : $app->user;
             $this->user = $user;
         }
@@ -65,52 +74,59 @@ abstract class MapasCulturais_TestCase extends \PHPUnit\Framework\TestCase
         $type = array_shift($_types);
 
         $entity = new $classname;
-        $entity->name = "Test $class "  . uniqid();
+        $entity->name = "Test $class " . uniqid();
         $entity->type = $type;
         $entity->shortDescription = 'A litle short description';
 
-        if($owner){
+        if ($owner) {
             $entity->owner = $owner;
-        } else if($app->user->is('guest') && $user && $classname::usesOwnerAgent()){
+        } else if ($app->user->is('guest') && $user && $classname::usesOwnerAgent()) {
             $entity->owner = $user->profile;
         }
 
-        if(!is_null($user)){
+        if (!is_null($user)) {
             $this->user = $_user;
         }
         return $entity;
     }
 
-    
-    function assertStatus($method, $status, $url, $message){
+
+    function assertStatus($method, $status, $url, $message)
+    {
         $c = $this->$method($url);
         $this->assertEquals($status, $c->http_status_code, $message);
         return $c;
     }
 
-    function assertGet200($url, $message){
+    function assertGet200($url, $message)
+    {
         return $this->assertStatus('get', 200, $url, $message);
     }
 
-    function assertGet401($url, $message){
+    function assertGet401($url, $message)
+    {
         return $this->assertStatus('get', 401, $url, $message);
     }
 
-    function assertGet403($url, $message){
+    function assertGet403($url, $message)
+    {
         return $this->assertStatus('get', 403, $url, $message);
     }
 
-    function assertGet404($url, $message){
+    function assertGet404($url, $message)
+    {
         return $this->assertStatus('get', 404, $url, $message);
     }
 
-    function assertGet503($url, $message){
+    function assertGet503($url, $message)
+    {
         return $this->assertStatus('get', 503, $url, $message);
     }
-    
-    function assertPermissionDenied($callable, $msg = ''){
+
+    function assertPermissionDenied($callable, $msg = '')
+    {
         $exception = null;
-        try{
+        try {
             $callable = \Closure::bind($callable, $this);
             $callable();
         } catch (\Exception $ex) {
@@ -121,9 +137,10 @@ abstract class MapasCulturais_TestCase extends \PHPUnit\Framework\TestCase
     }
 
 
-    function assertPermissionGranted($callable, $msg = ''){
+    function assertPermissionGranted($callable, $msg = '')
+    {
         $exception = null;
-        try{
+        try {
             $callable = \Closure::bind($callable, $this);
             $callable();
         } catch (\Exception $ex) {
@@ -134,26 +151,28 @@ abstract class MapasCulturais_TestCase extends \PHPUnit\Framework\TestCase
         $this->assertEmpty($exception, $msg);
     }
 
-    function assertAuthorizationRequestCreated($callable, $msg = ''){
+    function assertAuthorizationRequestCreated($callable, $msg = '')
+    {
         $exception = null;
-        try{
+        try {
             $callable = \Closure::bind($callable, $this);
             $callable();
-        }catch (\MapasCulturais\Exceptions\WorkflowRequest $ex) {
+        } catch (\MapasCulturais\Exceptions\WorkflowRequest $ex) {
             $exception = $ex;
-        }catch(\Exception $ex){
+        } catch (\Exception $ex) {
             $exception = $ex;
         }
 
-        if(is_object($exception) && substr(get_class($exception),0,9) === 'Doctrine\\'){
+        if (is_object($exception) && substr(get_class($exception), 0, 9) === 'Doctrine\\') {
             throw $exception;
         }
 
         $this->assertInstanceOf('MapasCulturais\Exceptions\WorkflowRequest', $exception, $msg);
     }
 
-    public function setUserId($user_id = null){
-        if(!is_null($user_id))
+    public function setUserId($user_id = null)
+    {
+        if (!is_null($user_id))
             $this->app->auth->authenticatedUser = $this->getUser($user_id);
         else
             $this->app->auth->logout();
@@ -165,12 +184,13 @@ abstract class MapasCulturais_TestCase extends \PHPUnit\Framework\TestCase
      * @param type $index
      * @return MapasCulturais\Entities\User
      */
-    public function getUser($user_id = null, $index = 0){
-        if($user_id instanceof Entities\User){
+    public function getUser($user_id = null, $index = 0)
+    {
+        if ($user_id instanceof Entities\User) {
             return $user_id;
-        }else if(key_exists($user_id, $this->app->config['userIds'])){
+        } else if (key_exists($user_id, $this->app->config['userIds'])) {
             return $this->app->repo('User')->find($this->app->config['userIds'][$user_id][$index]);
-        }else{
+        } else {
             return $this->app->repo('User')->find($user_id);
         }
     }
@@ -191,7 +211,8 @@ abstract class MapasCulturais_TestCase extends \PHPUnit\Framework\TestCase
         parent::tearDown();
 
     }
-    function resetTransactions(){
+    function resetTransactions()
+    {
         $this->app->em->rollback();
         $this->app->em->clear();
         $this->app->em->beginTransaction();
@@ -199,11 +220,12 @@ abstract class MapasCulturais_TestCase extends \PHPUnit\Framework\TestCase
 
     // Abstract way to make a request to SlimPHP, this allows us to mock the
     // slim environment
-    public function request($method, $path, $options = array()) {
+    public function request($method, $path, $options = array())
+    {
         $baseUrl = 'http://localhost:8888';
-        if(strpos($path, $baseUrl) !== 0){
+        if (strpos($path, $baseUrl) !== 0) {
             $url = $baseUrl . $path;
-        }else{
+        } else {
             $url = $path;
         }
 

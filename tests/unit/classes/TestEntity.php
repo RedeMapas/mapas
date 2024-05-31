@@ -1,4 +1,5 @@
 <?php
+namespace MapasCulturaisTests;
 
 use Doctrine\ORM\Mapping as ORM;
 
@@ -10,8 +11,9 @@ use MapasCulturais\Entity;
  * @ORM\Entity
  * @ORM\HasLifecycleCallbacks
  */
-class TestEntity extends Entity{
-    
+class TestEntity extends Entity
+{
+
     /**
      * @var integer
      *
@@ -24,8 +26,9 @@ class TestEntity extends Entity{
     protected $notRequiredBrPhone;
 
     protected $requiredBrPhone;
-    
-    static function getValidations() {
+
+    static function getValidations()
+    {
         return [
             'notRequiredBrPhone' => [
                 'v::brPhone()' => "Não é um telefone válido"

@@ -1,0 +1,53 @@
+name: Testing
+
+on:
+  pull_request:
+    branches:
+      - "main"
+
+jobs:
+  phpunit:
+    strategy:
+      matrix:
+        operating-system: [ubuntu-20.04]
+        php-versions: ["8.2"]
+    runs-on: ${{ matrix.operating-system }}
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v2
+
+      - name: Add hosts to /etc/hosts
+        run: |
+            sudo echo "127.0.0.1 db" | sudo tee -a /etc/hosts
+
+      - uses: hoverkraft-tech/compose-action@v1.5.1
+        with:
+          compose-file: "dev/docker-compose.yml"
+          services: "db"
+          up-flags: "-d"
+          down-flags: "-v"
+
+      - name: Install composer and dependencies
+        uses: php-actions/composer@v6
+
+      - name: Run migrations
+        run: |
+          php src/tools/apply-updates.php
+        env:
+          APP_MODE: development
+
+      - name: PHPUnit Tests
+        uses: php-actions/phpunit@v3
+        env:
+          XDEBUG_MODE: coverage
+        with:
+          configuration: phpunit.xml
+          php_extensions: xdebug mbstring curl xml
+          args: tests --coverage-clover ./coverage.xml
+
+      - name: Upload to Codecov
+        uses: codecov/codecov-action@v2
+        with:
+          token: ${{ secrets.CODE_COV_TOKEN }}
+          files: ./coverage.xml
+          verbose: true

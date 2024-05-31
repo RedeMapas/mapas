@@ -1,23 +1,40 @@
 {
+    "name": "mapasculturais/mapasculturais",
+    "version": "7.3.45",
+    "description": " Mapas Culturais é uma plataforma colaborativa que reúne informações sobre agentes, espaços, eventos e projetos culturais, fornecendo ao poder público uma radiografia da área de cultura e ao cidadão um mapa de espaços e eventos culturais da região",
+    "keywords": ["php", "docker", "gis", "postgres"],
+    "type": "project",
+    "license": "AGPL",
+    "require-dev": {
+        "phpunit/phpunit": "^10.5",
+        "squizlabs/php_codesniffer": "3.*",
+        "vimeo/psalm": "^5.17",
+        "zircote/swagger-php": "^4.8"
+    },
     "require": {
-        "acelaya/doctrine-enum-type": "^2.3",
+        "php": "^7.3 || ^8",
+        "acelaya/doctrine-enum-type": "^2.5",
         "akrabat/ip-address-middleware": "^2.1",
+        "creof/doctrine2-spatial": "^1",
         "doctrine/annotations": "^2.0",
         "doctrine/dbal": "^3.6",
         "doctrine/orm": "2.16.*",
         "firebase/php-jwt": "^6.4",
+        "league/csv": "^9.6.2",
         "michelf/php-markdown": "1.*",
         "monolog/monolog": "^3.4",
         "mustache/mustache": "^2.11",
+        "nyholm/psr7": "^1.4",
+        "opauth/authentik": "*",
+        "opauth/logincidadao": "*",
         "opauth/openid": "*",
-        "opauth/logincidadao" : "*",
-        "opauth/authentik" : "*",
+        "php-curl-class/php-curl-class": "^9.18",
         "pomo/pomo": "^1.5",
         "psy/psysh": "^0.11.12",
         "respect/validation": "^2.2",
         "sinergi/browser-detector": "^6.1",
         "slim/psr7": "^1.6",
-        "slim/slim": "4.*",
+        "slim/slim": "^4.0",
         "smottt/wideimage": "*",
         "symfony/amazon-mailer": "^6.3",
         "symfony/cache": "^6.2",
@@ -29,16 +46,23 @@
         "league/csv": "^9.6.2",
         "symfony/http-foundation": "^7.0",
         "symfony/routing": "^7.0",
-        "symfony/console": "^6.4.6"
+        "symfony/console": "^6.4.6",
+        "league/csv": "^9.6.2"
     },
     "autoload": {
         "psr-4": {
             "App\\": "app/src",
             "App\\Tests\\": "app/tests",
+            "MapasCulturaisTests\\": "tests/unit/classes",
             "MapasCulturais\\": "src/core",
             "MapasCulturais\\Modules\\": "src/modules",
             "MapasCulturais\\Themes\\": "src/themes"
         }
+    },
+    "config": {
+        "preferred-install": "dist",
+        "sort-packages": true,
+        "optimize-autoloader": true
     },
     "repositories": [
         {

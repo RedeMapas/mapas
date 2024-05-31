@@ -1,6 +1,6 @@
 <?php
-/*
-require_once __DIR__.'/bootstrap.php';
+
+namespace MapasCulturaisTests;
 
 use MapasCulturais\App;
 use MapasCulturais\Entities\User;
@@ -12,18 +12,21 @@ use MapasCulturais\Entities\EventOccurrence;
 use MapasCulturais\Entities\EventOccurrenceRecurrence;
 
 
-class CreateEntitiesForDoctrineProxyTest extends MapasCulturais_TestCase{
+class CreateEntitiesForDoctrineProxyTest extends TestCase
+{
 
-    function testAll() {
+    function testAll()
+    {
 
         $app = \MapasCulturais\App::i();
 
         $user = new User;
         $user->authUid = 'fakes';
+        $user->authProvider = 3;
         $user->email = 'user@doamain.com';
         $user->save(true);
 
-        $userFound = $app->repo('User')->findOneBy(array('email'=>'user@doamain.com'));
+        $userFound = $app->repo('User')->findOneBy(array('email' => 'user@doamain.com'));
 
         $this->assertEquals($userFound->email, 'user@doamain.com');
         $this->assertEquals($userFound->authUid, 'fakes');
@@ -33,7 +36,7 @@ class CreateEntitiesForDoctrineProxyTest extends MapasCulturais_TestCase{
         $agent->name = 'Nameless';
         $agent->save(true);
 
-        $agentFound = $app->repo('Agent')->findOneBy(array('id'=>$agent->id));
+        $agentFound = $app->repo('Agent')->findOneBy(array('id' => $agent->id));
 
         $this->assertEquals($agentFound->name, 'Nameless');
         $this->assertEquals($agentFound->user->id, $user->id);
@@ -63,13 +66,14 @@ class CreateEntitiesForDoctrineProxyTest extends MapasCulturais_TestCase{
         $event->setProjectId($project->id);
         $event->save(true);
 
-        $eventFound = $app->repo('Event')->findOneBy(array('id'=>$event->id));
+        $eventFound = $app->repo('Event')->findOneBy(array('id' => $event->id));
 
         $this->assertEquals($eventFound->project->id, $project->id);
 
     }
 
-    function testURLs(){
+    function testURLs()
+    {
         $app = \MapasCulturais\App::i();
         $urls = [
             'api/agent/find/?&@select=id,name,location&@order=name%20ASC',
@@ -86,9 +90,8 @@ class CreateEntitiesForDoctrineProxyTest extends MapasCulturais_TestCase{
             'api/project/find/?&@select=id,singleUrl,name,type,shortDescription,terms,registrationFrom,registrationTo&@files=(avatar.avatarBig):url&@page=1&@limit=10&@order=name%20ASC'
         ];
 
-        foreach($urls as $url){
-            $this->assertNotEmpty(file_get_contents($app->config['site.url'].$url));
+        foreach ($urls as $url) {
+            $this->assertNotEmpty(file_get_contents($app->config['site.url'] . $url));
         }
     }
 }
-*/

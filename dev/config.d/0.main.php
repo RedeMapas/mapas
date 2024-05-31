@@ -5,7 +5,7 @@ $__process_assets = false;
 return [
     /* MAIN */
     'themes.active' => 'MapasCulturais\Themes\BaseV2',
-    'app.mode' => $_ENV['APP_MODE'],
+    'app.mode' => env('APP_MODE'),
     'doctrine.isDev' => false, // deixe true somente se estiver trabalhando nos mapeamentos das entidades
 
     /* SELOS */

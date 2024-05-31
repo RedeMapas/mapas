@@ -1,13 +1,15 @@
 <?php
-require_once 'bootstrap.php';
+namespace MapasCulturaisTests;
 
 use MapasCulturais\App;
 use MapasCulturais\Traits\RegisterFunctions;
 use MapasCulturais\Entities\Agent;
 
-class MetadataTests extends MapasCulturais_TestCase {
+class MetadataTests extends TestCase
+{
     use RegisterFunctions;
-    function testValidations(){
+    function testValidations()
+    {
         $app = App::i();
         $type = new MapasCulturais\Definitions\EntityType('MapasCulturais\Entities\Agent', 9999, 'test type');
         $app->registerEntityType($type);
@@ -18,7 +20,7 @@ class MetadataTests extends MapasCulturais_TestCase {
                 'validations' => array(
                     'required' => 'required error message'
                 ),
-                'validValues' => array('Value','Loren'),
+                'validValues' => array('Value', 'Loren'),
                 'invalidValues' => array(null, '')
             ),
 
@@ -46,7 +48,7 @@ class MetadataTests extends MapasCulturais_TestCase {
                 'validations' => array(
                     'v::url()' => 'error message'
                 ),
-                'validValues' => array(null, '', 'http://www.test.com', 'http://www.testing-tests.com', 'http://www.test.com/', 'https://www.test.com/', 'http://www.test.com/ok', 'https://testing.com/ok.test', 'http://test.com/ok.php', 'http://a.very.long.domain.name.com/ok.jpg?with=get%20params', 'https://www.test.com/ok' ),
+                'validValues' => array(null, '', 'http://www.test.com', 'http://www.testing-tests.com', 'http://www.test.com/', 'https://www.test.com/', 'http://www.test.com/ok', 'https://testing.com/ok.test', 'http://test.com/ok.php', 'http://a.very.long.domain.name.com/ok.jpg?with=get%20params', 'https://www.test.com/ok'),
                 'invalidValues' => array('htts:///222 asd.com', 'asdasd', 'www.test.com')
             ),
 
@@ -56,7 +58,7 @@ class MetadataTests extends MapasCulturais_TestCase {
                     'required' => 'required error message',
                     'v::url()' => 'error message'
                 ),
-                'validValues' => array('http://www.test.com', 'http://www.testing-tests.com', 'http://www.test.com/', 'https://www.test.com/', 'http://www.test.com/ok', 'https://testing.com/ok.test', 'http://test.com/ok.php', 'http://a.very.long.domain.name.com/ok.jpg?with=get%20params', 'https://www.test.com/ok' ),
+                'validValues' => array('http://www.test.com', 'http://www.testing-tests.com', 'http://www.test.com/', 'https://www.test.com/', 'http://www.test.com/ok', 'https://testing.com/ok.test', 'http://test.com/ok.php', 'http://a.very.long.domain.name.com/ok.jpg?with=get%20params', 'https://www.test.com/ok'),
                 'invalidValues' => array(null, '', 'htts:///222 asd.com', 'asdasd', 'www.test.com')
             ),
 
@@ -71,7 +73,7 @@ class MetadataTests extends MapasCulturais_TestCase {
             )
         );
 
-        foreach($metas as $meta_key => $config){
+        foreach ($metas as $meta_key => $config) {
             $definition = new MapasCulturais\Definitions\Metadata($meta_key, $config);
             $app->unregisterEntityMetadata('MapasCulturais\Entities\Agent', $meta_key);
             $app->registerMetadata($definition, 'MapasCulturais\Entities\Agent', $type->id);
@@ -82,15 +84,15 @@ class MetadataTests extends MapasCulturais_TestCase {
 
             $agent->terms['area'][] = 'Cinema';
 
-            for($i = 1; $i <= 2; $i++){
+            for ($i = 1; $i <= 2; $i++) {
 
-                foreach($config['validValues'] as $val){
+                foreach ($config['validValues'] as $val) {
                     $agent->$meta_key = $val;
                     $errors = $agent->getValidationErrors();
                     $this->assertArrayNotHasKey($meta_key, $errors, print_r(array('type' => "assertArrayNotHasKey", 'KEY' => $meta_key, 'VALID VALUE' => $val, 'errors' => $errors), true));
                 }
 
-                foreach($config['invalidValues'] as $val){
+                foreach ($config['invalidValues'] as $val) {
                     $agent->$meta_key = $val;
                     $errors = $agent->getValidationErrors();
                     $this->assertArrayHasKey($meta_key, $errors, print_r(array('type' => "assertArrayNotHasKey", 'KEY' => $meta_key, 'INVALID VALUE' => $val, 'errors' => $errors), true));
@@ -100,8 +102,9 @@ class MetadataTests extends MapasCulturais_TestCase {
         }
 
     }
-    
-    function testGetMetadata(){
+
+    function testGetMetadata()
+    {
         // testa se o getter funciona para todos os roles
 
         // guest user
@@ -109,34 +112,35 @@ class MetadataTests extends MapasCulturais_TestCase {
         $this->user = null;
         $event = $this->app->repo('Event')->find(522);
         $this->assertEquals('Livre', $event->classificacaoEtaria);
-        
+
         // normal user
         $this->app->em->clear();
         $this->user = 'normal';
         $event = $this->app->repo('Event')->find(522);
         $this->assertEquals('Livre', $event->classificacaoEtaria);
-        
+
         // admin user
         $this->app->em->clear();
         $this->user = 'admin';
         $event = $this->app->repo('Event')->find(522);
         $this->assertEquals('Livre', $event->classificacaoEtaria);
-        
+
     }
 
-    function testRequiredMetadata() {
+    function testRequiredMetadata()
+    {
         $types = [
-            'number' => [0,0.5,1], 
-            'integer' => [0,1], 
-            'json' => [(object) [], [], 'test', '1', 1], 
-            'boolean' => [true, false,1,0, '1', '0'], 
-            'string' => ['teste', 333], 
+            'number' => [0, 0.5, 1],
+            'integer' => [0, 1],
+            'json' => [(object) [], [], 'test', '1', 1],
+            'boolean' => [true, false, 1, 0, '1', '0'],
+            'string' => ['teste', 333],
             'text' => ['teste', 333]
         ];
-        
-        foreach($types as $type => $valid_values) {
+
+        foreach ($types as $type => $valid_values) {
             $field_name = "required_{$type}";
-            
+
             $this->registerAgentMetadata($field_name, [
                 'type' => $type,
                 'label' => "Campo do tipo '$type' para testar valores nulos obrigatórios",
@@ -150,12 +154,12 @@ class MetadataTests extends MapasCulturais_TestCase {
 
         $agent = $this->getNewEntity('Agent');
 
-        foreach($types as $type => $valid_values) {
+        foreach ($types as $type => $valid_values) {
             $field_name = "required_{$type}";
             $errors = $agent->validationErrors[$field_name] ?? [];
             $this->assertContains('campo obrigatório', $errors, "Campo do tipo $type não preenchido deve retornar erro de validação");
 
-            foreach($valid_values as $value) {
+            foreach ($valid_values as $value) {
                 $agent->$field_name = $value;
                 $errors = $agent->validationErrors[$field_name] ?? [];
                 $this->assertNotContains('campo obrigatório', $errors, "Campo do tipo $type não deve retornar erro de validação quando preenchido com valor válido: " . print_r($value, true));
@@ -163,21 +167,22 @@ class MetadataTests extends MapasCulturais_TestCase {
         }
     }
 
-    function testNullValues() {
+    function testNullValues()
+    {
         $app = App::i();
 
         $types = [
-            'number' => 1.5, 
-            'integer' => 1, 
-            'json' => (object) [], 
-            'boolean' => true, 
-            'string' => 'teste', 
+            'number' => 1.5,
+            'integer' => 1,
+            'json' => (object) [],
+            'boolean' => true,
+            'string' => 'teste',
             'text' => 'teste'
         ];
-        
-        foreach($types as $type => $valid_value) {
+
+        foreach ($types as $type => $valid_value) {
             $field_name = "optional_{$type}";
-            
+
             $this->registerAgentMetadata($field_name, [
                 'type' => $type,
                 'label' => "Campo do tipo '$type' para testar valores nulos"
@@ -188,14 +193,14 @@ class MetadataTests extends MapasCulturais_TestCase {
 
         $agent = $this->getNewEntity('Agent');
 
-        foreach($types as $type => $valid_value) {
+        foreach ($types as $type => $valid_value) {
             $field_name = "optional_{$type}";
 
             $this->assertNull($agent->$field_name, "campo opcional do tipo $type deveria ser nulo antes de ser definido");
         }
 
         // assegurando que é possível deixar o campo nulo após salvar um valor válido
-        foreach($types as $type => $valid_value) {
+        foreach ($types as $type => $valid_value) {
             $field_name = "optional_{$type}";
 
             $agent->$field_name = $valid_value;
@@ -205,10 +210,10 @@ class MetadataTests extends MapasCulturais_TestCase {
         $agent_id = $agent->id;
 
         $app->em->clear();
-        
+
         $agent = $app->repo('Agent')->find($agent_id);
-        
-        foreach($types as $type => $valid_value) {
+
+        foreach ($types as $type => $valid_value) {
             $field_name = "optional_{$type}";
             $this->assertEquals($valid_value, $agent->$field_name, 'O valor do campo salvo deve ser igual ao definido');
 
@@ -220,7 +225,7 @@ class MetadataTests extends MapasCulturais_TestCase {
 
         $agent = $app->repo('Agent')->find($agent_id);
 
-        foreach($types as $type => $valid_value) {
+        foreach ($types as $type => $valid_value) {
             $field_name = "optional_{$type}";
 
             $this->assertNull($agent->$field_name, "campo opcional do tipo $type deveria ser nulo após ser definido como null");
