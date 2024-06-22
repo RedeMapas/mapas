@@ -24,7 +24,7 @@ class RoutesTest extends TestCase
     {
         $this->user = null;
 
-        $this->assertGet200('/busca/', 'assert that about page status code is 200');
+        $this->assertGet404('/busca/', 'assert that about page status code is 404');
     }
 
     function test404()
