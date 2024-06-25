@@ -104,10 +104,10 @@ class APITest extends MapasCulturaisTests\TestCase
 
     function testSelectWildcard()
     {
-        $occurrences = $this->apiFindOne('event', "id=EQ(3)&@limit=1&@select=id,name,occurrences.{*}");
-        $spaces = $this->apiFindOne('event', "id=EQ(3)&@limit=1&@select=id,name,occurrences.{space.*}");
-        $occ_space = $this->apiFindOne('event', "id=EQ(3)&@limit=1&@select=id,name,occurrences.{*, space.*}");
-
+        $occurrences = $this->apiFindOne('event', "@limit=1&@select=id,name,occurrences.{*}");
+        $spaces = $this->apiFindOne('event', "@limit=1&@select=id,name,occurrences.{space.*}");
+        $occ_space = $this->apiFindOne('event', "@limit=1&@select=id,name,occurrences.{*, space.*}");
+        
         $expected = $occurrences;
 
         foreach ($expected['occurrences'] as $i => &$occ) {
@@ -115,7 +115,6 @@ class APITest extends MapasCulturaisTests\TestCase
         }
 
         $this->assertEquals($expected, $occ_space);
-
     }
 
     function testJsonOutput()
