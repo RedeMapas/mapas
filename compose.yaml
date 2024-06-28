@@ -50,7 +50,7 @@ services:
   recreate-pending-pcache:
     extends:
       service: php
-    command: sh ./mapas/docker/recreate-pending-pcache.sh
+    command: sh ./mapas/docker/recreate-pending-pcache-cron.sh
     depends_on:
       - php
     volumes:
