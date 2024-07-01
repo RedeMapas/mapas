@@ -6,7 +6,7 @@
 
 use MapasCulturais\i;
 
-$this->import(" 
+$this->import("
     mc-modal
 ");
 ?>
@@ -54,7 +54,8 @@ $this->import("
                     </div>
                 </div>
             </div>
-            
+
+        <div style="display: none;">
             <template #actions="modal">
                 <VueRecaptcha v-if="sitekey" :sitekey="sitekey" @verify="verifyCaptcha" @expired="expiredCaptcha" @render="expiredCaptcha" class="complaint-suggestion__recaptcha"></VueRecaptcha>
                 <button class="button button--primary" @click="send(modal)"><?= i::__('Enviar Denúncia') ?></button>
@@ -63,11 +64,12 @@ $this->import("
 
             <template #button="modal">
                 <button type="button" @click="modal.open(); initFormData('sendComplaintMessage')" class="button button--primary-outline"><?= i::__('Denúncia') ?></button>
-            </template>
+                </template>
+        </div>
         </mc-modal>
     </div>
 
-    <div class="complaint-suggestion__suggestion">
+    <div class="complaint-suggestion__suggestion" style="display: none;">
         <mc-modal title="<?= i::__('Contato') ?>" classes="complaint-sugestion__modal">
 
             <div class="complaint-suggestion__modal-content">

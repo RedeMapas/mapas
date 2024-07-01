@@ -9,9 +9,15 @@
     line-height: size(25);
     margin: 0 auto;
     justify-content: center;
-    
+    color: var(--mc-white);
+
     .iconify {
         font-size: size(40);
+        color: var(--mc-white);
+    }
+
+    text {
+        color: var(--mc-white);
     }
 
 }

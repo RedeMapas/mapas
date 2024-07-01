@@ -112,7 +112,7 @@ importers:
         version: 1.77.2
       sass-loader:
         specifier: ^8.0.2
-        version: 8.0.2(sass@1.77.2)(webpack@4.47.0(webpack-cli@3.3.12(webpack@4.47.0(webpack-cli@4.10.0(webpack@5.91.0)))))
+        version: 8.0.2(sass@1.77.2)(webpack@5.91.0(webpack-cli@4.10.0(webpack@5.91.0)))
 
   plugins/plugin-MultipleLocalAuth:
     devDependencies:
@@ -127,7 +127,7 @@ importers:
         version: 1.77.2
       sass-loader:
         specifier: ^8.0.2
-        version: 8.0.2(sass@1.77.2)(webpack@5.91.0(webpack-cli@4.10.0(webpack@5.91.0)))
+        version: 8.0.2(sass@1.77.2)(webpack@4.47.0(webpack-cli@3.3.12(webpack@4.47.0(webpack-cli@4.10.0(webpack@5.91.0)))))
 
   themes/BaseV2:
     devDependencies:

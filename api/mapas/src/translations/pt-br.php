@@ -55,7 +55,7 @@ return array(
     "Required" => 'Obrigatório',
     "Facultative" => 'Facultativo',
     "Don't use" => 'Não usar',
-    
+
     // registration field types
     'Check Boxes Field' => 'Seleção múltipla (checkboxes)',
     'Radio Buttons Field' => 'Seleção única (radio)',
@@ -65,5 +65,5 @@ return array(
     'Text Field' => 'Campo de texto simples',
     'Textarea Field' => 'Campo de texto (textarea)',
     'Date Field' => 'Campo de data',
-    
+
 );

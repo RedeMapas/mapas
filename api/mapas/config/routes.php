@@ -11,7 +11,7 @@ return [
             'agentes'           => ['search', 'agents'],
             'eventos'           => ['search', 'events'],
             'espacos'           => ['search', 'spaces'],
-            'oportunidades'     => ['search', 'opportunities'],
+            'edital'     => ['search', 'opportunities'],
             'projetos'          => ['search', 'projects'],
 
             // entidades
@@ -126,7 +126,7 @@ return [
             'agent'          => i::__('Agente'),       'agents'        => i::__('Agentes'),
             'space'          => i::__('Espaço'),       'spaces'        => i::__('Espaços'),
             'project'        => i::__('Projeto'),      'projects'      => i::__('Projetos'),
-            'opportunity'    => i::__('Oportunidade'), 'opportunities' => i::__('Oportunidades'),
+            'opportunity'    => i::__('Edital'), 'opportunities' => i::__('Edital'),
             'registration'   => i::__('Inscrição'),    'registrations' => i::__('Inscrições'),
             'file'           => i::__('Arquivo'),      'files'         => i::__('Arquivos'),
             'seal'           => i::__('Selo'),         'seals'         => i::__('Selos'),
