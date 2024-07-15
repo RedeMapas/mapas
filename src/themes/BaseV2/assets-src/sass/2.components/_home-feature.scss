@@ -69,7 +69,7 @@
 				margin-top: size(20);
 				
 				&__prev {
-					background: url('https://api.iconify.design/akar-icons/arrow-left.svg?color=%23d50200') no-repeat center center / size(27);
+					background: url('https://api.iconify.design/akar-icons/arrow-left.svg?color=%23d5020') no-repeat center center / size(27);
 					background-color: var(--mc-white);
 					cursor: pointer;
 
@@ -132,6 +132,13 @@
 				&__track {
 					align-items: flex-start;
 				}
+
+				&__prev--in-active,
+                &__next--in-active {
+                    cursor: default;
+                    opacity: .3;
+                    pointer-events: none;
+                }
 			}
 
 		}
