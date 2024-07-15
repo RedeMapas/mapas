@@ -132,9 +132,14 @@
 				&__track {
 					align-items: flex-start;
 				}
+				
+				&__prev--in-active,
+                &__next--in-active {
+                    cursor: default;
+                    opacity: .3;
+                    pointer-events: none;
+                }
 			}
-
 		}
-
 	}
 }
