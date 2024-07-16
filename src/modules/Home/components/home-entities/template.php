@@ -25,19 +25,21 @@ $this->import('
         <div class="home-entities__content--cards">
             <div v-if="global.enabledEntities.opportunities" class="card">
                 <div class="card__left">
-                    <div class="card__left--content">
-                        <div class="card__left--content-icon opportunity__background">
-                            <mc-icon name="opportunity"></mc-icon>
-                        </div>                        
-                        <div class="card__left--content-title">
-                            <label class="title">
-                                <?= i::__('Oportunidades') ?>
-                            </label>
+                    <mc-link route="search/opportunities">
+                        <div class="card__left--content">
+                            <div class="card__left--content-icon opportunity__background">
+                                <mc-icon name="opportunity"></mc-icon>
+                            </div>                        
+                            <div class="card__left--content-title">
+                                    <label class="title">
+                                        <?= i::__('Oportunidades') ?>
+                                    </label>
+                            </div>
                         </div>
-                    </div>
-                    <div class="card__left--img">
-                        <img src="<?php $this->asset($app->config['module.home']['home-opportunities']) ?>" />
-                    </div>
+                        <div class="card__left--img">
+                            <img src="<?php $this->asset($app->config['module.home']['home-opportunities']) ?>" />
+                        </div>
+                    </mc-link>
                 </div>
                 <div class="card__right">
                     <p><?= $this->text('opportunities', i::__('Faça a sua inscrição ou acesse o resultado de diversas convocatórias como editais, oficinas, prêmios e concursos. Você também pode criar o seu próprio formulário e divulgar uma oportunidade para outros agentes culturais.')) ?></p>
@@ -50,19 +52,21 @@ $this->import('
 
             <div v-if="global.enabledEntities.events" class="card">
                 <div class="card__left">
-                    <div class="card__left--content">
-                        <div class="card__left--content-icon event__background">
-                            <mc-icon name="event"></mc-icon>
-                        </div>                        
-                        <div class="card__left--content-title">
-                            <label class="title">
-                                <?= i::__('Eventos') ?>
-                            </label>
+                    <mc-link route="search/events">
+                        <div class="card__left--content">
+                            <div class="card__left--content-icon event__background">
+                                <mc-icon name="event"></mc-icon>
+                            </div>                        
+                            <div class="card__left--content-title">
+                                <label class="title">
+                                    <?= i::__('Eventos') ?>
+                                </label>
+                            </div>
                         </div>
-                    </div>
-                    <div class="card__left--img">
-                        <img src="<?php $this->asset($app->config['module.home']['home-events']) ?>" />
-                    </div>
+                        <div class="card__left--img">
+                            <img src="<?php $this->asset($app->config['module.home']['home-events']) ?>" />
+                        </div>
+                    </mc-link>
                 </div>
                 <div class="card__right">
                     <p><?= $this->text('events', i::__('Você pode pesquisar eventos culturais nos campos de busca combinada. Como usuário cadastrado, você pode incluir seus eventos na plataforma e divulgá-los gratuitamente. (Mais uma linha aqui pra fechar cinco linhas)')) ?></p>
@@ -75,19 +79,21 @@ $this->import('
 
             <div v-if="global.enabledEntities.spaces" class="card">
                 <div class="card__left">
-                    <div class="card__left--content">
-                        <div class="card__left--content-icon space__background">
-                            <mc-icon name="space"></mc-icon>
-                        </div>                        
-                        <div class="card__left--content-title">
-                            <label class="title">
-                                <?= i::__('Espaços') ?>
-                            </label>
+                    <mc-link route="search/spaces">
+                        <div class="card__left--content">
+                            <div class="card__left--content-icon space__background">
+                                <mc-icon name="space"></mc-icon>
+                            </div>                        
+                            <div class="card__left--content-title">
+                                <label class="title">
+                                    <?= i::__('Espaços') ?>
+                                </label>
+                            </div>
                         </div>
-                    </div>
-                    <div class="card__left--img">
-                        <img src="<?php $this->asset($app->config['module.home']['home-spaces']) ?>" />
-                    </div>
+                        <div class="card__left--img">
+                            <img src="<?php $this->asset($app->config['module.home']['home-spaces']) ?>" />
+                        </div>
+                    </mc-link>
                 </div>
                 <div class="card__right">
                     <p><?= $this->text('spaces', i::__('Procure por espaços culturais incluídos na plataforma, acessando os campos de busca combinada que ajudam na precisão de sua pesquisa. Cadastre também os espaços onde desenvolve suas atividades artísticas e culturais.')) ?></p>
@@ -100,19 +106,21 @@ $this->import('
 
             <div v-if="global.enabledEntities.agents" class="card">
                 <div class="card__left">
-                    <div class="card__left--content">
-                        <div class="card__left--content-icon agent__background">
-                            <mc-icon name="agent-2"></mc-icon>
-                        </div>                        
-                        <div class="card__left--content-title">
-                            <label class="title">
-                                <?= i::__('Agentes') ?>
-                            </label>
+                    <mc-link route="search/agents"> 
+                        <div class="card__left--content">
+                            <div class="card__left--content-icon agent__background">
+                                <mc-icon name="agent-2"></mc-icon>
+                            </div>                        
+                            <div class="card__left--content-title">
+                                <label class="title">
+                                    <?= i::__('Agentes') ?>
+                                </label>
+                            </div>
                         </div>
-                    </div>
-                    <div class="card__left--img">
-                        <img src="<?php $this->asset($app->config['module.home']['home-agents']) ?>" />
-                    </div>
+                        <div class="card__left--img">
+                            <img src="<?php $this->asset($app->config['module.home']['home-agents']) ?>" />
+                        </div>
+                    </mc-link>
                 </div>
                 <div class="card__right">
                     <p><?= $this->text('agents', i::__('Neste espaço, estão registrados artistas, gestores e produtores; uma rede de atores envolvidos na cena cultural da região. Você pode cadastrar um ou mais agentes (grupos, coletivos, bandas instituições, empresas, etc.), (...)')) ?></p>
@@ -125,19 +133,21 @@ $this->import('
 
             <div v-if="global.enabledEntities.projects" class="card">
                 <div class="card__left">
-                    <div class="card__left--content">
-                        <div class="card__left--content-icon project__background">
-                            <mc-icon name="project"></mc-icon>
-                        </div>                        
-                        <div class="card__left--content-title">
-                            <label class="title">
-                                <?= i::__('Projetos') ?>
-                            </label>
+                    <mc-link route="search/projects">
+                        <div class="card__left--content">
+                            <div class="card__left--content-icon project__background">
+                                <mc-icon name="project"></mc-icon>
+                            </div>                        
+                            <div class="card__left--content-title">
+                                <label class="title">
+                                    <?= i::__('Projetos') ?>
+                                </label>
+                            </div>
                         </div>
-                    </div>
-                    <div class="card__left--img">
-                        <img src="<?php $this->asset($app->config['module.home']['home-projects']) ?>" />
-                    </div>
+                        <div class="card__left--img">
+                            <img src="<?php $this->asset($app->config['module.home']['home-projects']) ?>" />
+                        </div>
+                    </mc-link>
                 </div>
                 <div class="card__right">
                     <p><?= $this->text('projects', i::__('Aqui você encontra leis de fomento, mostras, convocatórias e editais criados, além de diversas iniciativas cadastradas pelos usuários da plataforma.')) ?></p>
