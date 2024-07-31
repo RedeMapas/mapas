@@ -1,7 +1,7 @@
-vendor
+# vendor
 var
 public/router.php
-vendor
+# vendor
 src/modules/Components/assets/js/media-query.js
 src/modules/Components/assets/js/media-query/
 node_modules
@@ -20,3 +20,4 @@ src/.phpdoc
 .phpunit*
 .phpdocs*
 .env
+vendor/
