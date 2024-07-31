@@ -49,7 +49,7 @@ class Test extends \MapasCulturais\AuthProvider{
         return $this->_user;
     }
 
-    public function setAuthenticatedUser(\MapasCulturais\Entities\User $user){
+    public function setAuthenticatedUser(\MapasCulturais\Entities\User $user=null){
         file_put_contents($this->filename, $user->id);
         $this->_setAuthenticatedUser($user);
     }

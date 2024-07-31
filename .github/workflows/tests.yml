@@ -1,0 +1,78 @@
+name: tests
+
+on:
+  pull_request:
+    branches:
+      - develop
+
+jobs:
+  CODE_STYLE:
+    name: CODE STYLE
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run PHP-CS-Fixer
+        uses: erkenes/php-cs-fixer-action@main
+        with:
+          args: '--dry-run --diff -vvv'
+
+  PHP_UNIT:
+    name: PHP UNIT
+    runs-on: ubuntu-latest
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      # - name: Add hosts to /etc/hosts
+      #   run: |
+      #       sudo echo "127.0.0.1 db" | sudo tee -a /etc/hosts
+
+      - uses: hoverkraft-tech/compose-action@v1.5.1
+        with:
+          compose-file: "docker-compose.yaml"
+          services: "web"
+          up-flags: "-d"
+          down-flags: "-v"
+
+      - name: Run Phpunit tests
+        run: |
+            docker compose exec web ./vendor/bin/phpunit -c phpunit.xml
+
+      - name: Run Cypress tests
+        run: |
+            docker compose exec web pnpm run cypress:run
+
+      # - name: Install composer and dependencies
+      #   uses: php-actions/composer@v6
+      #   with:
+      #     php_extensions: pdo_pgsql zip intl gd mbstring curl xml
+
+      # - name: Run migrations
+      #   run: |
+      #     mkdir var/private-files/
+      #     mkdir var/sessions/
+      #     mkdir var/DoctrineProxies/
+      #     php src/tools/apply-updates.php
+      #     php app/bin/doctrine migrations:migrate --no-interaction --all-or-nothing
+      #   env:
+      #     APP_MODE: development
+
+      # - name: PHPUnit Tests Mapas
+      #   uses: php-actions/phpunit@v3
+      #   env:
+      #     XDEBUG_MODE: coverage
+      #   with:
+      #     version: 10.5
+      #     php_version: 8.2
+      #     configuration: phpunit.xml
+      #     php_extensions: pdo_pgsql zip intl gd mbstring curl xml
+      #     args: tests --coverage-clover ./coverage.xml
+
+      # - name: Upload to Codecov
+      #   uses: codecov/codecov-action@v2
+      #   with:
+      #     token: ${{ secrets.CODE_COV_TOKEN }}
+      #     files: ./coverage.xml
+      #     verbose: true
+
