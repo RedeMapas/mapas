@@ -1,0 +1,1 @@
+docker build . -f ./.nixpacks/Dockerfile -t 745e5307-a768-47a8-9ade-d17560f8ae49 --build-arg NIXPACKS_METADATA=php --build-arg NIXPACKS_PHP_FALLBACK_PATH=/app/public/index.php --build-arg NIXPACKS_PHP_ROOT_DIR=/app/public --build-arg PORT=80
