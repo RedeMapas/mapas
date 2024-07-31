@@ -6,7 +6,7 @@
     "type": "project",
     "license": "AGPL",
     "require": {
-        "php": "^7.3 || ^8",
+        "php": "^8.2",
         "ext-intl": "*",
         "ext-pdo_pgsql": "*",
         "ext-zip": "*",
@@ -46,7 +46,10 @@
         "symfony/console": "^6.4.6",
         "symfony/serializer": "^7.0",
         "symfony/property-access": "^7.0",
-        "symfony/validator": "^7.0"
+        "symfony/validator": "^7.0",
+        "phpoffice/phpspreadsheet": "^2.0",
+        "curl/curl": "1.2.*"
+
     },
     "autoload": {
         "psr-4": {
@@ -78,12 +81,12 @@
         }
     ],
     "require-dev": {
+        "squizlabs/php_codesniffer": "3.*",
+        "vimeo/psalm": "^5.17",
+        "zircote/swagger-php": "^4.8",
         "friendsofphp/php-cs-fixer": "^3.51",
         "phpunit/phpunit": "^10",
         "symfony/http-client": "^7",
-        "doctrine/data-fixtures": "^1.7",
-        "squizlabs/php_codesniffer": "3.*",
-        "vimeo/psalm": "^5.17",
-        "zircote/swagger-php": "^4.8"
+        "doctrine/data-fixtures": "^1.7"
     }
 }

@@ -41,10 +41,13 @@ return array_merge(
         ),
 
         // disable cache
-        'db.host' => 'db',
 
         'app.usePermissionsCache' => false,
-        'app.chace' => new \Symfony\Component\Cache\Adapter\ArrayAdapter()
+        'app.chace' => new \Symfony\Component\Cache\Adapter\ArrayAdapter(),
+        'db.host' => 'database',
+
+        'app.usePermissionsCache' => false,
+        // 'app.chace' => new \Symfony\Component\Cache\Adapter\ArrayAdapter()
         //        'app.cache' => function_exists('apc_store') ? new \Doctrine\Common\Cache\ApcCache() : new \Doctrine\Common\Cache\ArrayCache(),
     )
 );

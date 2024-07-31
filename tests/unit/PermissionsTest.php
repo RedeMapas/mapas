@@ -11,9 +11,8 @@ class PermissionsTest extends TestCase
 
     function getRandomEntity($_class, $where = null)
     {
-        $app = MapasCulturais\App::i();
-        $classname = 'MapasCulturais\Entities\\' . $_class;
-
+        $app = \MapasCulturais\App::i();
+        $classname = '\MapasCulturais\Entities\\' . $_class;
         $where = $where ? "AND $where" : '';
         if ($_class === 'User')
             return $this->app->em->createQuery("SELECT e FROM $classname e WHERE e.status > 0 $where")->setMaxResults(1)->getOneOrNullResult();
@@ -28,7 +27,7 @@ class PermissionsTest extends TestCase
     {
         // $this->app->disableWorkflow();
         $this->resetTransactions();
-        $app = MapasCulturais\App::i();
+        $app = \MapasCulturais\App::i();
 
         /*
          * Guest users CANNOT create entities.
@@ -116,6 +115,7 @@ class PermissionsTest extends TestCase
     {
         // $this->app->disableWorkflow();
         $this->resetTransactions();
+        $app = \MapasCulturais\App::i();
         /*
          * Asserting thar guest users cannot modify entities
          */

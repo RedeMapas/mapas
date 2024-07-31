@@ -52,6 +52,15 @@ services:
       - caddy_data:/data
       - caddy_config:/config
 
+  # phpunit:
+  #   image: ghcr.io/redemapas/mapas-php
+  #   build: 
+  #     context: .
+  #   restart: no
+  #   volumes:
+  #     - .:/app
+  #   working_dir: /app
+
   pgadmin:
     image: dpage/pgadmin4
     environment:
