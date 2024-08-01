@@ -1,4 +1,4 @@
-name: tests
+name: Testing
 
 on:
   pull_request:
@@ -19,60 +19,144 @@ jobs:
   PHP_UNIT:
     name: PHP UNIT
     runs-on: ubuntu-latest
+    steps:
       - name: Checkout Code
         uses: actions/checkout@v4
         with:
           submodules: recursive
 
-      # - name: Add hosts to /etc/hosts
-      #   run: |
-      #       sudo echo "127.0.0.1 db" | sudo tee -a /etc/hosts
-
+      - name: Add default env values
+        run: |
+            cp .env.sample .env
+            cp .env.sample app
+  
       - uses: hoverkraft-tech/compose-action@v1.5.1
         with:
           compose-file: "docker-compose.yaml"
           services: "web"
-          up-flags: "-d"
+          up-flags: "-d --wait"
           down-flags: "-v"
+
+      - name: Run migrations
+        run: |
+          docker compose exec web mkdir var/logs/
+          docker compose exec web mkdir var/private-files/
+          docker compose exec web chmod 777 var/logs/
+          docker compose exec web chmod 777 var/private-files/
+          docker compose exec web chmod 777 var/sessions/
+          docker compose exec web chmod 777 var/DoctrineProxies/
+          docker compose exec web php src/tools/apply-updates.php
+          # docker compose exec web php app/bin/doctrine migrations:migrate --no-interaction --all-or-nothing
+        env:
+          APP_MODE: development
 
       - name: Run Phpunit tests
         run: |
             docker compose exec web ./vendor/bin/phpunit -c phpunit.xml
 
-      - name: Run Cypress tests
+  CYPRESS_E2E:
+    name: CYPRESS E2E
+    timeout-minutes: 15
+    runs-on: ubuntu-latest
+    # container:
+    #   image: cypress/browsers:node-20.14.0-chrome-126.0.6478.114-1-ff-127.0.1-edge-126.0.2592.61-1
+    #   options: --user 1001
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - name: Add default env values
         run: |
-            docker compose exec web pnpm run cypress:run
+            cp .env.sample .env
+            cp .env.sample app/.env
+      - uses: hoverkraft-tech/compose-action@v1.5.1
+        with:
+          compose-file: "docker-compose.yaml"
+          services: "web"
+          up-flags: "-d --wait"
+          down-flags: "-v"
 
-      # - name: Install composer and dependencies
-      #   uses: php-actions/composer@v6
-      #   with:
-      #     php_extensions: pdo_pgsql zip intl gd mbstring curl xml
+      - name: Run migrations
+        run: |
+          docker compose exec web mkdir var/logs/
+          docker compose exec web mkdir var/private-files/
+          docker compose exec web chmod 777 var/logs/
+          docker compose exec web chmod 777 var/private-files/
+          docker compose exec web chmod 777 var/sessions/
+          docker compose exec web chmod 777 var/DoctrineProxies/
+          docker compose exec web php src/tools/apply-updates.php
+          docker compose exec web php app/bin/doctrine migrations:migrate --no-interaction --all-or-nothing
+        env:
+          APP_MODE: development
 
-      # - name: Run migrations
-      #   run: |
-      #     mkdir var/private-files/
-      #     mkdir var/sessions/
-      #     mkdir var/DoctrineProxies/
-      #     php src/tools/apply-updates.php
-      #     php app/bin/doctrine migrations:migrate --no-interaction --all-or-nothing
-      #   env:
-      #     APP_MODE: development
+      - name: Cypress run
+        uses: cypress-io/github-action@v6
+        with:
+        # config: '{"e2e":{"viewportWidth":375,"viewportHeight":667}}'
+        # start: pnpm run cypress:run
+          wait-on: "http://localhost:4242"
+          wait-on-timeout: 120
+          record: true
+          group: "UI - Chrome - Mobile"
+          working-directory: src
+            # config-file: src/cypress.config.js
+        #   start: npm start
+          browser: chrome
+        env:
+          # CYPRESS_PROJECT_ID: ${{ secrets.CYPRESS_PROJECT_ID }}
+          # CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_RECORD_KEY }}
+          # Recommended: pass the GitHub token lets this action correctly
+          # determine the unique run id necessary to re-run the checks
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # - name: PHPUnit Tests Mapas
-      #   uses: php-actions/phpunit@v3
-      #   env:
-      #     XDEBUG_MODE: coverage
-      #   with:
-      #     version: 10.5
-      #     php_version: 8.2
-      #     configuration: phpunit.xml
-      #     php_extensions: pdo_pgsql zip intl gd mbstring curl xml
-      #     args: tests --coverage-clover ./coverage.xml
+      - name: Save build folder
+        uses: actions/upload-artifact@v4
+        with:
+          name: screenshots
+          if-no-files-found: error
+          path: src/cypress/screenshots
+      
+    # - name: "UI Tests - Chrome - Mobile"
+    #   uses: cypress-io/github-action@v6
+    #   with:
+    #     # config: '{"e2e":{"viewportWidth":375,"viewportHeight":667}}'
+    #     # start: pnpm run cypress:run
+    #     wait-on: "http://web"
+    #     wait-on-timeout: 120
+    #     browser: chrome
+    #     record: true
+    #     parallel: true
+    #     group: "UI - Chrome - Mobile"
+    #     spec: src/cypress/*
+    #     config-file: src/cypress/cypress.config.js
+    #   env:
+    #     # CYPRESS_PROJECT_ID: ${{ secrets.CYPRESS_PROJECT_ID }}
+    #     # CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_RECORD_KEY }}
+    #     # Recommended: pass the GitHub token lets this action correctly
+    #     # determine the unique run id necessary to re-run the checks
+    #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # - name: Upload to Codecov
-      #   uses: codecov/codecov-action@v2
-      #   with:
-      #     token: ${{ secrets.CODE_COV_TOKEN }}
-      #     files: ./coverage.xml
-      #     verbose: true
+    # - name: Install composer and dependencies
+    #   uses: php-actions/composer@v6
+    #   with:
+    #     php_extensions: pdo_pgsql zip intl gd mbstring curl xml
+
+    # - name: PHPUnit Tests Mapas
+    #   uses: php-actions/phpunit@v3
+    #   env:
+    #     XDEBUG_MODE: coverage
+    #   with:
+    #     version: 10.5
+    #     php_version: 8.2
+    #     configuration: phpunit.xml
+    #     php_extensions: pdo_pgsql zip intl gd mbstring curl xml
+    #     args: tests --coverage-clover ./coverage.xml
+
+    # - name: Upload to Codecov
+    #   uses: codecov/codecov-action@v2
+    #   with:
+    #     token: ${{ secrets.CODE_COV_TOKEN }}
+    #     files: ./coverage.xml
+    #     verbose: true
 

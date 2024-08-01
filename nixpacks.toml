@@ -1,0 +1,10 @@
+[variables]
+NIXPACKS_METADATA="php"
+NIXPACKS_PHP_FALLBACK_PATH="/app/public/index.php"
+NIXPACKS_PHP_ROOT_DIR="/app/public"
+PORT="80"
+
+[phases.setup]
+nixPkgs = ["...", "xvfb-run"] # Install the ffmpeg package from Nix
+nixLibs = ["...", "xvfb-run"] # Install the gcc-unwrapped package from Nix and add it to the LD_LIBRARY_PATH
+# aptPkgs = ["...", "wget"]   # Install the wget package with apt-get

@@ -1,8 +1,4 @@
 x-defaults: &defaults
-  build: 
-    context: .
-    dockerfile: .nixpacks/Dockerfile
-
   environment: &environment
     PORT: ${PORT}
     APP_MODE: ${APP_MODE}
@@ -28,128 +24,29 @@ x-defaults: &defaults
     # APP_RUNTIME: ${APP_RUNTIME}
     NIXPACKS_PHP_ROOT_DIR: ${NIXPACKS_PHP_ROOT_DIR}
     NIXPACKS_PHP_FALLBACK_PATH: ${NIXPACKS_PHP_FALLBACK_PATH}
+    ACTIVE_THEME: 'MapasCulturais\Themes\BaseV2'
+
 services:
+
   web:
     <<: *defaults
     image: ghcr.io/redemapas/mapas
+    build: 
+      context: .
+      dockerfile: .nixpacks/Dockerfile
     restart: unless-stopped
     depends_on:
       - database
     environment:
       <<: *environment
-    ports:
-      - 80
     volumes:
-      # - ./:/app
-      # - /app/var
       - var-files:/app/var/
-      - assets-files:/app/public/assets/
+      - assets-files:/app/public/assets
       - user-public-files:/app/public/files/
-      # - sessions-files:/app/var/sessions/
-      # - doctrine-files:/app/var/DoctrineProxies/
-      # - ./api/frankenphp/Caddyfile:/etc/caddy/Caddyfile:ro
-      # - ./api/frankenphp/conf.d/app.dev.ini:/usr/local/etc/php/conf.d/app.dev.ini:ro
-      - caddy_data:/data
-      - caddy_config:/config
-
-  # phpunit:
-  #   image: ghcr.io/redemapas/mapas-php
-  #   build: 
-  #     context: .
-  #   restart: no
-  #   volumes:
-  #     - .:/app
-  #   working_dir: /app
-
-  pgadmin:
-    image: dpage/pgadmin4
-    environment:
-      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-pgadmin4@pgadmin.org}
-      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin}
-      PGADMIN_CONFIG_SERVER_MODE: 'False'
-    volumes:
-      - pgadmin:/var/lib/pgadmin
+      - sessions-files:/app/var/sessions/
+      - doctrine-files:/app/var/DoctrineProxies/
     ports:
-      - 80
-
-  crontab:
-    image: rancher/container-crontab:v0.5.0
-    restart: '${DOCKER_RESTART_POLICY:-always}'
-    volumes:
-      - "/var/run/docker.sock:/var/run/docker.sock:ro"
-
-  recreate-pending-pcache:
-    <<: *defaults
-    image: ghcr.io/redemapas/mapas
-    depends_on:
-      - web
-    environment:
-      <<: *environment
-    command: php ./mapas/src/tools/recreate-pending-pcache.php
-    volumes:
-      # - ./api:/app
-      - var-files:/app/var/private-files
-    labels:
-      - "cron.schedule=* * * ? * *"
-
-  execute-job:
-    <<: *defaults
-    image: ghcr.io/redemapas/mapas
-    depends_on:
-      - web
-    environment:
-      <<: *environment
-    command: php ./mapas/src/tools/execute-job.php
-    volumes:
-      - var-files:/app/var/private-files
-    labels:
-      - "cron.schedule=* * * ? * *"
-
-  # db-update:
-  #   <<: *defaults
-  #   image: ghcr.io/redemapas/mapas
-  #   command: php mapas/src/tools/apply-updates.php
-  #   depends_on:
-  #     - database
-  #   volumes:
-  #     - var-files:/app/var/private-files
-
-  # mc-update:
-  #   command: php mapas/src/tools/apply-multicore-db-update.php
-  #   volumes:
-  #     - var-files:/app/var/private-files
-
-  redis:
-    image: redis:6
-    restart: unless-stopped
-    command: --maxmemory 128Mb --maxmemory-policy allkeys-lru
-    volumes:
-      - redis:/data
-    ports:
-      - 6379
-  sessions:
-    image: redis:6
-    restart: unless-stopped
-    command: --maxmemory 128Mb --maxmemory-policy allkeys-lru
-    volumes:
-      - sessions:/data
-    ports:
-      - 6379
-  mailhog:
-    image: mailhog/mailhog
-    ports:
-      - 8025
-    # pwa:
-    #   image: redemapas/mapas-pwa
-    #   build:
-    #     context: ./pwa
-    #     target: dev
-    #   volumes:
-    #     - ./pwa:/srv/app
-    #   environment:
-    #     API_PLATFORM_CREATE_CLIENT_ENTRYPOINT: http://php
-    #     API_PLATFORM_CREATE_CLIENT_OUTPUT: .
-    #     NEXT_PUBLIC_ENTRYPOINT: http://php
+      - 4242:80
 
   database:
     image: kartoza/postgis:14
@@ -161,16 +58,163 @@ services:
     volumes:
       - db_data:/opt/postgres/data
       - ./dev/db:/docker-entrypoint-initdb.d
-      # you may use a bind-mounted host directory instead, so that it is harder to accidentally remove the volume and lose all your data!
-      # - ./api/docker/db/data:/var/lib/postgresql/data
     ports:
       - 5432
     healthcheck:
       test: "PGPASSWORD=${POSTGRES_PASSWORD} pg_isready -h 127.0.0.1 -U ${POSTGRES_USER} -d ${POSTGRES_DB}"
 
+  crontab:
+    image: rancher/container-crontab:v0.5.0
+    restart: '${DOCKER_RESTART_POLICY:-always}'
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+
+  redis:
+    image: redis:6
+    restart: unless-stopped
+    command: --maxmemory 128Mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis:/data
+    ports:
+      - 6379
+
+  mailhog:
+    image: mailhog/mailhog
+    ports:
+      - 8025
+
+  recreate-pending-pcache:
+    <<: *defaults
+    image: ghcr.io/redemapas/mapas
+    depends_on:
+      - database
+    environment:
+      <<: *environment
+    volumes:
+      - var-files:/app/var/
+      - assets-files:/app/public/assets
+      - user-public-files:/app/public/files/
+      - sessions-files:/app/var/sessions/
+      - doctrine-files:/app/var/DoctrineProxies/
+    command: ./docker/recreate-pending-pcache-cron.sh
+    # labels:
+    #   - "cron.schedule=*/5 * * * * *"
+
+  execute-job:
+    <<: *defaults
+    image: ghcr.io/redemapas/mapas
+    depends_on:
+      - database
+    environment:
+      <<: *environment
+    volumes:
+      - var-files:/app/var/
+      - assets-files:/app/public/assets
+      - user-public-files:/app/public/files/
+      - sessions-files:/app/var/sessions/
+      - doctrine-files:/app/var/DoctrineProxies/
+    command: ./docker/jobs-cron.sh
+    # labels:
+    #   - "cron.schedule=*/5 * * * * *"
+
+  db-update:
+    <<: *defaults
+    image: ghcr.io/redemapas/mapas
+    command: ./scripts/db-update.sh -d localhost
+    environment:
+      <<: *environment
+    depends_on:
+      - database
+    volumes:
+      - var-files:/app/var/
+      - assets-files:/app/public/assets
+      - user-public-files:/app/public/files/
+      - sessions-files:/app/var/sessions/
+      - doctrine-files:/app/var/DoctrineProxies/
+
+  mc-db-updates.sh:
+    <<: *defaults
+    image: ghcr.io/redemapas/mapas
+    command: ./scripts/mc-db-updates.sh
+    environment:
+      <<: *environment
+    depends_on:
+      - database
+    volumes:
+      - var-files:/app/var/
+      - assets-files:/app/public/assets
+      - user-public-files:/app/public/files/
+      - sessions-files:/app/var/sessions/
+      - doctrine-files:/app/var/DoctrineProxies/
+
+  doctrine-orm:
+    <<: *defaults
+    image: ghcr.io/redemapas/mapas
+    command: php ./src/tools/doctrine.php orm:generate-proxies
+    environment:
+      <<: *environment
+    depends_on:
+      - database
+    volumes:
+      - var-files:/app/var/
+      - assets-files:/app/public/assets
+      - user-public-files:/app/public/files/
+      - sessions-files:/app/var/sessions/
+      - doctrine-files:/app/var/DoctrineProxies/
+
+  # doctrine-migrate:
+  #   <<: *defaults
+  #   image: ghcr.io/redemapas/mapas
+  #   command: php app/bin/doctrine migrations:migrate --no-interaction --all-or-nothing
+  #   environment:
+  #     <<: *environment
+  #   depends_on:
+  #     - db-update
+  #   volumes:
+  #     - var-files:/app/var/private-files
+
+  # pwa:
+  #   image: redemapas/mapas-pwa
+  #   build:
+  #     context: ./pwa
+  #     target: dev
+  #   volumes:
+  #     - ./pwa:/srv/app
+  #   environment:
+  #     API_PLATFORM_CREATE_CLIENT_ENTRYPOINT: http://php
+  #     API_PLATFORM_CREATE_CLIENT_OUTPUT: .
+  #     NEXT_PUBLIC_ENTRYPOINT: http://php
+
+  # sessions:
+  #   image: redis:6
+  #   restart: unless-stopped
+  #   command: --maxmemory 128Mb --maxmemory-policy allkeys-lru
+  #   volumes:
+  #     - sessions:/data
+  #   ports:
+  #     - 6379
+
+  # phpunit:
+  #   image: ghcr.io/redemapas/mapas-php
+  #   build: 
+  #     context: .
+  #   restart: no
+  #   volumes:
+  #     - .:/app
+  #   working_dir: /app
+
+  # pgadmin:
+  #   image: dpage/pgadmin4
+  #   environment:
+  #     PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-pgadmin4@pgadmin.org}
+  #     PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin}
+  #     PGADMIN_CONFIG_SERVER_MODE: 'False'
+  #   volumes:
+  #     - pgadmin:/var/lib/pgadmin
+  #   ports:
+  #     - 80
+
 volumes:
-  caddy_data:
-  caddy_config:
   var-files:
   db_data:
   sessions:
@@ -178,5 +222,5 @@ volumes:
   pgadmin:
   user-public-files:
   assets-files:
-  # sessions-files:
-  # doctrine-files:
+  sessions-files:
+  doctrine-files:

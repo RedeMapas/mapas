@@ -3,6 +3,7 @@ return [
     // 'auth.provider' => 'Fake',
     // 'auth.config' => [],
    
+    // /*
     // https://github.com/kterva/MultipleLocalAuth
     'auth.provider' => '\MultipleLocalAuth\Provider',
     'auth.config' => [
