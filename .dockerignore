@@ -28,7 +28,8 @@ var/*/*
 # public/bundles/
 # tests/
 var/
-# vendor/
+vendor/
+**/node_modules
 # .editorconfig
 # .env.*.local
 # .env.local

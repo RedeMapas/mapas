@@ -18,6 +18,12 @@ ENV NIXPACKS_METADATA=$NIXPACKS_METADATA NIXPACKS_PHP_FALLBACK_PATH=$NIXPACKS_PH
 COPY . /app/.
 RUN  mkdir -p /var/log/nginx && mkdir -p /var/cache/nginx
 RUN  composer install --ignore-platform-reqs
+RUN  pnpm i --frozen-lockfile
+
+# build phase
+COPY . /app/.
+RUN  pnpm run build
+
 
 
 
