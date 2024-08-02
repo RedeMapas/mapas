@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace MapasCulturais;
@@ -81,7 +82,8 @@ use Throwable;
  * 
  * @package MapasCulturais
  */
-class App {
+class App
+{
     use Traits\MagicCallers,
         Traits\MagicGetter,
         Traits\MagicSetter;
@@ -157,7 +159,7 @@ class App {
      * @var Logger
      */
     public Logger $log;
-    
+
     /**
      * Persistent Cache
      * @var Cache
@@ -175,13 +177,13 @@ class App {
      * @var Cache
      */
     public Cache $rcache;
-    
+
     /**
      * App Configuration.
      * @var array
      */
     public array $config;
-    
+
     /**
      * Alias da prop config para compatibilidade
      * @var array
@@ -288,14 +290,15 @@ class App {
      * @var float
      */
     public float $startTime;
-    
+
     /**
      * Retorna uma instância da aplicação
      * 
      * @param string $id 
      * @return App 
      */
-    static function i(string $id = 'web'): App {
+    static function i(string $id = 'web'): App
+    {
         $class = get_called_class();
         if (!(self::$_instances[$id] ?? null)) {
             self::$_instances[$id] = new $class($id);;
@@ -310,7 +313,8 @@ class App {
      * @return void 
      * @throws RuntimeException 
      */
-    protected function __construct(string $id) {
+    protected function __construct(string $id)
+    {
         $this->startTime = microtime(true);
         $this->id = $id;
 
@@ -342,18 +346,19 @@ class App {
      * @param array $config 
      * @return array 
      */
-    function parseConfig(array $config): array {
-        if(empty($config['base.url'])){
-            $config['base.url'] = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] ? 'https://' : 'http://') . 
-                                  (isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : 'localhost') . '/';
+    function parseConfig(array $config): array
+    {
+        if (empty($config['base.url'])) {
+            $config['base.url'] = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] ? 'https://' : 'http://') .
+                (isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : 'localhost') . '/';
         }
 
-        if(empty($config['base.assetUrl'])){
+        if (empty($config['base.assetUrl'])) {
             $config['base.assetUrl'] = $config['base.url'] . 'assets/';
         }
 
-        if(!is_array($config['app.verifiedSealsIds'])) {
-            if (is_numeric($config['app.verifiedSealsIds'])) { 
+        if (!is_array($config['app.verifiedSealsIds'])) {
+            if (is_numeric($config['app.verifiedSealsIds'])) {
                 $config['app.verifiedSealsIds'] = [(int) $config['app.verifiedSealsIds']];
             } else {
                 $config['app.verifiedSealsIds'] = [];
@@ -375,30 +380,31 @@ class App {
      * @throws LogicException 
      * @throws Exception 
      */
-    function init(array $config) {
+    function init(array $config)
+    {
         $config = $this->parseConfig($config);
-        
+
         $this->_config = &$config;
         $this->config = &$config;
 
-        foreach($this->config['middlewares'] as $middleware) {
+        foreach ($this->config['middlewares'] as $middleware) {
             $this->slim->add($middleware);
         }
 
         // necessário para obter o endereço ip da origem do request
         $this->slim->add(new \RKA\Middleware\IpAddress);
 
-        if($config['app.mode'] == APPMODE_DEVELOPMENT){
+        if ($config['app.mode'] == APPMODE_DEVELOPMENT) {
             error_reporting(E_ALL ^ E_STRICT);
         }
 
         session_save_path(SESSIONS_SAVE_PATH);
         session_start();
 
-        if($config['app.offline']){
+        if ($config['app.offline']) {
             $bypass_callable = $config['app.offlineBypassFunction'];
-            
-            if (php_sapi_name()!=="cli" && (!is_callable($bypass_callable) || !$bypass_callable())) {
+
+            if (php_sapi_name() !== "cli" && (!is_callable($bypass_callable) || !$bypass_callable())) {
                 http_response_code(307);
                 header('Location: ' . $config['app.offlineUrl']);
                 die;
@@ -415,7 +421,7 @@ class App {
         $this->_initAutoloader();
         $this->_initCache();
         $this->_initDoctrine();
-        
+
         $this->_initSubsite();
 
         $this->_initRouteManager();
@@ -438,7 +444,7 @@ class App {
 
         $this->_initStorage();
 
-        if(defined('DB_UPDATES_FILE') && file_exists(DB_UPDATES_FILE))
+        if (defined('DB_UPDATES_FILE') && file_exists(DB_UPDATES_FILE))
             $this->_dbUpdates();
 
         $this->applyHookBoundTo($this, 'app.init:after');
@@ -461,7 +467,8 @@ class App {
      * @throws TransactionRequiredException 
      * @throws WorkflowRequest 
      */
-    public function run() {
+    public function run()
+    {
         $this->applyHookBoundTo($this, 'mapasculturais.run:before');
         $this->slim->run();
         $this->persistPCachePendingQueue();
@@ -474,45 +481,43 @@ class App {
      * 
      * @return void 
      */
-    protected function _initLogger() {
+    protected function _initLogger()
+    {
         $processors = $this->config['monolog.processors'];
-        
+
         $handlers = [];
         if (is_string($this->config['monolog.handlers'])) {
             $handlers_config = explode(',', $this->config['monolog.handlers']);
-    
-            foreach($handlers_config as $handler_config) {
+
+            foreach ($handlers_config as $handler_config) {
                 $handler_config = explode(':', $handler_config);
-    
+
                 $type = $handler_config[0];
                 $level = $handler_config[1] ?? $this->config['monolog.defaultLevel'];
-    
+
                 if ($type == 'file') {
                     $handlers[] = new Handler\StreamHandler($this->config['monolog.logsDir'] . 'app.log', 'DEBUG');
-
                 } else if ($type == 'error_log') {
                     $formatter = new LineFormatter("%message%");
                     $handler = new Handler\ErrorLogHandler(level: $level);
                     $handler->setFormatter($formatter);
                     $handlers[] = $handler;
-
                 } else if ($type == 'browser') {
                     $formatter = new LineFormatter("%message%");
                     $handler = new Handler\BrowserConsoleHandler(level: $level);
                     $handler->setFormatter($formatter);
                     $handlers[] = $handler;
-
                 } else if ($type == 'telegram') {
                     $api_key = (string) $this->config['monolog.telegram.apiKey'] ?? false;
                     $channel_id = (string) $this->config['monolog.telegram.channelId'] ?? false;
-                    
-                    if($api_key && $channel_id) {
-                        $handler = new Handler\TelegramBotHandler($api_key, $channel_id, $level, parseMode:'Markdown');
-                        
+
+                    if ($api_key && $channel_id) {
+                        $handler = new Handler\TelegramBotHandler($api_key, $channel_id, $level, parseMode: 'Markdown');
+
                         $formatter = new LineFormatter("%message%", includeStacktraces: true);
-                        
+
                         $handler->setFormatter($formatter);
-                        
+
                         $handlers[] = $handler;
                     }
                 }
@@ -524,7 +529,7 @@ class App {
         $this->log = new Logger('', $handlers, $processors);
 
         if ($this->config['app.log.query']) {
-            $this->hook('app.init:after', function() use($handlers) {
+            $this->hook('app.init:after', function () use ($handlers) {
                 $query_logger = new QueryLogger;
                 $this->em->getConnection()->getConfiguration()->setSQLLogger($query_logger);
             });
@@ -536,11 +541,12 @@ class App {
      * 
      * @return void 
      */
-    protected function _initAutoloader() {
+    protected function _initAutoloader()
+    {
         $config = $this->config;
 
         // list of modules
-        if($handle = opendir(MODULES_PATH)){
+        if ($handle = opendir(MODULES_PATH)) {
             while (false !== ($file = readdir($handle))) {
                 $dir = MODULES_PATH . $file . '/';
                 if ($file != "." && $file != ".." && is_dir($dir) && file_exists("$dir/Module.php")) {
@@ -549,51 +555,51 @@ class App {
             }
             closedir($handle);
         }
-        
+
         // list of themes
         foreach (scandir(THEMES_PATH) as $ff) {
-            if ($ff != '.' && $ff != '..' ) {
+            if ($ff != '.' && $ff != '..') {
                 $theme_folder = THEMES_PATH . $ff;
                 if (is_dir($theme_folder) && file_exists($theme_folder . '/Theme.php')) {
                     $content = file_get_contents($theme_folder . '/Theme.php');
-                    if(preg_match('#namespace +([a-z0-9\\\]+) *;#i', $content, $matches)) {
+                    if (preg_match('#namespace +([a-z0-9\\\]+) *;#i', $content, $matches)) {
                         $namespace = $matches[1];
-                        if ( !array_key_exists($namespace, $config['namespaces']) )
+                        if (!array_key_exists($namespace, $config['namespaces']))
                             $config['namespaces'][$namespace] = $theme_folder;
                     }
                 }
             }
         }
 
-        spl_autoload_register(function($class) use ($config){
+        spl_autoload_register(function ($class) use ($config) {
             $namespaces = $config['namespaces'];
 
             $namespaces['MapasCulturais\\DoctrineProxies'] = DOCTRINE_PROXIES_PATH;
 
-            $subfolders = ['Controllers','Entities','Repositories','Jobs'];
+            $subfolders = ['Controllers', 'Entities', 'Repositories', 'Jobs'];
 
-            foreach($config['plugins'] as $plugin){
-                if(is_string($plugin)) {
+            foreach ($config['plugins'] as $plugin) {
+                if (is_string($plugin)) {
                     $plugin = ['namespace' => $plugin];
                 }
                 $namespace = $plugin['namespace'];
                 $dir = $plugin['path'] ?? PLUGINS_PATH . $namespace;
-                if(!isset($namespaces[$namespace])){
+                if (!isset($namespaces[$namespace])) {
                     $namespaces[$namespace] = $dir;
                 }
 
-                foreach($subfolders as $subfolder) {
-                    if(!isset($namespaces[$namespace . '\\' . $subfolder])){
+                foreach ($subfolders as $subfolder) {
+                    if (!isset($namespaces[$namespace . '\\' . $subfolder])) {
                         $namespaces[$namespace . '\\' . $subfolder] = $dir . '/' . $subfolder;
-                    }   
+                    }
                 }
             }
 
-            foreach($namespaces as $namespace => $base_dir){
-                if(strpos($class, $namespace) === 0){
-                    $path = str_replace('\\', '/', str_replace($namespace, $base_dir, $class) . '.php' );
+            foreach ($namespaces as $namespace => $base_dir) {
+                if (strpos($class, $namespace) === 0) {
+                    $path = str_replace('\\', '/', str_replace($namespace, $base_dir, $class) . '.php');
 
-                    if(\file_exists($path)){
+                    if (\file_exists($path)) {
                         require_once $path;
                         return true;
                     }
@@ -610,7 +616,8 @@ class App {
      * 
      * @return void 
      */
-    protected function _initCache() {
+    protected function _initCache()
+    {
         $this->config['app.registeredAutoloadCache.lifetime'] = (int) $this->config['app.registeredAutoloadCache.lifetime'];
         $this->config['app.assetsUrlCache.lifetime'] = (int) $this->config['app.assetsUrlCache.lifetime'];
         $this->config['app.fileUrlCache.lifetime'] = (int) $this->config['app.fileUrlCache.lifetime'];
@@ -624,7 +631,7 @@ class App {
         $this->cache = new Cache($this->config['app.cache']);
         $this->mscache = new Cache($this->config['app.mscache']);
         $this->mscache->setNamespace('MS');
-        
+
         $rcache_adapter = new \Symfony\Component\Cache\Adapter\ArrayAdapter(10000, false, 100000, 10000);
         $this->rcache = new Cache($rcache_adapter);
     }
@@ -638,7 +645,8 @@ class App {
      * @throws LogicException 
      * @throws Exception 
      */
-    protected function _initDoctrine() {
+    protected function _initDoctrine()
+    {
         // annotation driver
         $doctrine_config = ORMSetup::createAnnotationMetadataConfiguration(
             paths: [__DIR__ . '/Entities/'],
@@ -646,7 +654,7 @@ class App {
             cache: $this->cache->adapter
         );
 
-        
+
 
         // tells the doctrine to ignore hook annotation.
         AnnotationReader::addGlobalIgnoredName('hook');
@@ -680,7 +688,7 @@ class App {
         $doctrine_config->addCustomStringFunction('recurring_event_occurrence_for', 'MapasCulturais\DoctrineMappings\Functions\RecurringEventOcurrenceFor');
         $doctrine_config->addCustomNumericFunction('CAST', DoctrineMappings\Functions\Cast::class);
         $doctrine_config->addCustomStringFunction('CAST', DoctrineMappings\Functions\Cast::class);
-        
+
         $doctrine_config->addCustomNumericFunction('st_dwithin', 'MapasCulturais\DoctrineMappings\Functions\STDWithin');
         $doctrine_config->addCustomStringFunction('st_envelope', 'MapasCulturais\DoctrineMappings\Functions\STEnvelope');
         $doctrine_config->addCustomNumericFunction('st_within', 'MapasCulturais\DoctrineMappings\Functions\STWithin');
@@ -692,7 +700,7 @@ class App {
         $doctrine_config->setResultCache($this->mscache->adapter);
 
         $doctrine_config->setAutoGenerateProxyClasses(\Doctrine\Common\Proxy\AbstractProxyFactory::AUTOGENERATE_FILE_NOT_EXISTS);
-        
+
         // obtaining the entity manager
         $connection = DriverManager::getConnection([
             'driver' => 'pdo_pgsql',
@@ -702,8 +710,8 @@ class App {
             'host' => $this->config['db.host'],
             'wrapperClass' => Connection::class
         ], $doctrine_config);
-        
-        
+
+
         // obtaining the entity manager
         $this->em = new EntityManager($connection, $doctrine_config);
 
@@ -732,29 +740,31 @@ class App {
      * 
      * @return void 
      */
-    protected function _initSubsite() {
+    protected function _initSubsite()
+    {
         $domain = $_SERVER['HTTP_HOST'] ?? 'localhost';
 
-        if(($pos = strpos($domain, ':')) !== false){
+        if (($pos = strpos($domain, ':')) !== false) {
             $domain = substr($domain, 0, $pos);
         }
 
         // para permitir o db update rodar para criar a tabela do subsite
-        if(($pos = strpos($domain, ':')) !== false){
+        if (($pos = strpos($domain, ':')) !== false) {
             $domain = substr($domain, 0, $pos);
         }
-        try{
+        try {
             $subsite = $this->repo('Subsite')->findOneBy(['url' => $domain, 'status' => 1]) ?:
-                       $this->repo('Subsite')->findOneBy(['aliasUrl' => $domain, 'status' => 1]);
+                $this->repo('Subsite')->findOneBy(['aliasUrl' => $domain, 'status' => 1]);
 
-            if ($subsite){
+            if ($subsite) {
                 $this->subsite = $subsite;
             }
-        } catch ( \Exception $e) { }
+        } catch (\Exception $e) {
+        }
 
 
         $this->hook('app.init:after', function () {
-            if($this->subsite){
+            if ($this->subsite) {
                 $this->subsite->applyApiFilters();
                 $this->subsite->applyConfigurations();
             }
@@ -765,19 +775,20 @@ class App {
      * Inicializa o provedor de autenticação
      * @return void 
      */
-    protected function _initAuthProvider() {
+    protected function _initAuthProvider()
+    {
         // register auth providers
         $this->registerAuthProvider('OpenID');
         $this->registerAuthProvider('logincidadao');
         $this->registerAuthProvider('authentik');
-        
-        $auth_class_name = strpos($this->config['auth.provider'], '\\') !== false ? 
-            $this->config['auth.provider'] : 
+
+        $auth_class_name = strpos($this->config['auth.provider'], '\\') !== false ?
+            $this->config['auth.provider'] :
             'MapasCulturais\AuthProviders\\' . $this->config['auth.provider'];
         $auth = new $auth_class_name($this->config['auth.config']);
-        
+
         $auth->setCookies();
-        
+
         $this->auth = $auth;
     }
 
@@ -785,9 +796,10 @@ class App {
      * Inicializa a instância do tema
      * @return void 
      */
-    protected function _initTheme() {
+    protected function _initTheme()
+    {
 
-        if($this->subsite){
+        if ($this->subsite) {
             $this->cache->setNamespace($this->config['app.cache.namespace'] . ':' . $this->subsite->id);
 
             $theme_class = $this->subsite->namespace . "\Theme";
@@ -822,12 +834,13 @@ class App {
      * 
      * @return void 
      */
-    protected function _initModules() {
+    protected function _initModules()
+    {
         $available_modules = [];
-        if($handle = opendir(MODULES_PATH)){
+        if ($handle = opendir(MODULES_PATH)) {
             while (false !== ($file = readdir($handle))) {
                 $dir = MODULES_PATH . $file . '/';
-                if ($file != "." && $file != ".." && is_dir($dir) && file_exists($dir."/Module.php")) {
+                if ($file != "." && $file != ".." && is_dir($dir) && file_exists($dir . "/Module.php")) {
                     $available_modules[] = $file;
                 }
             }
@@ -837,11 +850,11 @@ class App {
         sort($available_modules);
 
         $this->applyHookBoundTo($this, 'app.modules.init:before', [&$available_modules]);
-        foreach ($available_modules as $module){
+        foreach ($available_modules as $module) {
             $module_class_name = "$module\Module";
-            $module_config = isset($config["module.$module"]) ? 
-            $config["module.$module"] : [];
-            
+            $module_config = isset($config["module.$module"]) ?
+                $config["module.$module"] : [];
+
             $this->applyHookBoundTo($this, "app.module({$module}).init:before", [&$module_config]);
             $this->modules[$module] = new $module_class_name($module_config);
             $this->applyHookBoundTo($this, "app.module({$module}).init:after");
@@ -857,14 +870,15 @@ class App {
      * 
      * @return void 
      */
-    protected function _initPlugins() {
+    protected function _initPlugins()
+    {
         // esta constante é usada no script que executa os db-updates, 
         // para que na primeira rodada do db-update não sejam incluídos os plugins
-        if(!env('DISABLE_PLUGINS')) {
+        if (!env('DISABLE_PLUGINS')) {
             $this->applyHookBoundTo($this, 'app.plugins.preInit:before');
             $plugins = [];
 
-            foreach($this->config['plugins'] as $slug => $plugin){
+            foreach ($this->config['plugins'] as $slug => $plugin) {
                 if (is_numeric($slug) && is_string($plugin)) {
                     $_namespace = $plugin;
                     $slug = $plugin;
@@ -875,7 +889,7 @@ class App {
                     $plugin_class_name = "$_namespace\\$_class";
                 }
 
-                if(class_exists($plugin_class_name)){
+                if (class_exists($plugin_class_name)) {
                     $plugin_config = isset($plugin['config']) && is_array($plugin['config']) ? $plugin['config'] : [];
 
                     $slug = is_numeric($slug) ? $_namespace : $slug;
@@ -892,7 +906,7 @@ class App {
 
             $this->applyHookBoundTo($this, 'app.plugins.preInit:after', ['plugins' => &$plugins]);
 
-            $this->hook('app.modules.init:after', function() use ($plugins) {
+            $this->hook('app.modules.init:after', function () use ($plugins) {
                 $this->applyHookBoundTo($this, 'app.plugins.init:before');
                 foreach ($plugins as $plugin) {
                     $slug = $plugin['slug'];
@@ -904,18 +918,19 @@ class App {
                 $this->applyHookBoundTo($this, 'app.plugins.init:after');
             });
         }
-    }    
+    }
 
     /**
      * Inicializa o gerenciador de rotas
      * @return void 
      */
-    protected function _initStorage() {
+    protected function _initStorage()
+    {
         $storage_class = $this->config['storage.driver'] ?? '';
-        if($storage_class && class_exists($storage_class) && is_subclass_of($storage_class, Storage::class)){
+        if ($storage_class && class_exists($storage_class) && is_subclass_of($storage_class, Storage::class)) {
             $storage_config = $this->config['storage.config'] ?? null;
             $this->storage =  $storage_class::i($storage_config);
-        }else{
+        } else {
             $this->storage = Storage\FileSystem::i();
         }
     }
@@ -924,7 +939,8 @@ class App {
      * Inicializa o gerenciador de rotas
      * @return void 
      */
-    protected function _initRouteManager() {
+    protected function _initRouteManager()
+    {
         $this->_routesManager = new RoutesManager($this->config['routes'] ?? []);
     }
 
@@ -942,13 +958,14 @@ class App {
      * @throws NotSupported 
      * @throws GlobalException 
      */
-    public function setCurrentSubsiteId(int $subsite_id = null) {
-        if(is_null($subsite_id)) {
+    public function setCurrentSubsiteId(int $subsite_id = null)
+    {
+        if (is_null($subsite_id)) {
             $this->subsite = null;
         } else {
             $subsite = $this->repo('Subsite')->find($subsite_id);
 
-            if(!$subsite) {
+            if (!$subsite) {
                 throw new \Exception('Subsite not found');
             }
 
@@ -966,7 +983,8 @@ class App {
      * 
      * @return string 
      */
-    public static function getHookPrefix() {
+    public static function getHookPrefix()
+    {
         return 'App';
     }
 
@@ -975,10 +993,11 @@ class App {
      * 
      * @return string 
      */
-    public function getVersion(){
+    public function getVersion()
+    {
         $version_filename = PROTECTED_PATH . 'version.txt';
         $version = trim(file_get_contents($version_filename));
-        if(is_numeric($version[0])) {
+        if (is_numeric($version[0])) {
             return sprintf('v%s', $version);
         } else {
             return $version;
@@ -992,7 +1011,8 @@ class App {
      * 
      * @return string 
      */
-    public function getSiteName(): string {
+    public function getSiteName(): string
+    {
         return $this->config['app.siteName'];
     }
 
@@ -1003,15 +1023,17 @@ class App {
      * 
      * @return string 
      */
-    public function getSiteDescription(): string {
+    public function getSiteDescription(): string
+    {
         return $this->config['app.siteDescription'];
     }
-    
+
     /**
      * Returns the RoutesManager
      * @return RoutesManager
      */
-    public function getRoutesManager(): RoutesManager{
+    public function getRoutesManager(): RoutesManager
+    {
         return $this->_routesManager;
     }
 
@@ -1019,7 +1041,8 @@ class App {
      * Returns the base url of the project
      * @return string the base url
      */
-    public function getBaseUrl(){
+    public function getBaseUrl()
+    {
         return $this->config['base.url'];
     }
 
@@ -1027,7 +1050,8 @@ class App {
      * Returns the asset url of the project
      * @return string the asset url
      */
-    public function getAssetUrl(){
+    public function getAssetUrl()
+    {
         return isset($this->config['base.assetUrl']) ? $this->config['base.assetUrl'] : $this->getBaseUrl() . 'assets/';
     }
 
@@ -1035,7 +1059,8 @@ class App {
      * Returns the logged in user
      * @return UserInterface
      */
-    public function getUser(): UserInterface {
+    public function getUser(): UserInterface
+    {
         return $this->auth->getAuthenticatedUser();
     }
 
@@ -1044,7 +1069,8 @@ class App {
      * 
      * @return Entities\Subsite|null 
      */
-    public function getCurrentSubsite(): Entities\Subsite|null {
+    public function getCurrentSubsite(): Entities\Subsite|null
+    {
         return $this->subsite;
     }
 
@@ -1053,10 +1079,11 @@ class App {
      *
      * @return int|null ID of the current site or Null for main site
      */
-    public function getCurrentSubsiteId(): int|null {
+    public function getCurrentSubsiteId(): int|null
+    {
         // @TODO: alterar isto quando for implementada a possibilidade de termos 
         // instalações de subsite com o tema diferente do Subsite
-        if($this->subsite){
+        if ($this->subsite) {
             return $this->subsite->id;
         }
 
@@ -1069,23 +1096,24 @@ class App {
      * @param bool $useSuffix 
      * @return mixed 
      */
-    public function getMaxUploadSize(bool $useSuffix = true): string|float|int {
+    public function getMaxUploadSize(bool $useSuffix = true): string|float|int
+    {
         $MB = 1024;
         $GB = $MB * 1024;
 
-        $convertToKB = function($size) use($MB, $GB){
-            switch(strtolower(substr($size, -1))){
+        $convertToKB = function ($size) use ($MB, $GB) {
+            switch (strtolower(substr($size, -1))) {
                 case 'k';
                     $size = intval($size);
-                break;
+                    break;
 
                 case 'm':
                     $size = intval($size) * $MB;
-                break;
+                    break;
 
                 case 'g':
                     $size = intval($size) * $GB;
-                break;
+                    break;
             }
 
             return $size;
@@ -1097,17 +1125,17 @@ class App {
 
         $result = min($max_upload, $max_post, $memory_limit);
 
-        if(!$useSuffix)
+        if (!$useSuffix)
             return $result;
 
-        if($result < $MB){
+        if ($result < $MB) {
             $result .= ' KB';
-        }else if($result < $GB){
+        } else if ($result < $GB) {
             $result = number_format($result / $MB, 0) . ' MB';
-        }else{
+        } else {
             $result = $result / $GB;
             $formated = number_format($result, 1);
-            if( $formated == (int) $result )
+            if ($formated == (int) $result)
                 $result = intval($result) . ' GB';
             else
                 $result = $formated . ' GB';
@@ -1121,16 +1149,17 @@ class App {
      * 
      * @return array 
      */
-    function getRegisteredGeoDivisions(): array {
+    function getRegisteredGeoDivisions(): array
+    {
         $result = [];
-        foreach($this->config['app.geoDivisionsHierarchy'] as $key => $division) {
+        foreach ($this->config['app.geoDivisionsHierarchy'] as $key => $division) {
 
             $display = true;
             if (substr($key, 0, 1) == '_') {
                 $display = false;
                 $key = substr($key, 1);
             }
-            
+
             if (!is_array($division)) { // for backward compability version < 4.0, $division is string not a array.
                 $d = new \stdClass();
                 $d->key = $key;
@@ -1156,7 +1185,8 @@ class App {
      * 
      * @return string 
      */
-    static function getCurrentLCode(): string{
+    static function getCurrentLCode(): string
+    {
         return i::get_locale();
     }
 
@@ -1164,7 +1194,8 @@ class App {
      * Retorna o nome do grupo de agente relacionado das inscrições
      * @return string 
      */
-    public function getOpportunityRegistrationAgentRelationGroupName(): string {
+    public function getOpportunityRegistrationAgentRelationGroupName(): string
+    {
         return 'registration';
     }
 
@@ -1175,13 +1206,13 @@ class App {
      *
      * @return mixed
      */
-    public function getConfig(string $key = null) {
+    public function getConfig(string $key = null)
+    {
         if (is_null($key)) {
             return $this->config;
         } else {
-            return key_exists ($key, $this->config) ? $this->config[$key] : null;
+            return key_exists($key, $this->config) ? $this->config[$key] : null;
         }
-
     }
 
     /**
@@ -1190,7 +1221,8 @@ class App {
      * @param int $length 
      * @return string 
      */
-    static function getToken(int $length):string {
+    static function getToken(int $length): string
+    {
         /**
          * http://stackoverflow.com/questions/1846202/php-how-to-generate-a-random-unique-alphanumeric-string/13733588#13733588
          */
@@ -1211,13 +1243,13 @@ class App {
 
         $token = "";
         $codeAlphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-        $codeAlphabet.= "abcdefghijklmnopqrstuvwxyz";
-        $codeAlphabet.= "0123456789";
+        $codeAlphabet .= "abcdefghijklmnopqrstuvwxyz";
+        $codeAlphabet .= "0123456789";
         $max = strlen($codeAlphabet) - 1;
         for ($i = 0; $i < $length; $i++) {
             $token .= $codeAlphabet[$crypto_rand_secure(0, $max)];
         }
-        
+
         return $token;
     }
 
@@ -1230,7 +1262,8 @@ class App {
      * @param mixed $slug 
      * @return string|null
      */
-    function getReadableName(string $slug): string|null {
+    function getReadableName(string $slug): string|null
+    {
         if (array_key_exists($slug, $this->config['routes']['readableNames'])) {
             return $this->config['routes']['readableNames'][$slug];
         }
@@ -1248,7 +1281,8 @@ class App {
      * @param string $entity 
      * @return bool 
      */
-    function isEnabled(string $entity){
+    function isEnabled(string $entity)
+    {
 
         $entities = [
             'agent' => 'agents',
@@ -1264,17 +1298,18 @@ class App {
         $entity = $entities[$entity] ?? $entity;
 
         $enabled = (bool) $this->config['app.enabled.' . $entity] ?? false;
-        
+
         $this->applyHookBoundTo($this, "app.isEnabled({$entity})", [&$enabled]);
 
         return $enabled;
     }
 
-     /**
-      * Habilita o controle de acesso
-      * @return void 
-      */
-    function enableAccessControl(){
+    /**
+     * Habilita o controle de acesso
+     * @return void 
+     */
+    function enableAccessControl()
+    {
         if ($this->_disableAccessControlCount > 0) {
             $this->_disableAccessControlCount--;
         }
@@ -1284,7 +1319,8 @@ class App {
      * Desabilita o controle de acesso
      * @return void 
      */
-    function disableAccessControl(){
+    function disableAccessControl()
+    {
         $this->_disableAccessControlCount++;
     }
 
@@ -1292,7 +1328,8 @@ class App {
      * Indica se o controle de acesso está habilitado
      * @return bool 
      */
-    function isAccessControlEnabled(){
+    function isAccessControlEnabled()
+    {
         return $this->_disableAccessControlCount === 0;
     }
 
@@ -1300,7 +1337,8 @@ class App {
      * Habilita a criação de Requests
      * @return void 
      */
-    function enableWorkflow(){
+    function enableWorkflow()
+    {
         if ($this->_disableWorkflowCount > 0) {
             $this->_disableWorkflowCount--;
         }
@@ -1310,7 +1348,8 @@ class App {
      * Desabilita a criação de Requests
      * @return void 
      */
-    function disableWorkflow(){
+    function disableWorkflow()
+    {
         $this->_disableWorkflowCount++;
     }
 
@@ -1318,7 +1357,8 @@ class App {
      * Indica se a criação de Requests está habilitada
      * @return bool 
      */
-    function isWorkflowEnabled(){
+    function isWorkflowEnabled()
+    {
         return $this->_disableWorkflowCount === 0;
     }
 
@@ -1327,67 +1367,70 @@ class App {
      *******************************/
 
 
-     /**
-      * Bloqueia a execução do código posterior ao chamamento da função,
-      * para o mesmo $name, enquanto não for chamado o unlock para o $name.
-      * 
-      * Caso o segundo parâmetro tenha sido informado, espera o tempo informado
-      * pelo unlock.
-      *
-      * @param string $name 
-      * @param float|int $wait_for_unlock 
-      * @param float|int $expire_in 
-      * @return void 
-      * @throws GlobalException 
-      */
-      function lock(string $name, float $wait_for_unlock = 0, float $expire_in = 10) {
-          $name = $this->slugify($name);
-  
-          $filename = sys_get_temp_dir() . "/lock-{$name}.lock";
-  
-          if ($expire_in && file_exists($filename) && (microtime (true) - filectime($filename) > $expire_in)) {
-              unlink($filename);
-          }
-  
-          if ($wait_for_unlock) {
-              $count = 0;
-              while (file_exists($filename) && $count < $wait_for_unlock) {
-                  if ($expire_in && (microtime (true) - filectime($filename) > $expire_in)) {
-                      unlink($filename);
-                  } else {
-                      $count += 0.1;
-                      usleep(100000);
-                  }
-              }
-          }
-  
-          if (file_exists($filename)) {
-              throw new \Exception("{$name} is locked");
-          }
-  
-          file_put_contents($filename, "1");
-      }
-
-     /**
-      * Desbloqueia a execução do código posterior ao chamamento do lock($name)
-
-      * @param string $name 
-      * @return void 
-      */
-     function unlock(string $name) {
+    /**
+     * Bloqueia a execução do código posterior ao chamamento da função,
+     * para o mesmo $name, enquanto não for chamado o unlock para o $name.
+     * 
+     * Caso o segundo parâmetro tenha sido informado, espera o tempo informado
+     * pelo unlock.
+     *
+     * @param string $name 
+     * @param float|int $wait_for_unlock 
+     * @param float|int $expire_in 
+     * @return void 
+     * @throws GlobalException 
+     */
+    function lock(string $name, float $wait_for_unlock = 0, float $expire_in = 10)
+    {
         $name = $this->slugify($name);
-        
-        $filename = sys_get_temp_dir()."/lock-{$name}.lock"; 
+
+        $filename = sys_get_temp_dir() . "/lock-{$name}.lock";
+
+        if ($expire_in && file_exists($filename) && (microtime(true) - filectime($filename) > $expire_in)) {
+            unlink($filename);
+        }
+
+        if ($wait_for_unlock) {
+            $count = 0;
+            while (file_exists($filename) && $count < $wait_for_unlock) {
+                if ($expire_in && (microtime(true) - filectime($filename) > $expire_in)) {
+                    unlink($filename);
+                } else {
+                    $count += 0.1;
+                    usleep(100000);
+                }
+            }
+        }
+
+        if (file_exists($filename)) {
+            throw new \Exception("{$name} is locked");
+        }
+
+        file_put_contents($filename, "1");
+    }
+
+    /**
+     * Desbloqueia a execução do código posterior ao chamamento do lock($name)
+
+     * @param string $name 
+     * @return void 
+     */
+    function unlock(string $name)
+    {
+        $name = $this->slugify($name);
+
+        $filename = sys_get_temp_dir() . "/lock-{$name}.lock";
 
         unlink($filename);
-     }
-     
-     /**
-      * Transforma o texto num slug
-      * @param string $text 
-      * @return string 
-      */
-    function slugify(string $text): string {        
+    }
+
+    /**
+     * Transforma o texto num slug
+     * @param string $text 
+     * @return string 
+     */
+    function slugify(string $text): string
+    {
         return Utils::slugify($text);
     }
 
@@ -1397,7 +1440,8 @@ class App {
      * @param string $string 
      * @return string 
      */
-    function removeAccents(string $string): string {
+    function removeAccents(string $string): string
+    {
         return Utils::removeAccents($string);
     }
 
@@ -1412,7 +1456,8 @@ class App {
      *
      * @return string the URL to action
      */
-    public function createUrl(string $controller_id, string $action_name = '', array $data = []): string {
+    public function createUrl(string $controller_id, string $action_name = '', array $data = []): string
+    {
         return $this->_routesManager->createUrl($controller_id, $action_name, $data);
     }
 
@@ -1424,11 +1469,12 @@ class App {
      * @param string $entity_name Repository Class Name
      * @return Repository the Entity Repository
      */
-    public function repo(string $entity_name): Repository {
+    public function repo(string $entity_name): Repository
+    {
 
         // add MapasCulturais\Entities namespace if no namespace in repo name
-        if(strpos($entity_name, '\\') === false)
-                $entity_name = "\MapasCulturais\Entities\\{$entity_name}";
+        if (strpos($entity_name, '\\') === false)
+            $entity_name = "\MapasCulturais\Entities\\{$entity_name}";
 
         return $this->em->getRepository($entity_name);
     }
@@ -1441,8 +1487,9 @@ class App {
      * @return string 
      * @throws GlobalException 
      */
-    function renderMustacheTemplate(string $template_name, array|object $template_data): string {
-        if(!is_array($template_data) && !is_object($template_data)) {
+    function renderMustacheTemplate(string $template_name, array|object $template_data): string
+    {
+        if (!is_array($template_data) && !is_object($template_data)) {
             throw new \Exception('Template data not object or array');
         }
 
@@ -1451,29 +1498,28 @@ class App {
         if ($this->view->version >= 2) {
             $template_data->siteName = $this->siteName;
             $template_data->siteDescription = $this->siteDescription;
-
         } else {
             $template_data->siteName = $this->view->dict('site: name', false);
             $template_data->siteDescription = $this->view->dict('site: description', false);
             $template_data->siteOwner = $this->view->dict('site: owner', false);
         }
-        
+
         $template_data->baseUrl = $this->getBaseUrl();
 
-        if(!($footer_name = $this->view->resolveFileName('templates/' . i::get_locale(), '_footer.html'))) {
-            if(!($footer_name = $this->view->resolveFileName('templates/pt_BR', '_footer.html'))) {
+        if (!($footer_name = $this->view->resolveFileName('templates/' . i::get_locale(), '_footer.html'))) {
+            if (!($footer_name = $this->view->resolveFileName('templates/pt_BR', '_footer.html'))) {
                 throw new \Exception('Email footer template not found');
             }
         }
 
-        if(!($header_name = $this->view->resolveFileName('templates/' . i::get_locale(), '_header.html'))) {
-            if(!($header_name = $this->view->resolveFileName('templates/pt_BR', '_header.html'))) {
+        if (!($header_name = $this->view->resolveFileName('templates/' . i::get_locale(), '_header.html'))) {
+            if (!($header_name = $this->view->resolveFileName('templates/pt_BR', '_header.html'))) {
                 throw new \Exception('Email header template not found');
             }
         }
 
-        if(!($file_name = $this->view->resolveFileName('templates/' . i::get_locale(), $template_name))) {
-            if(!($file_name = $this->view->resolveFileName('templates/pt_BR', $template_name))) {
+        if (!($file_name = $this->view->resolveFileName('templates/' . i::get_locale(), $template_name))) {
+            if (!($file_name = $this->view->resolveFileName('templates/pt_BR', $template_name))) {
                 throw new \Exception('Email Template undefined');
             }
         }
@@ -1483,26 +1529,26 @@ class App {
         $content = file_get_contents($file_name);
 
         $matches = [];
-        if(preg_match_all('#\{\{asset:([^\}]+)\}\}#', $header, $matches)){
-            foreach($matches[0] as $i => $tag){
+        if (preg_match_all('#\{\{asset:([^\}]+)\}\}#', $header, $matches)) {
+            foreach ($matches[0] as $i => $tag) {
                 $header = str_replace($tag, $this->view->asset($matches[1][$i], false), $header);
             }
         }
 
         $matches = [];
-        if(preg_match_all('#\{\{asset:([^\}]+)\}\}#', $footer, $matches)){
-            foreach($matches[0] as $i => $tag){
+        if (preg_match_all('#\{\{asset:([^\}]+)\}\}#', $footer, $matches)) {
+            foreach ($matches[0] as $i => $tag) {
                 $footer = str_replace($tag, $this->view->asset($matches[1][$i], false), $footer);
             }
         }
 
         $matches = [];
-        if(preg_match_all('#\{\{asset:([^\}]+)\}\}#', $content, $matches)){
-            foreach($matches[0] as $i => $tag){
+        if (preg_match_all('#\{\{asset:([^\}]+)\}\}#', $content, $matches)) {
+            foreach ($matches[0] as $i => $tag) {
                 $content = str_replace($tag, $this->view->asset($matches[1][$i], false), $content);
             }
         }
-        
+
         $mustache = new \Mustache_Engine();
 
         $headerData = $template_data;
@@ -1530,11 +1576,13 @@ class App {
      * @return never 
      * @throws NotFound 
      */
-    function pass() {
+    function pass()
+    {
         throw new Exceptions\NotFound;
     }
 
-    function redirect(string $destination, int $status_code = 302) {
+    function redirect(string $destination, int $status_code = 302)
+    {
         $this->response = $this->response->withHeader('Location', $destination);
         $this->halt($status_code);
     }
@@ -1549,7 +1597,8 @@ class App {
      * @throws RuntimeException 
      * @throws InvalidArgumentException 
      */
-    function halt(int $status_code, string $message = '') {
+    function halt(int $status_code, string $message = '')
+    {
         $this->response = $this->response->withStatus($status_code);
 
         if ($message) {
@@ -1576,32 +1625,32 @@ class App {
      *
      * @return Entities\File|Entities\File[]
      */
-    public function handleUpload($key, $file_class_name){
-        if(is_array($_FILES) && key_exists($key, $_FILES)){
+    public function handleUpload($key, $file_class_name)
+    {
+        if (is_array($_FILES) && key_exists($key, $_FILES)) {
 
-            if(is_array($_FILES[$key]['name'])){
+            if (is_array($_FILES[$key]['name'])) {
                 $result = [];
-                foreach(array_keys($_FILES[$key]['name']) as $i){
+                foreach (array_keys($_FILES[$key]['name']) as $i) {
                     $tmp_file = [];
-                    foreach(array_keys($_FILES[$key]) as $k){
+                    foreach (array_keys($_FILES[$key]) as $k) {
                         $tmp_file[$k] = $k == 'name' ? $this->sanitizeFilename($_FILES[$key][$k][$i]) : $_FILES[$key][$k][$i];
                     }
 
                     $result[] = new $file_class_name($tmp_file);
                 }
-            }else{
+            } else {
 
-                if($_FILES[$key]['error']){
+                if ($_FILES[$key]['error']) {
                     throw new Exceptions\FileUploadError($key, $_FILES[$key]['error']);
                 }
 
                 $mime = mime_content_type($_FILES[$key]['tmp_name']);
                 $_FILES[$key]['name'] = $this->sanitizeFilename($_FILES[$key]['name'], $mime);
                 $result = new $file_class_name($_FILES[$key]);
-
             }
             return $result;
-        }else{
+        } else {
             return null;
         }
     }
@@ -1615,9 +1664,10 @@ class App {
      *
      * @return string The sanitized filename.
      */
-    function sanitizeFilename($filename, $mimetype = false){
-        $filename = str_replace(' ','_', strtolower($filename));
-        if(is_callable($this->config['app.sanitize_filename_function'])){
+    function sanitizeFilename($filename, $mimetype = false)
+    {
+        $filename = str_replace(' ', '_', strtolower($filename));
+        if (is_callable($this->config['app.sanitize_filename_function'])) {
             $cb = $this->config['app.sanitize_filename_function'];
             $filename = $cb($filename);
         }
@@ -1637,7 +1687,6 @@ class App {
 
             if (array_key_exists($mimetype, $imagetypes))
                 $filename .= '.' . $imagetypes[$mimetype];
-
         }
 
         return $filename;
@@ -1645,7 +1694,7 @@ class App {
 
     /**********************************************
      * Hooks System
-     **********************************************/ 
+     **********************************************/
 
     /**
      * Clear hook listeners
@@ -1656,7 +1705,8 @@ class App {
      *
      * @param  string   $name   A hook name (Optional)
      */
-    public function clearHooks(string $name = null) {
+    public function clearHooks(string $name = null)
+    {
         $this->hooks->clear($name);
     }
 
@@ -1671,7 +1721,8 @@ class App {
      * @param  string     $name     A hook name (Optional)
      * @return array|null
      */
-    public function getHooks(string $name = null) {
+    public function getHooks(string $name = null)
+    {
         return $this->hooks->get($name);
     }
 
@@ -1681,7 +1732,8 @@ class App {
      * @param  callable    $callable   A callable object
      * @param  int      $priority   The hook priority; 0 = high, 10 = low
      */
-    function hook(string $name, callable $callable, int $priority = 10) {
+    function hook(string $name, callable $callable, int $priority = 10)
+    {
         $this->hooks->hook($name, $callable, $priority);
     }
 
@@ -1692,7 +1744,8 @@ class App {
      * 
      * @return callable[]
      */
-    function applyHook(string $name, array $hookArg = []): array {
+    function applyHook(string $name, array $hookArg = []): array
+    {
         return $this->hooks->apply($name, $hookArg);
     }
 
@@ -1705,7 +1758,8 @@ class App {
      * 
      * @return callable[]
      */
-    function applyHookBoundTo(object $target_object, string $name, array $hookArg = []) {
+    function applyHookBoundTo(object $target_object, string $name, array $hookArg = [])
+    {
         return $this->hooks->applyBoundTo($target_object, $name, $hookArg);
     }
 
@@ -1726,11 +1780,12 @@ class App {
      * @return Job 
      * @throws Exception 
      */
-    public function enqueueOrReplaceJob(string $type_slug, array $data, string $start_string = 'now', string $interval_string = '', int $iterations = 1) {
+    public function enqueueOrReplaceJob(string $type_slug, array $data, string $start_string = 'now', string $interval_string = '', int $iterations = 1)
+    {
         return $this->enqueueJob($type_slug, $data, $start_string, $interval_string, $iterations, true);
     }
 
-    
+
     /**
      * Enfileira um job
      * 
@@ -1743,13 +1798,14 @@ class App {
      * @return Job 
      * @throws Exception 
      */
-    public function enqueueJob(string $type_slug, array $data, string $start_string = 'now', string $interval_string = '', int $iterations = 1, $replace = false) {
-        if($this->config['app.log.jobs']) {
+    public function enqueueJob(string $type_slug, array $data, string $start_string = 'now', string $interval_string = '', int $iterations = 1, $replace = false)
+    {
+        if ($this->config['app.log.jobs']) {
             $this->log->debug("ENQUEUED JOB: $type_slug");
         }
 
         $type = $this->getRegisteredJobType($type_slug);
-        
+
         if (!$type) {
             throw new \Exception("invalid job type: {$type_slug}");
         }
@@ -1798,13 +1854,14 @@ class App {
      * @throws ORMException 
      * @throws OptimisticLockException 
      */
-    public function unqueueJob(string $type_slug, array $data, string $start_string = 'now', string $interval_string = '', int $iterations = 1) {
-        if($this->config['app.log.jobs']) {
+    public function unqueueJob(string $type_slug, array $data, string $start_string = 'now', string $interval_string = '', int $iterations = 1)
+    {
+        if ($this->config['app.log.jobs']) {
             $this->log->debug("UNQUEUED JOB: $type_slug");
         }
 
         $type = $this->getRegisteredJobType($type_slug);
-        
+
         if (!$type) {
             throw new \Exception("invalid job type: {$type_slug}");
         }
@@ -1822,7 +1879,8 @@ class App {
      * @return int|false 
      * @throws Exception 
      */
-    public function executeJob(): int|false {
+    public function executeJob(): int|false
+    {
         $conn = $this->em->getConnection();
         $now = date('Y-m-d H:i:s');
         $job_id = $conn->fetchScalar("
@@ -1839,7 +1897,7 @@ class App {
             /** @var Job $job */
             $conn->executeQuery("UPDATE job SET status = 1 WHERE id = '{$job_id}'");
             $job = $this->repo('Job')->find($job_id);
-            
+
             $this->disableAccessControl();
             $this->applyHookBoundTo($this, "app.executeJob:before");
             $job->execute();
@@ -1865,10 +1923,11 @@ class App {
      * 
      * @return void 
      */
-    public function enqueueEntityToPCacheRecreation(Entity $entity, User $user = null) {
+    public function enqueueEntityToPCacheRecreation(Entity $entity, User $user = null)
+    {
         if (!$entity->__skipQueuingPCacheRecreation) {
-            $entity_key = $entity->id ? "{$entity}" : "{$entity}:".spl_object_id($entity);
-            if($user) {
+            $entity_key = $entity->id ? "{$entity}" : "{$entity}:" . spl_object_id($entity);
+            if ($user) {
                 $entity_key = "{$entity_key}:{$user->id}";
             }
             $this->_permissionCachePendingQueue[$entity_key] = [$entity, $user];
@@ -1883,9 +1942,10 @@ class App {
      * 
      * @return bool 
      */
-    public function isEntityEnqueuedToPCacheRecreation(Entity $entity, User $user = null) {
-        $entity_key = $entity->id ? "{$entity}" : "{$entity}:".spl_object_id($entity);
-        if($user) {
+    public function isEntityEnqueuedToPCacheRecreation(Entity $entity, User $user = null)
+    {
+        $entity_key = $entity->id ? "{$entity}" : "{$entity}:" . spl_object_id($entity);
+        if ($user) {
             $entity_key = "{$entity_key}:{$user->id}";
         }
 
@@ -1895,17 +1955,18 @@ class App {
     /**
      * Persiste a fila de entidades para reprocessamento de cache de permissão
      */
-    public function persistPCachePendingQueue() {
+    public function persistPCachePendingQueue()
+    {
         $created = false;
-        foreach($this->_permissionCachePendingQueue as $config) {
+        foreach ($this->_permissionCachePendingQueue as $config) {
             $entity = $config[0];
             $user = $config[1];
             if (is_int($entity->id) && !$this->repo('PermissionCachePending')->findBy([
-                    'objectId' => $entity->id, 
-                    'objectType' => $entity->getClassName(),
-                    'status' => 0,
-                    'user' => $user
-                ])) {
+                'objectId' => $entity->id,
+                'objectType' => $entity->getClassName(),
+                'status' => 0,
+                'user' => $user
+            ])) {
                 $pendingCache = new \MapasCulturais\Entities\PermissionCachePending();
                 $pendingCache->objectId = $entity->id;
                 $pendingCache->objectType = $entity->getClassName();
@@ -1929,7 +1990,8 @@ class App {
      * @param Entity $entity 
      * @return void 
      */
-    public function setEntityPermissionCacheAsRecreated(Entity $entity) {
+    public function setEntityPermissionCacheAsRecreated(Entity $entity)
+    {
         $this->_recreatedPermissionCacheList["$entity"] = $entity;
     }
 
@@ -1940,7 +2002,8 @@ class App {
      * 
      * @return bool 
      */
-    public function isEntityPermissionCacheRecreated(Entity $entity) {
+    public function isEntityPermissionCacheRecreated(Entity $entity)
+    {
         return isset($this->_recreatedPermissionCacheList["$entity"]);
     }
 
@@ -1959,7 +2022,8 @@ class App {
      * @throws WorkflowRequest 
      * @throws GlobalException 
      */
-    public function recreatePermissionsCache(){
+    public function recreatePermissionsCache()
+    {
         $conn = $this->em->getConnection();
 
         $id = $conn->fetchOne('
@@ -1973,7 +2037,7 @@ class App {
                     status > 0
                 )');
 
-        if(!$id) { 
+        if (!$id) {
             return;
         }
         $item = $this->repo('PermissionCachePending')->find($id);
@@ -1993,20 +2057,20 @@ class App {
                 $item = $this->repo('PermissionCachePending')->find($item->id);
                 $this->em->remove($item);
                 $this->em->flush();
-            } catch (\Exception $e ){
+            } catch (\Exception $e) {
                 $this->disableAccessControl();
                 $item = $this->repo('PermissionCachePending')->find($item->id);
                 $item->status = 2; // ERROR
                 $item->save(true);
                 $this->enableAccessControl();
 
-                if(php_sapi_name()==="cli"){
+                if (php_sapi_name() === "cli") {
                     echo "\n\t - ERROR - {$e->getMessage()}";
                 }
                 throw $e;
             }
 
-            if($this->config['app.log.pcache']){
+            if ($this->config['app.log.pcache']) {
                 $end_time = microtime(true);
                 $total_time = number_format($end_time - $start_time, 1);
 
@@ -2028,7 +2092,8 @@ class App {
      * @throws ExceptionInvalidArgumentException 
      * @throws UnsupportedSchemeException 
      */
-    function getMailerTransport(): TransportInterface {
+    function getMailerTransport(): TransportInterface
+    {
         $transport = Transport::fromDsn($this->config['mailer.transport']);
 
         $this->applyHook('mailer.transport', [&$transport]);
@@ -2044,7 +2109,8 @@ class App {
      * @throws ExceptionInvalidArgumentException 
      * @throws UnsupportedSchemeException 
      */
-    function getMailer(): Mailer {
+    function getMailer(): Mailer
+    {
         $mailer = new Mailer($this->getMailerTransport());
 
         return $mailer;
@@ -2055,34 +2121,35 @@ class App {
      * Cria uma mensagem de email
      * 
      */
-    function createMailMessage(array $args = []): Email {
+    function createMailMessage(array $args = []): Email
+    {
         $message = new Email();
 
-        if($this->config['mailer.from']){
+        if ($this->config['mailer.from']) {
             $message->from($this->config['mailer.from']);
         }
 
-        if($this->config['mailer.alwaysTo']){
+        if ($this->config['mailer.alwaysTo']) {
             $message->to($this->config['mailer.alwaysTo']);
         }
 
-        if($this->config['mailer.bcc']){
-            $bcc = is_array($this->config['mailer.bcc']) ? 
-                $this->config['mailer.bcc']:
+        if ($this->config['mailer.bcc']) {
+            $bcc = is_array($this->config['mailer.bcc']) ?
+                $this->config['mailer.bcc'] :
                 explode(',', $this->config['mailer.bcc']);
 
-            
+
             $message->bcc(...$bcc);
         }
 
-        if($this->config['mailer.replyTo']){
+        if ($this->config['mailer.replyTo']) {
             $message->replyTo($this->config['mailer.replyTo']);
         }
 
         $original = [];
-        foreach($args as $method_name => $value){
-            if(in_array($method_name, ['to', 'cc', 'bcc'])) {
-                if($method_name == 'bcc' && isset($bcc)) {
+        foreach ($args as $method_name => $value) {
+            if (in_array($method_name, ['to', 'cc', 'bcc'])) {
+                if ($method_name == 'bcc' && isset($bcc)) {
                     $value = [...$bcc, ...(is_array($value) ? $value : explode(',', $value))];
                 }
                 if ($this->config['mailer.alwaysTo']) {
@@ -2092,19 +2159,19 @@ class App {
                     $message->$method_name(...$value);
                 }
             } else {
-                if($method_name == 'body') {
+                if ($method_name == 'body') {
                     $method_name = 'html';
                 }
-    
-                if(method_exists($message, $method_name)){
+
+                if (method_exists($message, $method_name)) {
                     $message->$method_name($value);
                 }
             }
         }
 
-        if($this->config['mailer.alwaysTo']){
-            foreach($original as $key => $val){
-                if(is_array($val)){
+        if ($this->config['mailer.alwaysTo']) {
+            foreach ($original as $key => $val) {
+                if (is_array($val)) {
                     $val = implode(', ', $val);
                 }
                 $current_body = $message->getHtmlBody();
@@ -2121,7 +2188,8 @@ class App {
      * @param Email $message 
      * @return bool 
      */
-    function sendMailMessage(Email $message): bool {
+    function sendMailMessage(Email $message): bool
+    {
         $mailer = $this->getMailer();
 
         if (!is_object($mailer))
@@ -2130,7 +2198,7 @@ class App {
         try {
             $mailer->send($message);
             return true;
-        } catch(TransportExceptionInterface $exception) {
+        } catch (TransportExceptionInterface $exception) {
             $this->log->error('Mailer error: ' . $exception->getMessage());
             return false;
         }
@@ -2148,11 +2216,12 @@ class App {
      * @throws Throwable 
      * @throws ExceptionLogicException 
      */
-    function createAndSendMailMessage(array $args = []){
+    function createAndSendMailMessage(array $args = [])
+    {
         $message = $this->createMailMessage($args);
         return $this->sendMailMessage($message);
-    }    
-    
+    }
+
     /**
      * Renderiza um template de email
      * 
@@ -2164,8 +2233,9 @@ class App {
      * @throws GlobalException 
      * @throws MailTemplateNotFound 
      */
-    function renderMailerTemplate(string $template_name, array|object $template_data = []): array {
-        if($message = $this->config['mailer.templates'][$template_name] ?? null) {
+    function renderMailerTemplate(string $template_name, array|object $template_data = []): array
+    {
+        if ($message = $this->config['mailer.templates'][$template_name] ?? null) {
             $message['body'] = $this->renderMustacheTemplate($message['template'], $template_data);
         } else {
             throw new Exceptions\MailTemplateNotFound($template_name);
@@ -2206,8 +2276,9 @@ class App {
      * @throws ReflectionException 
      * @throws MappingException 
      */
-    protected function register(){
-        if($this->_registered)
+    protected function register()
+    {
+        if ($this->_registered)
             return;
 
         $this->_registered = true;
@@ -2219,7 +2290,7 @@ class App {
         $this->registerController('site',    'MapasCulturais\Controllers\Site');
         $this->registerController('auth',    'MapasCulturais\Controllers\Auth');
 
-        if(($this->view) instanceof Themes\BaseV1\Theme ) {
+        if (($this->view) instanceof Themes\BaseV1\Theme) {
             $this->registerController('panel',   'MapasCulturais\Controllers\Panel');
         }
 
@@ -2242,9 +2313,9 @@ class App {
         $this->registerController('term',           'MapasCulturais\Controllers\Term');
         $this->registerController('file',           'MapasCulturais\Controllers\File');
         $this->registerController('metalist',       'MapasCulturais\Controllers\MetaList');
-        $this->registerController('eventOccurrence','MapasCulturais\Controllers\EventOccurrence');
+        $this->registerController('eventOccurrence', 'MapasCulturais\Controllers\EventOccurrence');
 
-        $this->registerController('eventAttendance','MapasCulturais\Controllers\EventAttendance');
+        $this->registerController('eventAttendance', 'MapasCulturais\Controllers\EventAttendance');
 
         //workflow controllers
         $this->registerController('notification', 'MapasCulturais\Controllers\Notification');
@@ -2269,7 +2340,7 @@ class App {
                 'plural' => i::__('Super Administradores do SaaS'),
                 'another_roles' => ['saasAdmin', 'superAdmin', 'admin'],
                 'subsite' => false,
-                'can_user_manage_role' => function(UserInterface $user, $subsite_id) {
+                'can_user_manage_role' => function (UserInterface $user, $subsite_id) {
                     return $user->is('saasSuperAdmin');
                 }
             ],
@@ -2278,7 +2349,7 @@ class App {
                 'plural' => i::__('Administradores do SaaS'),
                 'another_roles' => ['superAdmin', 'admin'],
                 'subsite' => false,
-                'can_user_manage_role' => function(UserInterface $user, $subsite_id) {
+                'can_user_manage_role' => function (UserInterface $user, $subsite_id) {
                     return $user->is('saasSuperAdmin');
                 }
             ],
@@ -2287,7 +2358,7 @@ class App {
                 'plural' => i::__('Super Administradores'),
                 'another_roles' => ['admin'],
                 'subsite' => true,
-                'can_user_manage_role' => function(UserInterface $user, $subsite_id) {
+                'can_user_manage_role' => function (UserInterface $user, $subsite_id) {
                     return $user->is('superAdmin', $subsite_id);
                 }
             ],
@@ -2296,7 +2367,7 @@ class App {
                 'plural' => i::__('Administradores'),
                 'another_roles' => [],
                 'subsite' => true,
-                'can_user_manage_role' => function(UserInterface $user, $subsite_id) {
+                'can_user_manage_role' => function (UserInterface $user, $subsite_id) {
                     return $user->is('superAdmin', $subsite_id);
                 }
             ],
@@ -2320,12 +2391,12 @@ class App {
             'gallery' => new Definitions\FileGroup('gallery', ['^image/(jpeg|png)$'], i::__('O arquivo enviado não é uma imagem válida.'), false),
             'registrationFileConfiguration' => new Definitions\FileGroup('registrationFileTemplate', ['^application/.*'], i::__('O arquivo enviado não é um documento válido.'), true),
             'rules' => new Definitions\FileGroup('rules', ['^application/.*'], i::__('O arquivo enviado não é um documento válido.'), true),
-            'logo'  => new Definitions\FileGroup('logo',['^image/(jpeg|png)$'], i::__('O arquivo enviado não é uma imagem válida.'), true),
-            'background' => new Definitions\FileGroup('background',['^image/(jpeg|png)$'], i::__('O arquivo enviado não é uma imagem válida.'),true),
-            'share' => new Definitions\FileGroup('share',['^image/(jpeg|png)$'], i::__('O arquivo enviado não é uma imagem válida.'),true),
-            'institute'  => new Definitions\FileGroup('institute',['^image/(jpeg|png)$'], i::__('O arquivo enviado não é uma imagem válida.'), true),
-            'favicon'  => new Definitions\FileGroup('favicon',['^image/(jpeg|png|x-icon|vnd.microsoft.icon)$'], i::__('O arquivo enviado não é uma imagem válida.'), true),
-            'zipArchive'  => new Definitions\FileGroup('zipArchive',['^application/zip$'], i::__('O arquivo não é um ZIP.'), true, null, true),
+            'logo'  => new Definitions\FileGroup('logo', ['^image/(jpeg|png)$'], i::__('O arquivo enviado não é uma imagem válida.'), true),
+            'background' => new Definitions\FileGroup('background', ['^image/(jpeg|png)$'], i::__('O arquivo enviado não é uma imagem válida.'), true),
+            'share' => new Definitions\FileGroup('share', ['^image/(jpeg|png)$'], i::__('O arquivo enviado não é uma imagem válida.'), true),
+            'institute'  => new Definitions\FileGroup('institute', ['^image/(jpeg|png)$'], i::__('O arquivo enviado não é uma imagem válida.'), true),
+            'favicon'  => new Definitions\FileGroup('favicon', ['^image/(jpeg|png|x-icon|vnd.microsoft.icon)$'], i::__('O arquivo enviado não é uma imagem válida.'), true),
+            'zipArchive'  => new Definitions\FileGroup('zipArchive', ['^application/zip$'], i::__('O arquivo não é um ZIP.'), true, null, true),
         ];
 
         // register file groups
@@ -2363,28 +2434,29 @@ class App {
         $this->registerFileGroup('registrationFileConfiguration', $file_groups['registrationFileConfiguration']);
         $this->registerFileGroup('registration', $file_groups['zipArchive']);
 
-        $this->registerFileGroup('subsite',$file_groups['header']);
-        $this->registerFileGroup('subsite',$file_groups['avatar']);
-        $this->registerFileGroup('subsite',$file_groups['logo']);
-        $this->registerFileGroup('subsite',$file_groups['background']);
-        $this->registerFileGroup('subsite',$file_groups['share']);
-        $this->registerFileGroup('subsite',$file_groups['institute']);
-        $this->registerFileGroup('subsite',$file_groups['favicon']);
-        $this->registerFileGroup('subsite',$file_groups['downloads']);
+        $this->registerFileGroup('subsite', $file_groups['header']);
+        $this->registerFileGroup('subsite', $file_groups['avatar']);
+        $this->registerFileGroup('subsite', $file_groups['logo']);
+        $this->registerFileGroup('subsite', $file_groups['background']);
+        $this->registerFileGroup('subsite', $file_groups['share']);
+        $this->registerFileGroup('subsite', $file_groups['institute']);
+        $this->registerFileGroup('subsite', $file_groups['favicon']);
+        $this->registerFileGroup('subsite', $file_groups['downloads']);
 
-        if ($theme_image_transformations = $this->view->resolveFilename('','image-transformations.php')) {
+        if ($theme_image_transformations = $this->view->resolveFilename('', 'image-transformations.php')) {
             $image_transformations = include $theme_image_transformations;
         } else {
-            $image_transformations = include APPLICATION_PATH.'/conf/image-transformations.php';
+            $image_transformations = include APPLICATION_PATH . '/conf/image-transformations.php';
         }
 
-        foreach($image_transformations as $name => $transformation)
+        foreach ($image_transformations as $name => $transformation)
             $this->registerImageTransformation($name, $transformation);
 
 
         // all metalist groups
         $metalist_groups = [
-            'links' => new Definitions\MetaListGroup('links',
+            'links' => new Definitions\MetaListGroup(
+                'links',
                 [
                     'title' => [
                         'label' => 'Nome'
@@ -2399,7 +2471,8 @@ class App {
                 i::__('O arquivo enviado não é uma imagem válida.'),
                 true
             ),
-            'videos' => new Definitions\MetaListGroup('videos',
+            'videos' => new Definitions\MetaListGroup(
+                'videos',
                 [
                     'title' => [
                         'label' => 'Nome'
@@ -2440,67 +2513,67 @@ class App {
 
 
         // get types and metadata configurations
-        if ($theme_space_types = $this->view->resolveFilename('','space-types.php')) {
+        if ($theme_space_types = $this->view->resolveFilename('', 'space-types.php')) {
             $space_types = include $theme_space_types;
         } else {
-            $space_types = include APPLICATION_PATH.'/conf/space-types.php';
+            $space_types = include APPLICATION_PATH . '/conf/space-types.php';
         }
         $space_meta = key_exists('metadata', $space_types) && is_array($space_types['metadata']) ? $space_types['metadata'] : [];
 
-        if ($theme_agent_types = $this->view->resolveFilename('','agent-types.php')) {
+        if ($theme_agent_types = $this->view->resolveFilename('', 'agent-types.php')) {
             $agent_types = include $theme_agent_types;
         } else {
-            $agent_types = include APPLICATION_PATH.'/conf/agent-types.php';
+            $agent_types = include APPLICATION_PATH . '/conf/agent-types.php';
         }
         $agents_meta = key_exists('metadata', $agent_types) && is_array($agent_types['metadata']) ? $agent_types['metadata'] : [];
 
-        if ($theme_event_types = $this->view->resolveFilename('','event-types.php')) {
+        if ($theme_event_types = $this->view->resolveFilename('', 'event-types.php')) {
             $event_types = include $theme_event_types;
         } else {
-            $event_types = include APPLICATION_PATH.'/conf/event-types.php';
+            $event_types = include APPLICATION_PATH . '/conf/event-types.php';
         }
         $event_meta = key_exists('metadata', $event_types) && is_array($event_types['metadata']) ? $event_types['metadata'] : [];
 
-        if ($theme_project_types = $this->view->resolveFilename('','project-types.php')) {
+        if ($theme_project_types = $this->view->resolveFilename('', 'project-types.php')) {
             $project_types = include $theme_project_types;
         } else {
-            $project_types = include APPLICATION_PATH.'/conf/project-types.php';
+            $project_types = include APPLICATION_PATH . '/conf/project-types.php';
         }
         $projects_meta = key_exists('metadata', $project_types) && is_array($project_types['metadata']) ? $project_types['metadata'] : [];
 
-        if ($theme_opportunity_types = $this->view->resolveFilename('','opportunity-types.php')) {
+        if ($theme_opportunity_types = $this->view->resolveFilename('', 'opportunity-types.php')) {
             $opportunity_types = include $theme_opportunity_types;
         } else {
-            $opportunity_types = include APPLICATION_PATH.'/conf/opportunity-types.php';
+            $opportunity_types = include APPLICATION_PATH . '/conf/opportunity-types.php';
         }
         $opportunities_meta = key_exists('metadata', $opportunity_types) && is_array($opportunity_types['metadata']) ? $opportunity_types['metadata'] : [];
 
         // get types and metadata configurations
-        if ($theme_subsite_types = $this->view->resolveFilename('','subsite-types.php')) {
+        if ($theme_subsite_types = $this->view->resolveFilename('', 'subsite-types.php')) {
             $subsite_types = include $theme_subsite_types;
         } else {
-            $subsite_types = include APPLICATION_PATH.'/conf/subsite-types.php';
+            $subsite_types = include APPLICATION_PATH . '/conf/subsite-types.php';
         }
         $subsite_meta = key_exists('metadata', $subsite_types) && is_array($subsite_types['metadata']) ? $subsite_types['metadata'] : [];
 
-        if ($theme_seal_types = $this->view->resolveFilename('','seal-types.php')) {
+        if ($theme_seal_types = $this->view->resolveFilename('', 'seal-types.php')) {
             $seal_types = include $theme_seal_types;
         } else {
-            $seal_types = include APPLICATION_PATH.'/conf/seal-types.php';
+            $seal_types = include APPLICATION_PATH . '/conf/seal-types.php';
         }
         $seals_meta = key_exists('metadata', $seal_types) && is_array($seal_types['metadata']) ? $seal_types['metadata'] : [];
 
-        if ($theme_notification_types = $this->view->resolveFilename('','notification-types.php')) {
+        if ($theme_notification_types = $this->view->resolveFilename('', 'notification-types.php')) {
             $notification_types = include $theme_notification_types;
         } else {
-            $notification_types = include APPLICATION_PATH.'/conf/notification-types.php';
+            $notification_types = include APPLICATION_PATH . '/conf/notification-types.php';
         }
         $notification_meta = key_exists('metadata', $notification_types) && is_array($notification_types['metadata']) ? $notification_types['metadata'] : [];
 
 
 
         // registration agent relations
-        foreach($this->config['registration.agentRelations'] as $config){
+        foreach ($this->config['registration.agentRelations'] as $config) {
             $def = new Definitions\RegistrationAgentRelation($config);
             $opportunities_meta[$def->metadataName] = $def->getMetadataConfiguration();
 
@@ -2509,14 +2582,14 @@ class App {
 
 
         // register space types and spaces metadata
-        foreach($space_types['items'] as $group_name => $group_config){
+        foreach ($space_types['items'] as $group_name => $group_config) {
             $entity_class = 'MapasCulturais\Entities\Space';
             $group = new Definitions\EntityTypeGroup($entity_class, $group_name, $group_config['range'][0], $group_config['range'][1]);
             $this->registerEntityTypeGroup($group);
 
             $group_meta = key_exists('metadata', $group_config) ? $group_config['metadata'] : [];
 
-            foreach ($group_config['items'] as $type_id => $type_config){
+            foreach ($group_config['items'] as $type_id => $type_config) {
                 $type = new Definitions\EntityType($entity_class, $type_id, $type_config['name']);
                 $group->registerType($type);
                 $this->registerEntityType($type);
@@ -2525,19 +2598,19 @@ class App {
                 $type_config['metadata'] = $type_meta;
 
                 // add group metadata to space type
-                if(key_exists('metadata', $group_config))
-                    foreach($group_meta as $meta_key => $meta_config)
-                        if(!key_exists($meta_key, $type_meta) || key_exists($meta_key, $type_meta) && is_null($type_config['metadata'][$meta_key]))
-                                $type_config['metadata'][$meta_key] = $meta_config;
-
-                // add space metadata to space type
-                foreach($space_meta as $meta_key => $meta_config)
-                    if(!key_exists($meta_key, $type_meta) || key_exists($meta_key, $type_meta) && is_null($type_config['metadata'][$meta_key]))
+                if (key_exists('metadata', $group_config))
+                    foreach ($group_meta as $meta_key => $meta_config)
+                        if (!key_exists($meta_key, $type_meta) || key_exists($meta_key, $type_meta) && is_null($type_config['metadata'][$meta_key]))
                             $type_config['metadata'][$meta_key] = $meta_config;
 
-                foreach($type_config['metadata'] as $meta_key => $meta_config){
-                   $metadata = new Definitions\Metadata($meta_key, $meta_config);
-                   $this->registerMetadata($metadata, $entity_class, $type_id);
+                // add space metadata to space type
+                foreach ($space_meta as $meta_key => $meta_config)
+                    if (!key_exists($meta_key, $type_meta) || key_exists($meta_key, $type_meta) && is_null($type_config['metadata'][$meta_key]))
+                        $type_config['metadata'][$meta_key] = $meta_config;
+
+                foreach ($type_config['metadata'] as $meta_key => $meta_config) {
+                    $metadata = new Definitions\Metadata($meta_key, $meta_config);
+                    $this->registerMetadata($metadata, $entity_class, $type_id);
                 }
             }
         }
@@ -2545,7 +2618,7 @@ class App {
         // register agent types and agent metadata
         $entity_class = 'MapasCulturais\Entities\Agent';
 
-        foreach($agent_types['items'] as $type_id => $type_config){
+        foreach ($agent_types['items'] as $type_id => $type_config) {
             $type = new Definitions\EntityType($entity_class, $type_id, $type_config['name']);
 
             $this->registerEntityType($type);
@@ -2554,11 +2627,11 @@ class App {
             $type_config['metadata'] = $type_meta;
 
             // add agents metadata definition to agent type
-            foreach($agents_meta as $meta_key => $meta_config)
-                if(!key_exists($meta_key, $type_meta) || key_exists($meta_key, $type_meta) && is_null($type_config['metadata'][$meta_key]))
+            foreach ($agents_meta as $meta_key => $meta_config)
+                if (!key_exists($meta_key, $type_meta) || key_exists($meta_key, $type_meta) && is_null($type_config['metadata'][$meta_key]))
                     $type_config['metadata'][$meta_key] = $meta_config;
 
-            foreach($type_config['metadata'] as $meta_key => $meta_config){
+            foreach ($type_config['metadata'] as $meta_key => $meta_config) {
 
                 $metadata = new Definitions\Metadata($meta_key, $meta_config);
                 $this->registerMetadata($metadata, $entity_class, $type_id);
@@ -2568,20 +2641,20 @@ class App {
         // register event types and event metadata
         $entity_class = 'MapasCulturais\Entities\Event';
 
-        foreach($event_types['items'] as $type_id => $type_config){
+        foreach ($event_types['items'] as $type_id => $type_config) {
             $type = new Definitions\EntityType($entity_class, $type_id, $type_config['name']);
 
             $this->registerEntityType($type);
 
             $type_meta = key_exists('metadata', $type_config) && is_array($type_config['metadata']) ? $type_config['metadata'] : [];
             $type_config['metadata'] = $type_meta;
-            
+
             // add events metadata definition to event type
-            foreach($event_meta as $meta_key => $meta_config)
-                if(!key_exists($meta_key, $type_meta) || key_exists($meta_key, $type_meta) && is_null($type_config['metadata'][$meta_key]))
+            foreach ($event_meta as $meta_key => $meta_config)
+                if (!key_exists($meta_key, $type_meta) || key_exists($meta_key, $type_meta) && is_null($type_config['metadata'][$meta_key]))
                     $type_config['metadata'][$meta_key] = $meta_config;
 
-            foreach($type_config['metadata'] as $meta_key => $meta_config){
+            foreach ($type_config['metadata'] as $meta_key => $meta_config) {
                 $metadata = new Definitions\Metadata($meta_key, $meta_config);
                 $this->registerMetadata($metadata, $entity_class, $type_id);
             }
@@ -2590,7 +2663,7 @@ class App {
         // register project types and project metadata
         $entity_class = 'MapasCulturais\Entities\Project';
 
-        foreach($project_types['items'] as $type_id => $type_config){
+        foreach ($project_types['items'] as $type_id => $type_config) {
             $type = new Definitions\EntityType($entity_class, $type_id, $type_config['name']);
 
             $this->registerEntityType($type);
@@ -2598,11 +2671,11 @@ class App {
             $type_config['metadata'] = $type_meta;
 
             // add projects metadata definition to project type
-            foreach($projects_meta as $meta_key => $meta_config)
-                if(!key_exists($meta_key, $type_meta) || key_exists($meta_key, $type_meta) && is_null($type_config['metadata'][$meta_key]))
+            foreach ($projects_meta as $meta_key => $meta_config)
+                if (!key_exists($meta_key, $type_meta) || key_exists($meta_key, $type_meta) && is_null($type_config['metadata'][$meta_key]))
                     $type_config['metadata'][$meta_key] = $meta_config;
 
-            foreach($type_config['metadata'] as $meta_key => $meta_config){
+            foreach ($type_config['metadata'] as $meta_key => $meta_config) {
                 $metadata = new Definitions\Metadata($meta_key, $meta_config);
                 $this->registerMetadata($metadata, $entity_class, $type_id);
             }
@@ -2611,7 +2684,7 @@ class App {
         // register opportunity types and opportunity metadata
         $entity_class = 'MapasCulturais\Entities\Opportunity';
 
-        foreach($opportunity_types['items'] as $type_id => $type_config){
+        foreach ($opportunity_types['items'] as $type_id => $type_config) {
             $type = new Definitions\EntityType($entity_class, $type_id, $type_config['name']);
 
             $this->registerEntityType($type);
@@ -2619,11 +2692,11 @@ class App {
             $type_config['metadata'] = $type_meta;
 
             // add opportunities metadata definition to opportunity type
-            foreach($opportunities_meta as $meta_key => $meta_config)
-                if(!key_exists($meta_key, $type_meta) || key_exists($meta_key, $type_meta) && is_null($type_config['metadata'][$meta_key]))
+            foreach ($opportunities_meta as $meta_key => $meta_config)
+                if (!key_exists($meta_key, $type_meta) || key_exists($meta_key, $type_meta) && is_null($type_config['metadata'][$meta_key]))
                     $type_config['metadata'][$meta_key] = $meta_config;
 
-            foreach($type_config['metadata'] as $meta_key => $meta_config){
+            foreach ($type_config['metadata'] as $meta_key => $meta_config) {
                 $metadata = new Definitions\Metadata($meta_key, $meta_config);
                 $this->registerMetadata($metadata, $entity_class, $type_id);
             }
@@ -2633,27 +2706,27 @@ class App {
         $entity_class = 'MapasCulturais\Entities\Subsite';
 
         // add subsite metadata definition to event type
-        foreach($subsite_meta as $meta_key => $meta_config){
+        foreach ($subsite_meta as $meta_key => $meta_config) {
             $metadata = new Definitions\Metadata($meta_key, $meta_config);
             $this->registerMetadata($metadata, $entity_class);
         }
 
         // register seal time unit types
-		$entity_class = 'MapasCulturais\Entities\Seal';
+        $entity_class = 'MapasCulturais\Entities\Seal';
 
-        foreach($seal_types['items'] as $type_id => $type_config){
-        	$type = new Definitions\EntityType($entity_class, $type_id, $type_config['name']);
-        	$this->registerEntityType($type);
+        foreach ($seal_types['items'] as $type_id => $type_config) {
+            $type = new Definitions\EntityType($entity_class, $type_id, $type_config['name']);
+            $this->registerEntityType($type);
 
             $type_meta = key_exists('metadata', $type_config) && is_array($type_config['metadata']) ? $type_config['metadata'] : [];
             $type_config['metadata'] = $type_meta;
-            
-        	// add projects metadata definition to project type
-            foreach($seals_meta as $meta_key => $meta_config)
-                if(!key_exists($meta_key, $type_meta) || key_exists($meta_key, $type_meta) && is_null($type_config['metadata'][$meta_key]))
+
+            // add projects metadata definition to project type
+            foreach ($seals_meta as $meta_key => $meta_config)
+                if (!key_exists($meta_key, $type_meta) || key_exists($meta_key, $type_meta) && is_null($type_config['metadata'][$meta_key]))
                     $type_config['metadata'][$meta_key] = $meta_config;
 
-            foreach($type_config['metadata'] as $meta_key => $meta_config){
+            foreach ($type_config['metadata'] as $meta_key => $meta_config) {
                 $metadata = new Definitions\Metadata($meta_key, $meta_config);
                 $this->registerMetadata($metadata, $entity_class, $type_id);
             }
@@ -2663,19 +2736,19 @@ class App {
         $entity_class = 'MapasCulturais\Entities\Notification';
 
         // add notification metadata definition
-        foreach($notification_meta as $meta_key => $meta_config){
+        foreach ($notification_meta as $meta_key => $meta_config) {
             $metadata = new Definitions\Metadata($meta_key, $meta_config);
             $this->registerMetadata($metadata, $entity_class);
         }
 
         // register taxonomies
-        if ($theme_taxonomies = $this->view->resolveFilename('','taxonomies.php')) {
+        if ($theme_taxonomies = $this->view->resolveFilename('', 'taxonomies.php')) {
             $taxonomies = include $theme_taxonomies;
         } else {
             $taxonomies = include APPLICATION_PATH . '/conf/taxonomies.php';
         }
 
-        foreach($taxonomies as $taxonomy_id => $taxonomy_definition){
+        foreach ($taxonomies as $taxonomy_id => $taxonomy_definition) {
             $taxonomy_slug = $taxonomy_definition['slug'];
             $taxonomy_required = key_exists('required', $taxonomy_definition) ? $taxonomy_definition['required'] : false;
             $taxonomy_description = key_exists('description', $taxonomy_definition) ? $taxonomy_definition['description'] : '';
@@ -2685,22 +2758,22 @@ class App {
             $definition->name = $taxonomy_definition['name'] ?? '';
             $entity_classes = $taxonomy_definition['entities'];
 
-            foreach($entity_classes as $entity_class){
+            foreach ($entity_classes as $entity_class) {
                 $this->registerTaxonomy($entity_class, $definition);
             }
         }
 
         $this->view->register();
 
-        foreach($this->modules as $module){
+        foreach ($this->modules as $module) {
             $module->register();
         }
 
-        foreach($this->plugins as $plugin){
+        foreach ($this->plugins as $plugin) {
             $plugin->register();
         }
 
-        $this->applyHookBoundTo($this, 'app.register',[&$this->_register]);
+        $this->applyHookBoundTo($this, 'app.register', [&$this->_register]);
         $this->applyHookBoundTo($this, 'app.register:after');
     }
 
@@ -2715,8 +2788,9 @@ class App {
      * @return void 
      * @throws GlobalException 
      */
-    public function registerJobType(Definitions\JobType $definition) {
-        if(key_exists($definition->slug, $this->_register['job_types'])){
+    public function registerJobType(Definitions\JobType $definition)
+    {
+        if (key_exists($definition->slug, $this->_register['job_types'])) {
             throw new \Exception("Job type {$definition->slug} already registered");
         }
         $this->_register['job_types'][$definition->slug] = $definition;
@@ -2727,7 +2801,8 @@ class App {
      * 
      * @return Definitions\JobType[]
      */
-    public function getRegisteredJobTypes(): array {
+    public function getRegisteredJobTypes(): array
+    {
         return $this->_register['job_types'];
     }
 
@@ -2736,7 +2811,8 @@ class App {
      * 
      * @return Definitions\JobType
      */
-    public function getRegisteredJobType(string $slug): Definitions\JobType|null {
+    public function getRegisteredJobType(string $slug): Definitions\JobType|null
+    {
         return $this->_register['job_types'][$slug] ?? null;
     }
 
@@ -2751,7 +2827,8 @@ class App {
      * @param Definitions\Role $role the role definition
      * @return void
      */
-    public function registerRole(Definitions\Role $role) {
+    public function registerRole(Definitions\Role $role)
+    {
         $this->_register['roles'][$role->getRole()] = $role;
     }
 
@@ -2760,7 +2837,8 @@ class App {
      *
      * @return Definitions\Role[]
      */
-    public function getRoles(): array {
+    public function getRoles(): array
+    {
         return $this->_register['roles'];
     }
 
@@ -2770,7 +2848,8 @@ class App {
      * @param string $role_slug
      * @return Definitions\Role|null
      */
-    public function getRoleDefinition(string $role_slug): Definitions\Role|null {
+    public function getRoleDefinition(string $role_slug): Definitions\Role|null
+    {
         return $this->_register['roles'][$role_slug] ?? null;
     }
 
@@ -2780,7 +2859,8 @@ class App {
      * @param string $role_slug 
      * @return string|null 
      */
-    public function getRoleName(string $role_slug): string|null {
+    public function getRoleName(string $role_slug): string|null
+    {
         $def = $this->_register['roles'][$role_slug] ?? null;
         return $def ? $def->name : $role_slug;
     }
@@ -2797,9 +2877,10 @@ class App {
      * @return void 
      * @throws GlobalException 
      */
-    function registerRegistrationAgentRelation(Definitions\RegistrationAgentRelation $def) {
+    function registerRegistrationAgentRelation(Definitions\RegistrationAgentRelation $def)
+    {
         $group_name = $def->agentRelationGroupName;
-        if($this->_register['registration_agent_relations'][$group_name] ?? false){
+        if ($this->_register['registration_agent_relations'][$group_name] ?? false) {
             throw new \Exception('There is already a RegistrationAgentRelation with agent relation group name "' . $def->agentRelationGroupName . '"');
         }
         $this->_register['registration_agent_relations'][$group_name] = $def;
@@ -2810,7 +2891,8 @@ class App {
      * 
      * @return Definitions\RegistrationAgentRelation[]
      */
-    function getRegisteredRegistrationAgentRelations(): array {
+    function getRegisteredRegistrationAgentRelations(): array
+    {
         return $this->_register['registration_agent_relations'];
     }
 
@@ -2819,7 +2901,8 @@ class App {
      * 
      * @return Definitions\RegistrationAgentRelation 
      */
-    function getRegistrationOwnerDefinition(): Definitions\RegistrationAgentRelation{
+    function getRegistrationOwnerDefinition(): Definitions\RegistrationAgentRelation
+    {
         $config = $this->getConfig('registration.ownerDefinition');
         $definition = new Definitions\RegistrationAgentRelation($config);
         return $definition;
@@ -2830,9 +2913,10 @@ class App {
      * 
      * @return Definitions\RegistrationAgentRelation[] 
      */
-    function getRegistrationAgentsDefinitions(): array {
+    function getRegistrationAgentsDefinitions(): array
+    {
         $definitions =  ['owner' => $this->getRegistrationOwnerDefinition()];
-        foreach ($this->getRegisteredRegistrationAgentRelations() as $groupName => $def){
+        foreach ($this->getRegisteredRegistrationAgentRelations() as $groupName => $def) {
             $definitions[$groupName] = $def;
         }
         return $definitions;
@@ -2843,7 +2927,8 @@ class App {
      * @param string $group_name 
      * @return RegistrationAgentRelation|null 
      */
-    function getRegisteredRegistrationAgentRelationByAgentRelationGroupName(string $group_name): Definitions\RegistrationAgentRelation|null {
+    function getRegisteredRegistrationAgentRelationByAgentRelationGroupName(string $group_name): Definitions\RegistrationAgentRelation|null
+    {
         return $this->_register['registration_agent_relations'][$group_name] ?? null;
     }
 
@@ -2852,14 +2937,15 @@ class App {
      * ============ AGENTES RELACIONADOS DAS INSCRIÇÕES ============ 
      */
 
-     /**
-      * Registra um tipo de thread de chat
-      *
-      * @param ChatThreadType $definition 
-      * @return void 
-      * @throws GlobalException 
-      */
-    function registerChatThreadType(Definitions\ChatThreadType $definition) {
+    /**
+     * Registra um tipo de thread de chat
+     *
+     * @param ChatThreadType $definition 
+     * @return void 
+     * @throws GlobalException 
+     */
+    function registerChatThreadType(Definitions\ChatThreadType $definition)
+    {
         if (isset($this->_register['chat_thread_types'][$definition->slug])) {
             throw new \Exception("Attempting to re-register {$definition->slug}.");
         }
@@ -2871,7 +2957,8 @@ class App {
      * 
      * @return array 
      */
-    function getRegisteredChatThreadTypes(): array {
+    function getRegisteredChatThreadTypes(): array
+    {
         return $this->_register['chat_thread_types'];
     }
 
@@ -2881,7 +2968,8 @@ class App {
      * @param mixed $slug 
      * @return ChatThreadType|null 
      */
-    function getRegisteredChatThreadType($slug): Definitions\ChatThreadType|null    {
+    function getRegisteredChatThreadType($slug): Definitions\ChatThreadType|null
+    {
         return ($this->_register['chat_thread_types'][$slug] ?? null);
     }
 
@@ -2897,8 +2985,9 @@ class App {
      * @param string $api_output_id the api_output id
      *
      */
-    public function registerApiOutput($api_output_class_name, $api_output_id = null){
-        if(is_null($api_output_id))
+    public function registerApiOutput($api_output_class_name, $api_output_id = null)
+    {
+        if (is_null($api_output_id))
             $api_output_id = strtolower(str_replace('\\', '.', str_replace('MapasCulturais\ApiOutputs\\', '', $api_output_class_name)));
 
         $this->_register['api_outputs'][$api_output_id] = $api_output_class_name;
@@ -2914,8 +3003,9 @@ class App {
      *
      * @return ApiOutput|null the API Output
      */
-    public function getRegisteredApiOutputByClassName($api_output_class_name): ApiOutput|null {
-        if(in_array($api_output_class_name, $this->_register['api_outputs']) && class_exists($api_output_class_name) && is_subclass_of($api_output_class_name, '\MapasCulturais\ApiOutput')) {
+    public function getRegisteredApiOutputByClassName($api_output_class_name): ApiOutput|null
+    {
+        if (in_array($api_output_class_name, $this->_register['api_outputs']) && class_exists($api_output_class_name) && is_subclass_of($api_output_class_name, '\MapasCulturais\ApiOutput')) {
             return $api_output_class_name::i();
         } else {
             return null;
@@ -2931,15 +3021,15 @@ class App {
      *
      * @return ApiOutput|null The API Output
      */
-    public function getRegisteredApiOutputById(string $api_output_id): ApiOutput|null {
+    public function getRegisteredApiOutputById(string $api_output_id): ApiOutput|null
+    {
         $api_output_id = strtolower($api_output_id);
-        if(key_exists($api_output_id, $this->_register['api_outputs']) && class_exists($this->_register['api_outputs'][$api_output_id]) && is_subclass_of($this->_register['api_outputs'][$api_output_id], '\MapasCulturais\ApiOutput')){
+        if (key_exists($api_output_id, $this->_register['api_outputs']) && class_exists($this->_register['api_outputs'][$api_output_id]) && is_subclass_of($this->_register['api_outputs'][$api_output_id], '\MapasCulturais\ApiOutput')) {
             $api_output_class_name = $this->_register['api_outputs'][$api_output_id];
             return $api_output_class_name::i();
-        }else{
+        } else {
             return null;
         }
-
     }
 
     /**
@@ -2951,7 +3041,8 @@ class App {
      *
      * @return string|null the API Output id
      */
-    public function getRegisteredApiOutputId($api_output): string|null {
+    public function getRegisteredApiOutputId($api_output): string|null
+    {
         if (is_object($api_output)) {
             $api_output = get_class($api_output);
         }
@@ -2972,7 +3063,8 @@ class App {
      * @param string $name 
      * @return void 
      */
-    public function registerAuthProvider(string $name) {
+    public function registerAuthProvider(string $name)
+    {
         $nextId = count($this->_register['auth_providers']) + 1;
         $this->_register['auth_providers'][$nextId] = strtolower($name);
     }
@@ -2982,7 +3074,8 @@ class App {
      * @param mixed $name 
      * @return int|string|false 
      */
-    public function getRegisteredAuthProviderId($name){
+    public function getRegisteredAuthProviderId($name)
+    {
         return array_search(strtolower($name), $this->_register['auth_providers']);
     }
 
@@ -3001,10 +3094,11 @@ class App {
      *
      * @throws \Exception
      */
-    public function registerController(string $id, string $controller_class_name, string $default_action = 'index', $view_dir = null) {
+    public function registerController(string $id, string $controller_class_name, string $default_action = 'index', $view_dir = null)
+    {
         $id = strtolower($id);
 
-        if(key_exists($id, $this->_register['controllers']))
+        if (key_exists($id, $this->_register['controllers']))
             throw new \Exception('Controller Id already in use');
 
         $this->_register['controllers-by-class'][$controller_class_name] = $id;
@@ -3021,10 +3115,11 @@ class App {
      * 
      * @return array 
      */
-    public function getRegisteredControllers(bool $return_controller_object = false): array {
+    public function getRegisteredControllers(bool $return_controller_object = false): array
+    {
         $controllers = $this->_register['controllers'];
-        if($return_controller_object){
-            foreach($controllers as $id => $class){
+        if ($return_controller_object) {
+            foreach ($controllers as $id => $class) {
                 $controllers[$id] = $class::i();
             }
         }
@@ -3043,12 +3138,13 @@ class App {
      *
      * @return Controller|null
      */
-    public function getController(string $controller_id): Controller|null {
+    public function getController(string $controller_id): Controller|null
+    {
         $controller_id = strtolower($controller_id);
-        if(key_exists($controller_id, $this->_register['controllers']) && class_exists($this->_register['controllers'][$controller_id])){
+        if (key_exists($controller_id, $this->_register['controllers']) && class_exists($this->_register['controllers'][$controller_id])) {
             $class = $this->_register['controllers'][$controller_id];
             return $class::i($controller_id);
-        }else{
+        } else {
             return null;
         }
     }
@@ -3062,7 +3158,8 @@ class App {
      *
      * @return Controller|null
      */
-    public function controller(string $controller_id): Controller|null {
+    public function controller(string $controller_id): Controller|null
+    {
         return $this->getController($controller_id);
     }
 
@@ -3076,10 +3173,11 @@ class App {
      *
      * @return Controller|null The controller
      */
-    public function getControllerByClass(string $controller_class): Controller|null {
-        if(key_exists($controller_class, $this->_register['controllers-by-class']) && class_exists($controller_class)){
+    public function getControllerByClass(string $controller_class): Controller|null
+    {
+        if (key_exists($controller_class, $this->_register['controllers-by-class']) && class_exists($controller_class)) {
             return $controller_class::i($this->_register['controllers-by-class'][$controller_class]);
-        }else{
+        } else {
             return null;
         }
     }
@@ -3097,10 +3195,11 @@ class App {
      *
      * @return Controllers\EntityController|null The controller
      */
-    public function getControllerByEntity(Entity|string $entity): Controller|null {
-        if(is_object($entity))
+    public function getControllerByEntity(Entity|string $entity): Controller|null
+    {
+        if (is_object($entity))
             $entity = $entity->getClassName();
-        
+
         $controller_class = $entity::getControllerClassName();
         return $this->getControllerByClass($controller_class);
     }
@@ -3116,8 +3215,9 @@ class App {
      *
      * @return Controller|null The controller
      */
-    public function getControllerIdByEntity(Entity|string $entity): string|null {
-        if(is_object($entity))
+    public function getControllerIdByEntity(Entity|string $entity): string|null
+    {
+        if (is_object($entity))
             $entity = $entity->getClassName();
 
         $controller_class = $entity::getControllerClassName();
@@ -3132,8 +3232,9 @@ class App {
      *
      * @return string|null
      */
-    public function getControllerId(Controller|string $controller): string|null {
-        if(is_object($controller))
+    public function getControllerId(Controller|string $controller): string|null
+    {
+        if (is_object($controller))
             $controller = get_class($controller);
 
         return array_search($controller, $this->_register['controllers']) ?: null;
@@ -3148,7 +3249,8 @@ class App {
      *
      * @return string|null
      */
-    public function controllerId(Controller|string $controller): string|null {
+    public function controllerId(Controller|string $controller): string|null
+    {
         return $this->getControllerId($controller);
     }
 
@@ -3160,11 +3262,12 @@ class App {
      *
      * @return string|null
      */
-    public function getControllerDefaultAction(string $controller_id): string|null {
+    public function getControllerDefaultAction(string $controller_id): string|null
+    {
         $controller_id = strtolower($controller_id);
-        if(key_exists($controller_id, $this->_register['controllers_default_actions'])){
+        if (key_exists($controller_id, $this->_register['controllers_default_actions'])) {
             return $this->_register['controllers_default_actions'][$controller_id];
-        }else{
+        } else {
             return null;
         }
     }
@@ -3179,7 +3282,8 @@ class App {
      *
      * @return string|null
      */
-    public function controllerDefaultAction(string $controller_id): string|null {
+    public function controllerDefaultAction(string $controller_id): string|null
+    {
         return $this->getControllerDefaultAction($controller_id);
     }
 
@@ -3193,9 +3297,10 @@ class App {
      *
      * @param Definitions\EntityTypeGroup $group The Entity Type Group to register.
      */
-    function registerEntityTypeGroup(Definitions\EntityTypeGroup $group){
-        if(!key_exists($group->entity_class, $this->_register['entity_type_groups']))
-                $this->_register['entity_type_groups'][$group->entity_class] = [];
+    function registerEntityTypeGroup(Definitions\EntityTypeGroup $group)
+    {
+        if (!key_exists($group->entity_class, $this->_register['entity_type_groups']))
+            $this->_register['entity_type_groups'][$group->entity_class] = [];
 
         $this->_register['entity_type_groups'][$group->entity_class][] = $group;
     }
@@ -3208,17 +3313,18 @@ class App {
      *
      * @return Definitions\EntityTypeGroup|null
      */
-    function getRegisteredEntityTypeGroupByTypeId(Entity|string $entity, int $type_id): Definitions\EntityTypeGroup|null {
-        if(is_object($entity))
+    function getRegisteredEntityTypeGroupByTypeId(Entity|string $entity, int $type_id): Definitions\EntityTypeGroup|null
+    {
+        if (is_object($entity))
             $entity = $entity->getClassName();
 
-        if(key_exists($entity, $this->_register['entity_type_groups'])){
-            foreach($this->_register['entity_type_groups'][$entity] as $group){
-                if($group->min_id >= $type_id && $group->max_id <= $type_id)
+        if (key_exists($entity, $this->_register['entity_type_groups'])) {
+            foreach ($this->_register['entity_type_groups'][$entity] as $group) {
+                if ($group->min_id >= $type_id && $group->max_id <= $type_id)
                     return $group;
             }
             return null;
-        }else{
+        } else {
             return null;
         }
     }
@@ -3230,13 +3336,14 @@ class App {
      *
      * @return Definitions\EntityTypeGroup[]
      */
-    function getRegisteredEntityTypeGroupsByEntity(Entity|string $entity): array {
-        if(is_object($entity))
+    function getRegisteredEntityTypeGroupsByEntity(Entity|string $entity): array
+    {
+        if (is_object($entity))
             $entity = $entity->getClassName();
 
-        if(key_exists($entity, $this->_register['entity_type_groups'])){
+        if (key_exists($entity, $this->_register['entity_type_groups'])) {
             return $this->_register['entity_type_groups'][$entity];
-        }else{
+        } else {
             return [];
         }
     }
@@ -3247,8 +3354,9 @@ class App {
      * @param Definitions\EntityType $type 
      * @return void 
      */
-    function registerEntityType(Definitions\EntityType $type){
-        if (!key_exists($type->entity_class, $this->_register['entity_types'])){
+    function registerEntityType(Definitions\EntityType $type)
+    {
+        if (!key_exists($type->entity_class, $this->_register['entity_types'])) {
             $this->_register['entity_types'][$type->entity_class] = [];
         }
 
@@ -3265,7 +3373,8 @@ class App {
      * @throws ReflectionException 
      * @throws MappingException 
      */
-    function getRegisteredEntityTypeById(Entity|string $entity, int|string|null $type_id): Definitions\EntityType|null {
+    function getRegisteredEntityTypeById(Entity|string $entity, int|string|null $type_id): Definitions\EntityType|null
+    {
         if (is_object($entity)) {
             $entity = $entity->getClassName();
         }
@@ -3281,7 +3390,8 @@ class App {
      *
      * @return boolean
      */
-    function entityTypeExists(Entity|string $entity, int|string $type_id): bool {
+    function entityTypeExists(Entity|string $entity, int|string $type_id): bool
+    {
         return !!$this->getRegisteredEntityTypeById($entity, $type_id);
     }
 
@@ -3292,7 +3402,8 @@ class App {
      *
      * @return Definitions\EntityType
      */
-    function getRegisteredEntityType(Entity $entity): Definitions\EntityType|null {
+    function getRegisteredEntityType(Entity $entity): Definitions\EntityType|null
+    {
         return $this->_register['entity_types'][$entity->getClassName()][(string)$entity->type] ?? null;
     }
 
@@ -3306,8 +3417,9 @@ class App {
      * @throws ReflectionException 
      * @throws MappingException 
      */
-    function getRegisteredEntityTypeByTypeName(Entity|string $entity, string $type_name): Definitions\EntityType|null {
-        foreach($this->getRegisteredEntityTypes($entity) as $type) {
+    function getRegisteredEntityTypeByTypeName(Entity|string $entity, string $type_name): Definitions\EntityType|null
+    {
+        foreach ($this->getRegisteredEntityTypes($entity) as $type) {
             if (strtolower($type->name) == trim(strtolower($type_name))) {
                 return $type;
             }
@@ -3323,9 +3435,14 @@ class App {
      *
      * @return Definitions\EntityType[]
      */
-    function getRegisteredEntityTypes(Entity|string $entity): array {
-        if(is_object($entity))
+    function getRegisteredEntityTypes(Entity|string $entity): array
+    {
+        if (is_object($entity))
             $entity = $entity->getClassName();
+
+        usort($this->_register['entity_types'][$entity], function ($a, $b) {
+            return strcmp($a->name, $b->name);
+        });
 
         return $this->_register['entity_types'][$entity] ?? [];
     }
@@ -3342,7 +3459,8 @@ class App {
      * @param RegistrationFieldType $registration_field 
      * @return void 
      */
-    function registerRegistrationFieldType(Definitions\RegistrationFieldType $registration_field) {
+    function registerRegistrationFieldType(Definitions\RegistrationFieldType $registration_field)
+    {
         $this->_register['registration_fields'][$registration_field->slug] = $registration_field;
     }
 
@@ -3351,7 +3469,8 @@ class App {
      * 
      * @return Definitions\RegistrationFieldType[] 
      */
-    function getRegisteredRegistrationFieldTypes(): array {
+    function getRegisteredRegistrationFieldTypes(): array
+    {
         return $this->_register['registration_fields'];
     }
 
@@ -3361,7 +3480,8 @@ class App {
      * @param string $slug 
      * @return RegistrationFieldType|null 
      */
-    function getRegisteredRegistrationFieldTypeBySlug(string $slug): Definitions\RegistrationFieldType|null {
+    function getRegisteredRegistrationFieldTypeBySlug(string $slug): Definitions\RegistrationFieldType|null
+    {
         return $this->_register['registration_fields'][$slug] ?? null;
     }
 
@@ -3378,24 +3498,25 @@ class App {
      * @param string $entity_class 
      * @param int|string|null $entity_type_id
      */
-    function registerMetadata(Definitions\Metadata $metadata, string $entity_class, int|string $entity_type_id = null) {
-        if($entity_class::usesTypes() && is_null($entity_type_id)){
-            foreach($this->getRegisteredEntityTypes($entity_class) as $type){
-                if($type){
-                   $this->registerMetadata($metadata, $entity_class, $type->id);
+    function registerMetadata(Definitions\Metadata $metadata, string $entity_class, int|string $entity_type_id = null)
+    {
+        if ($entity_class::usesTypes() && is_null($entity_type_id)) {
+            foreach ($this->getRegisteredEntityTypes($entity_class) as $type) {
+                if ($type) {
+                    $this->registerMetadata($metadata, $entity_class, $type->id);
                 }
             }
             return;
         }
 
         $key = is_null($entity_type_id) ? $entity_class : $entity_class . ':' . $entity_type_id;
-        if(!key_exists($key, $this->_register['entity_metadata_definitions']))
+        if (!key_exists($key, $this->_register['entity_metadata_definitions']))
             $this->_register['entity_metadata_definitions'][$key] = [];
 
         $this->_register['entity_metadata_definitions'][$key][$metadata->key] = $metadata;
 
-        if($entity_type_id){
-            if(!key_exists($entity_class, $this->_register['entity_metadata_definitions']))
+        if ($entity_type_id) {
+            if (!key_exists($entity_class, $this->_register['entity_metadata_definitions']))
                 $this->_register['entity_metadata_definitions'][$entity_class] = [];
 
             $this->_register['entity_metadata_definitions'][$entity_class][$metadata->key] = $metadata;
@@ -3412,17 +3533,17 @@ class App {
      * 
      * @return void 
      */
-    function unregisterEntityMetadata(string $entity_class, string $key = null) {
-        foreach($this->_register['entity_metadata_definitions'] as $class => $metadata){
-            if($class === $entity_class || strpos($class . ':', $entity_class) === 0){
-                if($key){
+    function unregisterEntityMetadata(string $entity_class, string $key = null)
+    {
+        foreach ($this->_register['entity_metadata_definitions'] as $class => $metadata) {
+            if ($class === $entity_class || strpos($class . ':', $entity_class) === 0) {
+                if ($key) {
                     unset($this->_register['entity_metadata_definitions'][$class][$key]);
                 } else {
                     $this->_register['entity_metadata_definitions'][$class] = [];
                 }
             }
         }
-
     }
 
     /**
@@ -3434,14 +3555,15 @@ class App {
      *
      * @return Definitions\Metadata[]
      */
-    function getRegisteredMetadata(Entity|string $entity, int|Definitions\EntityType $type = null){
+    function getRegisteredMetadata(Entity|string $entity, int|Definitions\EntityType $type = null)
+    {
         if (is_object($entity)) {
             $entity = $entity->getClassName();
         }
 
         $key = $entity::usesTypes() && $type ? "{$entity}:{$type}" : $entity;
 
-        return key_exists($key, $this->_register['entity_metadata_definitions']) ? 
+        return key_exists($key, $this->_register['entity_metadata_definitions']) ?
             $this->_register['entity_metadata_definitions'][$key] : [];
     }
 
@@ -3453,11 +3575,12 @@ class App {
      * @param int $type
      * @return Definitions\Metadata|null
      */
-    function getRegisteredMetadataByMetakey(string $metakey, Entity|string $entity, int $type = null): Definitions\Metadata|null {
+    function getRegisteredMetadataByMetakey(string $metakey, Entity|string $entity, int $type = null): Definitions\Metadata|null
+    {
         if (is_object($entity)) {
             $entity = $entity->getClassName();
         }
-        
+
         $metas = $this->getRegisteredMetadata($entity, $type);
 
         return $metas[$metakey] ?? null;
@@ -3475,10 +3598,11 @@ class App {
      * @param string $controller_id The id of the controller.
      * @param Definitions\FileGroup $group The group to register
      */
-    function registerFileGroup(string $controller_id, Definitions\FileGroup $group){
+    function registerFileGroup(string $controller_id, Definitions\FileGroup $group)
+    {
         $controller_id = strtolower($controller_id);
 
-        if(!key_exists($controller_id, $this->_register['file_groups'])){
+        if (!key_exists($controller_id, $this->_register['file_groups'])) {
             $this->_register['file_groups'][$controller_id] = [];
         }
 
@@ -3495,7 +3619,8 @@ class App {
      *
      * @return Definitions\FileGroup|null The File Group Definition
      */
-    function getRegisteredFileGroup(string $controller_id, string $group_name): Definitions\FileGroup|null {
+    function getRegisteredFileGroup(string $controller_id, string $group_name): Definitions\FileGroup|null
+    {
         return $this->_register['file_groups'][$controller_id][$group_name] ?? null;
     }
 
@@ -3508,7 +3633,8 @@ class App {
      * @throws ReflectionException 
      * @throws MappingException 
      */
-    function getRegisteredFileGroupsByEntity(Entity|string $entity): array {
+    function getRegisteredFileGroupsByEntity(Entity|string $entity): array
+    {
         if (is_object($entity)) {
             $entity = $entity->getClassName();
         }
@@ -3532,7 +3658,8 @@ class App {
      * @param string $name
      * @param string $transformation
      */
-    function registerImageTransformation(string $name, string $transformation) {
+    function registerImageTransformation(string $name, string $transformation)
+    {
         $this->_register['image_transformations'][$name] = trim($transformation);
     }
 
@@ -3543,7 +3670,8 @@ class App {
      *
      * @return string The Transformation Expression
      */
-    function getRegisteredImageTransformation(string $name): string {
+    function getRegisteredImageTransformation(string $name): string
+    {
         return $this->_register['image_transformations'][$name] ?? null;
     }
 
@@ -3559,8 +3687,9 @@ class App {
      * @param string $controller_id The id of the controller.
      * @param Definitions\MetaListGroup $group The group to register
      */
-    function registerMetaListGroup(string $controller_id, Definitions\MetaListGroup $group) {
-        if(!key_exists($controller_id, $this->_register['metalist_groups']))
+    function registerMetaListGroup(string $controller_id, Definitions\MetaListGroup $group)
+    {
+        if (!key_exists($controller_id, $this->_register['metalist_groups']))
             $this->_register['metalist_groups'][$controller_id] = [];
 
         $this->_register['metalist_groups'][$controller_id][$group->name] = $group;
@@ -3576,7 +3705,8 @@ class App {
      *
      * @return Definitions\MetaListGroup|null The MetaList Group Definition
      */
-    function getRegisteredMetaListGroup(string $controller_id, string $group_name): Definitions\MetaListGroup|null {
+    function getRegisteredMetaListGroup(string $controller_id, string $group_name): Definitions\MetaListGroup|null
+    {
         return $this->_register['metalist_groups'][$controller_id][$group_name] ?? null;
     }
 
@@ -3590,8 +3720,9 @@ class App {
      * @throws ReflectionException 
      * @throws MappingException 
      */
-    function getRegisteredMetaListGroupsByEntity(Entity|string $entity): array {
-        if(is_object($entity))
+    function getRegisteredMetaListGroupsByEntity(Entity|string $entity): array
+    {
+        if (is_object($entity))
             $entity = $entity->getClassName();
 
         $controller_id = $this->getControllerIdByEntity($entity);
@@ -3605,7 +3736,8 @@ class App {
      * @param string $entity_class The entity class name to register.
      * @param Definitions\Taxonomy $definition
      */
-    function registerTaxonomy($entity_class, Definitions\Taxonomy $definition) {
+    function registerTaxonomy($entity_class, Definitions\Taxonomy $definition)
+    {
         if (!key_exists($entity_class, $this->_register['taxonomies']['by-entity'])) {
             $this->_register['taxonomies']['by-entity'][$entity_class] = [];
         }
@@ -3623,7 +3755,8 @@ class App {
      *
      * @return Definitions\Taxonomy The Taxonomy Definition
      */
-    function getRegisteredTaxonomyById($taxonomy_id): Definitions\Taxonomy|null {
+    function getRegisteredTaxonomyById($taxonomy_id): Definitions\Taxonomy|null
+    {
         return $this->_register['taxonomies']['by-id'][$taxonomy_id] ?? null;
     }
 
@@ -3634,7 +3767,8 @@ class App {
      *
      * @return Definitions\Taxonomy The Taxonomy Definition
      */
-    function getRegisteredTaxonomyBySlug(string $taxonomy_slug): Definitions\Taxonomy|null {
+    function getRegisteredTaxonomyBySlug(string $taxonomy_slug): Definitions\Taxonomy|null
+    {
         return $this->_register['taxonomies']['by-slug'][$taxonomy_slug] ?? null;
     }
 
@@ -3647,14 +3781,15 @@ class App {
      *
      * @return Definitions\Taxonomy[] The Taxonomy Definitions objects or an empty array
      */
-    function getRegisteredTaxonomies(Entity|string $entity = null): array {
+    function getRegisteredTaxonomies(Entity|string $entity = null): array
+    {
         if (is_object($entity)) {
             $entity = $entity->getClassName();
         }
 
-        if(is_null($entity)){
+        if (is_null($entity)) {
             return $this->_register['taxonomies']['by-slug'];
-        }else{
+        } else {
             return $this->_register['taxonomies']['by-entity'][$entity] ?? [];
         }
     }
@@ -3669,7 +3804,8 @@ class App {
      *
      * @return Definitions\Taxonomy|null The Taxonomy Definition.
      */
-    function getRegisteredTaxonomy(Entity|string $entity, string $taxonomy_slug): Definitions\Taxonomy|null {
+    function getRegisteredTaxonomy(Entity|string $entity, string $taxonomy_slug): Definitions\Taxonomy|null
+    {
         if (is_object($entity)) {
             $entity = $entity->getClassName();
         }
@@ -3688,7 +3824,8 @@ class App {
      * 
      * @param Definitions\EvaluationMethod $def
      */
-    function registerEvaluationMethod(Definitions\EvaluationMethod $def) {
+    function registerEvaluationMethod(Definitions\EvaluationMethod $def)
+    {
         $this->_register['evaluation_method'][$def->slug] = $def;
     }
 
@@ -3700,9 +3837,10 @@ class App {
      * 
      * @return Definitions\EvaluationMethod[];
      */
-    function getRegisteredEvaluationMethods(bool $return_internal = false): array {
-        return array_filter($this->_register['evaluation_method'], function(Definitions\EvaluationMethod $em) use ($return_internal) {
-            if($return_internal || !$em->internal) {
+    function getRegisteredEvaluationMethods(bool $return_internal = false): array
+    {
+        return array_filter($this->_register['evaluation_method'], function (Definitions\EvaluationMethod $em) use ($return_internal) {
+            if ($return_internal || !$em->internal) {
                 return $em;
             }
         });
@@ -3713,7 +3851,8 @@ class App {
      * 
      * @param Definitions\EvaluationMethod $def
      */
-    function unregisterEvaluationMethod(string $slug){
+    function unregisterEvaluationMethod(string $slug)
+    {
         unset($this->_register['evaluation_method'][$slug]);
     }
 
@@ -3724,7 +3863,8 @@ class App {
      *
      * @return Definitions\EvaluationMethod;
      */
-    function getRegisteredEvaluationMethodBySlug(string $slug){
+    function getRegisteredEvaluationMethodBySlug(string $slug)
+    {
         return $this->_register['evaluation_method'][$slug] ?? null;
     }
 
@@ -3736,49 +3876,49 @@ class App {
     /**
      * Aplica os db-uptades
      */
-    function _dbUpdates(){
+    function _dbUpdates()
+    {
         $this->disableAccessControl();
 
         $executed_updates = [];
 
-        foreach($this->repo('DbUpdate')->findAll() as $update)
+        foreach ($this->repo('DbUpdate')->findAll() as $update)
             $executed_updates[] = $update->name;
 
         $updates = include DB_UPDATES_FILE;
 
-        foreach($this->view->path as $path){
+        foreach ($this->view->path as $path) {
             $db_update_file = $path . 'db-updates.php';
-            if(file_exists($db_update_file)){
+            if (file_exists($db_update_file)) {
                 $updates += include $db_update_file;
             }
         }
 
         $new_updates = false;
 
-        foreach($updates as $name => $function){
-            if(!in_array($name, $executed_updates)){
+        foreach ($updates as $name => $function) {
+            if (!in_array($name, $executed_updates)) {
                 $new_updates = true;
                 echo "\nApplying db update \"$name\":";
                 echo "\n-------------------------------------------------------------------------------------------------------\n";
-                try{
-                    if($function() !== false){
+                try {
+                    if ($function() !== false) {
                         $update = new Entities\DbUpdate();
                         $update->name = $name;
                         $update->save();
                     }
-                }catch(\Exception $e){
+                } catch (\Exception $e) {
                     echo "\nERROR " . $e . "\n";
                 }
                 echo "\n-------------------------------------------------------------------------------------------------------\n\n";
             }
         }
 
-        if($new_updates){
+        if ($new_updates) {
             $this->em->flush();
             $this->cache->deleteAll();
         }
 
         $this->enableAccessControl();
     }
-
 }

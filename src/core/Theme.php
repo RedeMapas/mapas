@@ -1,4 +1,5 @@
 <?php
+
 namespace MapasCulturais;
 
 use ArrayObject;
@@ -34,7 +35,8 @@ use MapasCulturais\Entities\Opportunity;
  * @hook **view.render:after ($template_name, $html)** - executed after the render of the template and the layout
  * @hook **view.render({$template_name}):before ($template_name, $html)** - executed after the render of the template and the layout
  */
-abstract class Theme {
+abstract class Theme
+{
     use Traits\MagicGetter,
         Traits\MagicSetter,
         Traits\MagicCallers,
@@ -99,11 +101,12 @@ abstract class Theme {
 
     abstract function getVersion();
 
-    public function __construct(AssetManager $asset_manager) {
+    public function __construct(AssetManager $asset_manager)
+    {
         $this->_assetManager = $asset_manager;
 
         $app = App::i();
-        
+
         $this->documentMeta = new \ArrayObject;
         $this->bodyClasses = new \ArrayObject;
         $this->bodyProperties = new \ArrayObject;
@@ -111,7 +114,7 @@ abstract class Theme {
         $this->jsObject = new \ArrayObject;
         $this->jsObject['baseURL'] = $app->baseUrl;
         $this->jsObject['assetURL'] = $app->assetUrl;
-        $this->jsObject['maxUploadSize'] = $app->getMaxUploadSize($useSuffix=false);
+        $this->jsObject['maxUploadSize'] = $app->getMaxUploadSize($useSuffix = false);
         $this->jsObject['maxUploadSizeFormatted'] = $app->getMaxUploadSize();
         $this->jsObject['EntitiesDescription'] = [];
         $this->jsObject['config'] = [
@@ -120,20 +123,20 @@ abstract class Theme {
             'currency' => $app->config['app.currency']
         ];
         $this->jsObject['routes'] = $app->config['routes'];
-        
-        $app->hook('app.init:after', function(){
+
+        $app->hook('app.init:after', function () {
             $this->view->jsObject['userId'] = $this->user->is('guest') ? null : $this->user->id;
             $this->view->jsObject['user'] = $this->user;
         });
 
-        $app->hook('app.register', function() use($app){
+        $app->hook('app.register', function () use ($app) {
             $def = new Definitions\Metadata('sentNotification', ['label' => 'Notificação enviada', 'type' => 'boolean']);
 
             $app->registerMetadata($def, 'MapasCulturais\Entities\Agent');
             $app->registerMetadata($def, 'MapasCulturais\Entities\Space');
         });
-        
-        $app->hook('mapas.printJsObject:before', function () use($app) {
+
+        $app->hook('mapas.printJsObject:before', function () use ($app) {
             if ($app->view->version >= 2) {
                 $this->jsObject['request'] = [
                     'controller' => $app->view->controller->id,
@@ -143,7 +146,7 @@ abstract class Theme {
 
                 $this->jsObject['request']['id'] = $app->view->controller->data['id'] ?? null;
             }
-          
+
             $this->jsObject['EntitiesDescription'] = [
                 "user"          => Entities\User::getPropertiesMetadata(),
                 "agent"         => Entities\Agent::getPropertiesMetadata(),
@@ -159,12 +162,12 @@ abstract class Theme {
             ];
 
             $taxonomies = [];
-            foreach($app->getRegisteredTaxonomies() as $slug => $definition) {
+            foreach ($app->getRegisteredTaxonomies() as $slug => $definition) {
                 $taxonomy = $definition->jsonSerialize();
                 $taxonomy['terms'] = array_values($taxonomy['restrictedTerms']);
 
                 unset($taxonomy['id'], $taxonomy['slug'], $taxonomy['restrictedTerms']);
-                
+
                 $taxonomies[$slug] = $taxonomy;
             }
             $this->jsObject['Taxonomies'] = $taxonomies;
@@ -176,12 +179,12 @@ abstract class Theme {
         $self = $this;
         $class = get_called_class();
 
-        $app->hook('app.modules.init:after', function() use($class, $self){
+        $app->hook('app.modules.init:after', function () use ($class, $self) {
             $reflaction = new \ReflectionClass($class);
-        
-            while($reflaction->getName() != __CLASS__){
+
+            while ($reflaction->getName() != __CLASS__) {
                 $dir = dirname($reflaction->getFileName());
-                if($dir != __DIR__) {
+                if ($dir != __DIR__) {
                     $self->addPath($dir);
                 }
                 $reflaction = $reflaction->getParentClass();
@@ -189,19 +192,19 @@ abstract class Theme {
         }, 100);
 
 
-        $app->hook('app.init:after', function () use($app) {
-            if(!$app->user->is('guest') && $app->user->profile->status < 1){
-                if($app->view->version < 2) {
-                    $app->hook('view.partial(nav-main-user).params', function($params, &$name){
+        $app->hook('app.init:after', function () use ($app) {
+            if (!$app->user->is('guest') && $app->user->profile->status < 1) {
+                if ($app->view->version < 2) {
+                    $app->hook('view.partial(nav-main-user).params', function ($params, &$name) {
                         $name = 'header-profile-link';
                     });
                 }
-                
+
                 // redireciona o usuário para a edição do perfil se este não estiver publicado
-                $app->hook('GET(panel.<<*>>):before, GET(<<*>>.<<edit|create>>):before', function() use($app){
-                    if($entity = $this->requestedEntity) {
+                $app->hook('GET(panel.<<*>>):before, GET(<<*>>.<<edit|create>>):before', function () use ($app) {
+                    if ($entity = $this->requestedEntity) {
                         /** @var \MapasCulturais\Entity $entity */
-                        if(!$entity->equals($app->user->profile)){
+                        if (!$entity->equals($app->user->profile)) {
                             $app->redirect($app->user->profile->editUrl);
                         }
                     } else {
@@ -213,24 +216,25 @@ abstract class Theme {
 
 
         $reflaction = new \ReflectionClass(get_class($this));
-        
-        while($reflaction->getName() != __CLASS__){
+
+        while ($reflaction->getName() != __CLASS__) {
             $dir = dirname($reflaction->getFileName());
-            if($dir != __DIR__) {
+            if ($dir != __DIR__) {
                 i::addReplacements($dir . '/translations/replacements');
             }
             $reflaction = $reflaction->getParentClass();
         }
     }
 
-    function init(){
+    function init()
+    {
         $app = App::i();
         $app->applyHookBoundTo($this, 'theme.init:before');
         $this->_init();
         $app->applyHookBoundTo($this, 'theme.init:after');
     }
 
-    
+
     /**
      * Nome do último arquivo que teve o log de texto impresso.     * 
      * @var string
@@ -274,15 +278,16 @@ abstract class Theme {
      * 
      * @return string 
      */
-    function text(string $name, string $default_localized_text) {
+    function text(string $name, string $default_localized_text)
+    {
         $app = App::i();
 
-        $bt = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS,1);
+        $bt = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 1);
         $caller_filename = $bt[0]['file'];
 
         if ($conf = $app->_config['app.log.texts']) {
             $filename = str_replace(APPLICATION_PATH, '', $caller_filename);
-            if($filename != $this->__previousLoggedFilename) {
+            if ($filename != $this->__previousLoggedFilename) {
                 $this->__previousLoggedFilename = $filename;
                 $app->log->debug("text > \033[37m{$filename}\033[0m");
             }
@@ -294,7 +299,7 @@ abstract class Theme {
         $action = $this->controller->action;
 
         // TEMPLATE PART
-        if(preg_match("#layouts/parts/(.*?)\.php$#", $caller_filename, $matches)){
+        if (preg_match("#layouts/parts/(.*?)\.php$#", $caller_filename, $matches)) {
             $match = $matches[1];
             $keys = [
                 "text:{$controller_id}.{$action}.part($match).title",
@@ -303,8 +308,8 @@ abstract class Theme {
                 "text:part($match).title",
             ];
 
-        // LAYOUT
-        }elseif(preg_match("#layouts/([^/]*?)\.php$#", $caller_filename, $matches)) {
+            // LAYOUT
+        } elseif (preg_match("#layouts/([^/]*?)\.php$#", $caller_filename, $matches)) {
             $match = $matches[1];
             $keys = [
                 "text:{$controller_id}.{$action}.layout({$match}).{$name}",
@@ -313,8 +318,8 @@ abstract class Theme {
                 "text:layout({$match}).{$name}",
             ];
 
-        // VIEWS
-        }elseif(preg_match("#views/([^/]*?)\.php$#", $caller_filename, $matches)) {
+            // VIEWS
+        } elseif (preg_match("#views/([^/]*?)\.php$#", $caller_filename, $matches)) {
             $match = $matches[1];
             $keys = [
                 "text:{$controller_id}.{$action}.view({$match}).{$name}",
@@ -323,7 +328,7 @@ abstract class Theme {
                 "text:view({$match}).{$name}",
             ];
 
-        // COMPONENTS
+            // COMPONENTS
         } else if (preg_match("#components/([^/]+)/[^/]+.php#", $caller_filename, $matches)) {
             $match = $matches[1];
             $keys = [
@@ -334,14 +339,14 @@ abstract class Theme {
             ];
         }
 
-        foreach($keys as $key) {
+        foreach ($keys as $key) {
             if ($conf = $app->_config['app.log.texts']) {
-                if(is_bool($conf) || preg_match('#' . str_replace('*', '.*', $conf) . '#i', $key)){
+                if (is_bool($conf) || preg_match('#' . str_replace('*', '.*', $conf) . '#i', $key)) {
                     $app->log->debug("text >> \033[33m{$key}\033[0m");
                 }
             }
 
-            if($text = $app->_config[$key] ?? false) {
+            if ($text = $app->_config[$key] ?? false) {
                 return $text;
             }
         }
@@ -356,7 +361,8 @@ abstract class Theme {
      *
      * @param bool $val
      */
-    public function setPartial($val){
+    public function setPartial($val)
+    {
         $this->_partial = $val;
     }
 
@@ -364,7 +370,8 @@ abstract class Theme {
      * Sets the layout property.
      * @param string $name
      */
-    public function setLayout($name){
+    public function setLayout($name)
+    {
         $this->controller->layout = $name;
     }
 
@@ -373,7 +380,8 @@ abstract class Theme {
      *
      * @param \MapasCulturais\Controller $controller the controller.
      */
-    public function setController(\MapasCulturais\Controller $controller){
+    public function setController(\MapasCulturais\Controller $controller)
+    {
         $this->controller = $controller;
     }
 
@@ -387,7 +395,8 @@ abstract class Theme {
      * @param string $template the template name.
      * @return string The rendered template
      */
-    public function render($template, array $data = []){
+    public function render($template, array $data = [])
+    {
         $app = App::i();
 
         $this->template = $template;
@@ -395,9 +404,9 @@ abstract class Theme {
         $this->data = $data;
 
         if ($this->_partial) {
-            $output = $this->partialRender ($template, $data);
+            $output = $this->partialRender($template, $data);
         } else {
-            $output = $this->fullRender ($template, $data);
+            $output = $this->fullRender($template, $data);
         }
 
         $app->response->getBody()->write($output);
@@ -420,31 +429,32 @@ abstract class Theme {
      *
      * @return string The rendered template.
      */
-    public function fullRender($__template, $data = null){
+    public function fullRender($__template, $data = null)
+    {
         $app = App::i();
 
         $__template_filename = strtolower(substr($__template, -4)) === '.php' ? $__template : $__template . '.php';
         $render_data = [];
 
-        foreach($data as $k => $val){
+        foreach ($data as $k => $val) {
             $render_data[$k] = $val;
             $$k = $val;
         }
 
         $controller = $this->controller;
-        
+
         $this->bodyClasses[] = "controller-{$controller->id}";
         $this->bodyClasses[] = "action-{$controller->action}";
         $this->bodyClasses[] = "layout-{$controller->layout}";
-        
-	    if(isset($entity)){
+
+        if (isset($entity)) {
             $this->bodyClasses[] = 'entity';
         }
 
         // render the template
         $__templatePath = $this->resolveFilename('views', $__template_filename);
 
-        if(!$__templatePath){
+        if (!$__templatePath) {
             throw new \Exception("Template $__template_filename not found");
         }
 
@@ -459,15 +469,15 @@ abstract class Theme {
         // render the layout with template
         $__layoutPath = $this->resolveFilename('layouts', $__layout_filename);
 
-        if(strtolower(substr($__layoutPath, -4)) !== '.php')
-                $__layoutPath .= '.php';
+        if (strtolower(substr($__layoutPath, -4)) !== '.php')
+            $__layoutPath .= '.php';
 
-        ob_start(function($output){
+        ob_start(function ($output) {
             return $output;
         });
 
         $app->applyHookBoundTo($this, 'view.renderLayout(' . $controller->layout . '):before', ['template' => $__template_name]);
-        
+
         include $__layoutPath;
 
         $app->applyHookBoundTo($this, 'view.renderLayout(' . $controller->layout . '):after', ['template' => $__template_name]);
@@ -496,54 +506,52 @@ abstract class Theme {
      *
      * @return string The rendered template.
      */
-    public function partialRender($__template, $__data = [], $_is_part = false){
+    public function partialRender($__template, $__data = [], $_is_part = false)
+    {
         $app = App::i();
-        
-        if($__data instanceof \Slim\Helper\Set){
+
+        if ($__data instanceof \Slim\Helper\Set) {
             $_data = $__data;
             $__data = [];
-            
-            foreach($_data->keys() as $k){
+
+            foreach ($_data->keys() as $k) {
                 $__data[$k] = $_data->get($k);
             }
-
         }
-        
+
         $app->applyHookBoundTo($this, 'view.partial(' . $__template . ').params', [&$__data, &$__template]);
 
-        if(strtolower(substr($__template, -4)) === '.php'){
+        if (strtolower(substr($__template, -4)) === '.php') {
             $__template_filename = $__template;
             $__template = substr($__template, 0, -4);
         } else {
             $__template_filename = $__template . '.php';
         }
-        
-        if(is_array($__data)){
+
+        if (is_array($__data)) {
             extract($__data);
         }
 
         // render the template
-        if($_is_part){
+        if ($_is_part) {
             $__templatePath = $this->resolveFilename('layouts', 'parts/' . $__template_filename);
-        }else{
+        } else {
             $__templatePath = $this->resolveFilename('views', $__template_filename);
-
         }
-        
-        if(!$__templatePath){
+
+        if (!$__templatePath) {
             throw new \Exception("Template $__template_filename not found");
-
         }
 
-        $__template_name = substr(preg_replace('#^'.$this->templatesDirectory.'/?#', '', $__templatePath),0,-4);
+        $__template_name = substr(preg_replace('#^' . $this->templatesDirectory . '/?#', '', $__templatePath), 0, -4);
 
 
         $app->applyHookBoundTo($this, 'view.partial(' . $__template . '):before', ['template' => $__template]);
 
-        ob_start(function($output){
+        ob_start(function ($output) {
             return $output;
         });
-        
+
         if ($app->mode == APPMODE_DEVELOPMENT) {
             $template_debug = str_replace(THEMES_PATH, '', $__template_name);
             $template_debug = str_replace(MODULES_PATH, 'modules/', $template_debug);
@@ -552,7 +560,7 @@ abstract class Theme {
         }
 
         include $__templatePath;
-        
+
         if ($app->mode == APPMODE_DEVELOPMENT) {
             echo '<!-- ' . $template_debug . ".php # END -->";
         }
@@ -577,21 +585,23 @@ abstract class Theme {
      * @param string $template
      * @param array $data Data to be passed to template part.
      */
-    public function part($template, $data = []){
+    public function part($template, $data = [])
+    {
         echo $this->partialRender($template, $data, true);
     }
 
-    function getTitle($entity = null){
+    function getTitle($entity = null)
+    {
         $app = App::i();
         $title = '';
-        if($entity){
+        if ($entity) {
             $title = $entity->name . ' - ' . $app->siteName;
-        }elseif($this->controller->id == 'site' && $this->controller->action === 'index'){
+        } elseif ($this->controller->id == 'site' && $this->controller->action === 'index') {
             $title = $app->siteName;
-        }elseif($this->controller->id == 'panel' && $this->controller->action === 'index'){
+        } elseif ($this->controller->id == 'panel' && $this->controller->action === 'index') {
             $title = $app->getReadableName('panel');
-        }else{
-            $title =$app->getReadableName($this->controller->action);
+        } else {
+            $title = $app->getReadableName($this->controller->action);
         }
 
         $app->applyHookBoundTo($this, 'mapasculturais.getTitle', [&$title]);
@@ -599,8 +609,9 @@ abstract class Theme {
         return $title;
     }
 
-    function addPath($path){
-        if(substr($path,-1) !== '/') $path .= '/';
+    function addPath($path)
+    {
+        if (substr($path, -1) !== '/') $path .= '/';
 
         $this->path[] = (string) $path;
     }
@@ -609,28 +620,31 @@ abstract class Theme {
      *
      * @return \MapasCulturais\AssetManager
      */
-    function getAssetManager(){
+    function getAssetManager()
+    {
         return $this->_assetManager;
     }
 
-    function enqueueScript($group, $script_name, $script_filename, array $dependences = []){
+    function enqueueScript($group, $script_name, $script_filename, array $dependences = [])
+    {
         $app = App::i();
-        if($app->config['app.log.assets']){
+        if ($app->config['app.log.assets']) {
             $dep = implode(', ', $dependences);
             $app->log->debug("enqueueScript ({$group}) {$script_name} : {$script_filename} ({$dep})");
         }
         $this->_assetManager->enqueueScript($group, $script_name, $script_filename, $dependences);
     }
 
-    function enqueueStyle($group, $style_name, $style_filename, array $dependences = [], $media = 'all'){
+    function enqueueStyle($group, $style_name, $style_filename, array $dependences = [], $media = 'all')
+    {
         $app = App::i();
-        if($app->config['app.log.assets']){
+        if ($app->config['app.log.assets']) {
             $dep = implode(', ', $dependences);
             $app->log->debug("enqueueScript ({$group}) {$style_name} : {$style_filename} ({$dep})");
         }
         $this->_assetManager->enqueueStyle($group, $style_name, $style_filename, $dependences, $media);
     }
-    
+
     /**
      * Add localization strings to a javascript object
      *
@@ -647,26 +661,27 @@ abstract class Theme {
      * @param string $group All strings will be grouped in this property. Make this unique to avoid conflict with other scripts
      * @param array $vars Array with translated strgins with key beeing the variable name anda value beeing the translated string
      */
-    public function localizeScript($group, $vars) {
-        
+    public function localizeScript($group, $vars)
+    {
+
         if (!is_string($group) || empty($group))
             throw new \Exception('localizeScript expects $group to be a string');
-        
+
         if (!is_array($vars))
             throw new \Exception('localizeScript expects $vars to be an array');
-        
+
         if (!isset($this->jsObject['gettext']))
             $this->jsObject['gettext'] = [];
-        
-        if ( isset($this->jsObject['gettext'][$group]) && is_array($this->jsObject['gettext'][$group]) ) {
+
+        if (isset($this->jsObject['gettext'][$group]) && is_array($this->jsObject['gettext'][$group])) {
             $this->jsObject['gettext'][$group] = array_merge($vars, $this->jsObject['gettext'][$group]);
         } else {
             $this->jsObject['gettext'][$group] = $vars;
         }
-        
     }
 
-    function printJsObject (string $var_name = 'Mapas', bool $print_script_tag = true) {
+    function printJsObject(string $var_name = 'Mapas', bool $print_script_tag = true)
+    {
         $app = App::i();
         $app->applyHookBoundTo($this, 'mapas.printJsObject:before');
 
@@ -687,19 +702,22 @@ abstract class Theme {
         $app->applyHookBoundTo($this, 'mapas.printJsObject:after');
     }
 
-    function printScripts($group){
+    function printScripts($group)
+    {
         $this->_assetManager->printScripts($group);
     }
 
-    function printStyles($group){
+    function printStyles($group)
+    {
         $this->_assetManager->printStyles($group);
     }
 
-    function printDocumentMeta(){
-        
-        foreach($this->documentMeta as $metacfg){
+    function printDocumentMeta()
+    {
+
+        foreach ($this->documentMeta as $metacfg) {
             $meta = "\n <meta";
-            foreach($metacfg as $prop => $val){
+            foreach ($metacfg as $prop => $val) {
                 $val = htmlentities((string) $val);
                 $meta .= " {$prop}=\"{$val}\"";
             }
@@ -708,13 +726,14 @@ abstract class Theme {
         }
     }
 
-    function resolveFilename($folder, $file){
-        if(!substr($folder, -1) !== '/') $folder .= '/';
+    function resolveFilename($folder, $file)
+    {
+        if (!substr($folder, -1) !== '/') $folder .= '/';
 
         $path = $this->path->getArrayCopy();
 
-        foreach($path as $dir){
-            if(file_exists($dir . $folder . $file)){
+        foreach ($path as $dir) {
+            if (file_exists($dir . $folder . $file)) {
                 return $dir . $folder . $file;
             }
         }
@@ -722,49 +741,52 @@ abstract class Theme {
         return null;
     }
 
-    function getAssetFilename($file){
+    function getAssetFilename($file)
+    {
         $filename = $this->resolveFilename('assets', $file);
-        if(!$filename) throw new \Exception('Asset not found: ' . $file);
+        if (!$filename) throw new \Exception('Asset not found: ' . $file);
 
         return $filename;
     }
 
-    function asset($file, $print = true, $include_hash_in_filename = true){
+    function asset($file, $print = true, $include_hash_in_filename = true)
+    {
         $app = App::i();
         $app->applyHook('asset(' . $file . ')', [&$file]);
         $url = $this->getAssetManager()->assetUrl($file, $include_hash_in_filename);
 
         $app->applyHook('asset(' . $file . '):url', [&$url]);
 
-        if($print){
+        if ($print) {
             echo $url;
         }
 
         return $url;
     }
 
-    function renderMarkdown($markdown){
+    function renderMarkdown($markdown)
+    {
         $app = App::i();
         $matches = [];
-        if(preg_match_all('#\{\{asset:([^\}]+)\}\}#', $markdown, $matches)){
-            foreach($matches[0] as $i => $tag){
+        if (preg_match_all('#\{\{asset:([^\}]+)\}\}#', $markdown, $matches)) {
+            foreach ($matches[0] as $i => $tag) {
                 $markdown = str_replace($tag, $this->asset($matches[1][$i], false), $markdown);
             }
         }
 
-        if(method_exists($this, 'dict') && preg_match_all('#\{\{dict:([^\}]+)\}\}#', $markdown, $matches)){
-            foreach($matches[0] as $i => $tag){
+        if (method_exists($this, 'dict') && preg_match_all('#\{\{dict:([^\}]+)\}\}#', $markdown, $matches)) {
+            foreach ($matches[0] as $i => $tag) {
                 $markdown = str_replace($tag, $this->dict(trim($matches[1][$i]), false), $markdown);
             }
         }
 
-        if(preg_match_all('#\{\{downloads:([^\}]+)\}\}#', $markdown, $matches)){
+        if (preg_match_all('#\{\{downloads:([^\}]+)\}\}#', $markdown, $matches)) {
             $subsite = $app->getCurrentSubsite();
             $files = $subsite->getFiles('downloads');
-            if($subsite) {
-                foreach($matches[0] as $i => $tag){
-                    foreach($files as $file) {
-                        if($file->description == $matches[1][$i]) {
+            if ($subsite) {
+                foreach ($matches[0] as $i => $tag) {
+                    foreach ($files as $file) {
+                        if ($file->description == $matches[1][$i]) {
                             $markdown = str_replace($tag, $file->url, $markdown);
                             break;
                         }
@@ -777,33 +799,38 @@ abstract class Theme {
         return \Michelf\MarkdownExtra::defaultTransform($markdown);
     }
 
-    function isEditable(){
-        $result = $this->controller->action == 'edit' || $this->controller->action == 'create'|| $this->editable ?? false;
+    function isEditable()
+    {
+        $result = $this->controller->action == 'edit' || $this->controller->action == 'create' || $this->editable ?? false;
 
         App::i()->applyHookBoundTo($this, 'mapasculturais.isEditable', [&$result]);
 
         return $result;
     }
 
-    function isSearch(){
+    function isSearch()
+    {
         return (bool) $this->controller->id === 'site' && $this->action === 'search';
     }
 
     public $insideBody = false;
 
-    function bodyBegin(){
+    function bodyBegin()
+    {
         $this->insideBody = true;
         App::i()->applyHook('mapasculturais.body:before');
-        $this->applyTemplateHook('body','begin');
+        $this->applyTemplateHook('body', 'begin');
     }
 
-    function bodyEnd(){
-        $this->applyTemplateHook('body','end');
+    function bodyEnd()
+    {
+        $this->applyTemplateHook('body', 'end');
         App::i()->applyHook('mapasculturais.body:after');
         $this->insideBody = false;
     }
 
-    function bodyProperties(){
+    function bodyProperties()
+    {
         $body_properties = [];
 
         foreach ($this->bodyProperties as $key => $val)
@@ -814,20 +841,21 @@ abstract class Theme {
         echo implode(' ', $body_properties);
     }
 
-    function head(){
+    function head()
+    {
         $app = App::i();
 
         $app->applyHook('mapasculturais.head');
 
         $this->printDocumentMeta();
-
     }
-    
-    function applyTemplateHook($name, $sufix = '', $args = []){
+
+    function applyTemplateHook($name, $sufix = '', $args = [])
+    {
         $app = App::i();
 
         $hook = "template({$this->controller->id}.{$this->controller->action}.$name)";
-        if($sufix){
+        if ($sufix) {
             $hook .= ':' . $sufix;
         }
 
@@ -836,7 +864,7 @@ abstract class Theme {
         }
         $app->applyHookBoundTo($this, $hook, $args);
     }
-    
+
     /**
      * Replace links in text with html links
      *
@@ -846,45 +874,46 @@ abstract class Theme {
      * @param  bool $force By default will check for isEditable and only add links if not on edit mode. Set force to true to force replace
      * @return string
      */
-    function autoLinkString($text, $force = false) {
-       
+    function autoLinkString($text, $force = false)
+    {
+
         if ($this->isEditable() && true !== $force)
             return $text;
-        
-        return preg_replace('@(http)?(s)?(://)?(([-\w]+\.)+([^\s]+)+[^,.\s])@', '<a href="http$2://$4" rel="noopener noreferrer">$1$2$3$4</a>', $text);
-        
-    }    
 
-    function addRequestedEntityToJs(string $entity_class_name = null, int $entity_id = null) {
+        return preg_replace('@(http)?(s)?(://)?(([-\w]+\.)+([^\s]+)+[^,.\s])@', '<a href="http$2://$4" rel="noopener noreferrer">$1$2$3$4</a>', $text);
+    }
+
+    function addRequestedEntityToJs(string $entity_class_name = null, int $entity_id = null)
+    {
         $entity_class_name = $entity_class_name ?: $this->controller->entityClassName ?? null;
         $entity_id = $entity_id ?: $this->controller->data['id'] ?? null;
-        
+
         $_entity = $entity_class_name::getHookClassPath();
 
         if ($entity_class_name && $entity_id) {
             $app = App::i();
             $query_params = [
-                '@select' => '*', 
-                'id' => "EQ({$entity_id})", 
-                '@permissions'=>'view', 
+                '@select' => '*',
+                'id' => "EQ({$entity_id})",
+                '@permissions' => 'view',
             ];
 
-            if($entity_class_name == EvaluationMethodConfiguration::class) {
+            if ($entity_class_name == EvaluationMethodConfiguration::class) {
                 unset($query_params['@permissions']);
             }
 
-            if(property_exists ($entity_class_name, 'status')) {
-                $query_params['status'] = 'GTE(-10)'; 
+            if (property_exists($entity_class_name, 'status')) {
+                $query_params['status'] = 'GTE(-10)';
             }
 
-            if(property_exists ($entity_class_name, 'project')) {
+            if (property_exists($entity_class_name, 'project')) {
                 $query_params['@select'] .= ',project.{name,type,files.avatar,terms,seals}';
             }
 
-            if(property_exists ($entity_class_name, 'evaluationMethodConfiguration')) {
+            if (property_exists($entity_class_name, 'evaluationMethodConfiguration')) {
                 $query_params['@select'] .= ',evaluationMethodConfiguration.*';
             }
-            
+
             if ($entity_class_name::usesAgentRelation()) {
                 $query_params['@select'] .= ',agentRelations';
             }
@@ -904,7 +933,7 @@ abstract class Theme {
 
             $e = $query->findOne();
 
-            if(property_exists ($entity_class_name, 'opportunity')) {
+            if (property_exists($entity_class_name, 'opportunity')) {
                 $query = $app->em->createQuery("
                     SELECT o FROM                             
                         MapasCulturais\\Entities\\Opportunity o
@@ -913,11 +942,11 @@ abstract class Theme {
                 $query->setParameter('id', $e['id']);
                 $opportunity = $query->getSingleResult();
                 $e['opportunity'] = $opportunity->simplify('id,name,type,files,terms,seals');
-                if($opportunity->parent){
+                if ($opportunity->parent) {
                     $e['opportunity']->parent = $opportunity->parent->simplify('id,name,type,files,terms,seals');
                 }
             }
-            
+
 
             if ($entity_class_name == Entities\Agent::class) {
                 $owner_prop = 'parent';
@@ -936,35 +965,35 @@ abstract class Theme {
             } else {
                 $owner_prop = 'owner';
             }
-            
+
             if ($owner_id = $e[$owner_prop] ?? false) {
                 $owner_query_params = [
-                    '@select' => 'name, terms, files.avatar, singleUrl, shortDescription', 
-                    'id' => "EQ({$owner_id})", 
+                    '@select' => 'name, terms, files.avatar, singleUrl, shortDescription',
+                    'id' => "EQ({$owner_id})",
                     'status' => 'GTE(-10)',
-                    '@permissions'=>'view', 
+                    '@permissions' => 'view',
                 ];
-                $app->applyHookBoundTo($this,"view.requestedEntity($_entity).owner.params", [&$owner_query_params, $entity_class_name, $entity_id]);
+                $app->applyHookBoundTo($this, "view.requestedEntity($_entity).owner.params", [&$owner_query_params, $entity_class_name, $entity_id]);
                 $query = new ApiQuery(Entities\Agent::class, $owner_query_params);
                 $query->__useDQLCache = false;
                 $owner = $query->findOne();
                 $e[$owner_prop] = $owner;
             }
 
-            if($owner_prop != 'parent' && $entity_class_name::usesNested() && !empty($e['parent'])) {
+            if ($owner_prop != 'parent' && $entity_class_name::usesNested() && !empty($e['parent'])) {
                 $parent_query_params = [
-                    '@select' => 'name, terms, files.avatar, singleUrl, shortDescription', 
-                    'id' => "EQ({$e['parent']})", 
+                    '@select' => 'name, terms, files.avatar, singleUrl, shortDescription',
+                    'id' => "EQ({$e['parent']})",
                     'status' => 'GTE(-10)',
-                    '@permissions'=>'view', 
+                    '@permissions' => 'view',
                 ];
-                $app->applyHookBoundTo($this,"view.requestedEntity($_entity).parent.params", [&$parent_query_params, $entity_class_name, $entity_id]);
+                $app->applyHookBoundTo($this, "view.requestedEntity($_entity).parent.params", [&$parent_query_params, $entity_class_name, $entity_id]);
                 $query = new ApiQuery($entity_class_name, $parent_query_params);
                 $query->__useDQLCache = false;
                 $parent = $query->findOne();
                 $e['parent'] = $parent;
             }
-            
+
             $e['controllerId'] = $app->getControllerIdByEntity($entity_class_name);
 
             // adiciona as permissões do usuário sobre a entidade:
@@ -972,7 +1001,7 @@ abstract class Theme {
                 $entity = $app->repo($entity_class_name)->find($entity_id);
                 $permissions_list = $entity_class_name::getPermissionsList();
                 $permissions = [];
-                foreach($permissions_list as $action) {
+                foreach ($permissions_list as $action) {
                     $permissions[$action] = $entity->canUser($action);
                 }
 
@@ -983,7 +1012,7 @@ abstract class Theme {
                 $entity = $app->repo(Agent::class)->find($profile_id);
                 $permissions_list = Agent::getPermissionsList();
                 $permissions = [];
-                foreach($permissions_list as $action) {
+                foreach ($permissions_list as $action) {
                     $permissions[$action] = $entity->canUser($action);
                 }
 
@@ -991,9 +1020,8 @@ abstract class Theme {
             }
 
             $app->applyHookBoundTo($this, "view.requestedEntity($_entity).result", [&$e, $entity_class_name, $entity_id]);
-            
+
             $this->jsObject['requestedEntity'] = $e;
         }
     }
-    
 }

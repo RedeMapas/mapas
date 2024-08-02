@@ -1,4 +1,5 @@
 <?php
+
 namespace MapasCulturais;
 
 use Respect\Validation\Validator as v;
@@ -49,7 +50,8 @@ use Doctrine\Common\Collections\Criteria;
  * @hook **entity({$entity_class}).update:after** - Executed after an entity of class $entity_class is updated.
  *
  */
-abstract class Entity implements \JsonSerializable{
+abstract class Entity implements \JsonSerializable
+{
     use Traits\MagicGetter,
         Traits\MagicSetter,
         Traits\MagicCallers;
@@ -71,7 +73,7 @@ abstract class Entity implements \JsonSerializable{
     private static $_jsonSerializeNestedObjects = [];
 
     public $_changes = [];
-    
+
     /**
      * enable or disable the usage of magic getter hook to filter properties values
      */
@@ -85,46 +87,49 @@ abstract class Entity implements \JsonSerializable{
      *
      * @hook **entity(<<Entity>>).new** - Executed when the __construct method of the $entity_class is called.
      */
-    public function __construct() {
+    public function __construct()
+    {
         $app = App::i();
 
-        foreach($app->em->getClassMetadata($this->getClassName())->associationMappings as $field => $conf){
-            if($conf['type'] === 4){
+        foreach ($app->em->getClassMetadata($this->getClassName())->associationMappings as $field => $conf) {
+            if ($conf['type'] === 4) {
                 $this->$field = new \Doctrine\Common\Collections\ArrayCollection;
             }
         }
 
-        foreach($app->em->getClassMetadata($this->getClassName())->fieldMappings as $field => $conf){
+        foreach ($app->em->getClassMetadata($this->getClassName())->fieldMappings as $field => $conf) {
 
-            if($conf['type'] == 'point'){
-                $this->$field = new Types\GeoPoint(0,0);
+            if ($conf['type'] == 'point') {
+                $this->$field = new Types\GeoPoint(0, 0);
             }
         }
 
-        if(property_exists($this, 'createTimestamp')) {
+        if (property_exists($this, 'createTimestamp')) {
             $this->createTimestamp = new \DateTime;
         }
 
-        if(property_exists($this, 'updateTimestamp')) {
+        if (property_exists($this, 'updateTimestamp')) {
             $this->updateTimestamp = new \DateTime;
         }
 
-        if($this->usesOwnerAgent() && !$app->user->is('guest')){
+        if ($this->usesOwnerAgent() && !$app->user->is('guest')) {
             $this->setOwner($app->user->profile);
         }
-
     }
 
 
-    function __toString() {
+    function __toString()
+    {
         return $this->getClassName() . ':' . $this->id;
     }
 
-    static function isPrivateEntity(){
+    static function isPrivateEntity()
+    {
         return false;
     }
 
-    function refresh(){
+    function refresh()
+    {
         App::i()->em->refresh($this);
     }
 
@@ -133,56 +138,61 @@ abstract class Entity implements \JsonSerializable{
      * 
      * @return self
      */
-    function refreshed() {
+    function refreshed()
+    {
         return $this->repo()->find($this->id);
     }
 
-    function equals($entity){
+    function equals($entity)
+    {
         return is_object($entity) && $entity instanceof Entity && $entity->getClassName() === $this->getClassName() && $entity->id === $this->id;
     }
 
-    function isNew(){
+    function isNew()
+    {
         return App::i()->em->getUnitOfWork()->getEntityState($this) === \Doctrine\ORM\UnitOfWork::STATE_NEW;
     }
 
-    function isArchived(){
+    function isArchived()
+    {
         return $this->status === self::STATUS_ARCHIVED;
     }
 
-    function simplify($properties = 'id,name'){
+    function simplify($properties = 'id,name')
+    {
         $e = new \stdClass;
         $e->{'@entityType'} = $this->getControllerId();
 
-        $properties = is_string($properties) ? explode(',',$properties) : $properties;
-        if(is_array($properties)){
-            foreach($properties as $prop){
-                switch ($prop){
+        $properties = is_string($properties) ? explode(',', $properties) : $properties;
+        if (is_array($properties)) {
+            foreach ($properties as $prop) {
+                switch ($prop) {
                     case 'className':
                         $e->className = $this->getClassName();
-                    break;
+                        break;
 
                     case 'avatar':
-                        if($this->usesAvatar()){
+                        if ($this->usesAvatar()) {
                             $e->avatar = [];
-                            if($avatar = $this->avatar){
-                                foreach($avatar->files as $transformation => $f){
+                            if ($avatar = $this->avatar) {
+                                foreach ($avatar->files as $transformation => $f) {
                                     $e->avatar[$transformation] = $f->simplify('id,url');
                                 }
                                 $e->files = $e->files ?? [];
                                 $e->files['avatar'] = $this->avatar->simplify('id,name,description,url,files');
                             }
                         }
-                    break;
+                        break;
 
                     case 'terms':
-                        if($this->usesTaxonomies())
+                        if ($this->usesTaxonomies())
                             $e->terms = $this->getTerms();
 
-                    break;
+                        break;
 
                     default:
                         $e->$prop = $this->__get($prop);
-                    break;
+                        break;
                 }
             }
         }
@@ -190,13 +200,15 @@ abstract class Entity implements \JsonSerializable{
         return $e;
     }
 
-    function dump(){
+    function dump()
+    {
         echo '<pre>';
         \Doctrine\Common\Util\Debug::dump($this);
         echo '</pre>';
     }
 
-    static function getClassName(){
+    static function getClassName()
+    {
         return App::i()->em->getClassMetadata(get_called_class())->name;
     }
 
@@ -205,20 +217,21 @@ abstract class Entity implements \JsonSerializable{
      *
      * @return \MapasCulturais\Entities\User
      */
-    function getOwnerUser(){
+    function getOwnerUser()
+    {
         $app = App::i();
 
-        if(isset($this->user)){
+        if (isset($this->user)) {
             return $this->user;
         }
 
         $owner = $this->owner;
 
-        if(!$owner){
+        if (!$owner) {
             return $app->user;
         }
 
-        if(!($owner instanceof Entity)){
+        if (!($owner instanceof Entity)) {
             return $app->user;
         }
 
@@ -233,12 +246,13 @@ abstract class Entity implements \JsonSerializable{
      * @return array
      */
 
-    static function getStatusesNames() {
+    static function getStatusesNames()
+    {
         $app = App::i();
         $class = get_called_class();
-        
+
         $statuses = $class::_getStatusesNames();
-        
+
         // hook: entity(EntityName).statusesNames
         $hook_prefix = $class::getHookPrefix();
         $app->applyHook("{$hook_prefix}.statusesNames", [&$statuses]);
@@ -251,7 +265,8 @@ abstract class Entity implements \JsonSerializable{
      * 
      * @return array
      */
-    protected static function _getStatusesNames() {
+    protected static function _getStatusesNames()
+    {
         return [
             self::STATUS_ARCHIVED => i::__('Arquivado'),
             self::STATUS_DISABLED => i::__('Desabilitado'),
@@ -266,7 +281,8 @@ abstract class Entity implements \JsonSerializable{
      * 
      * @return string|null
      */
-    static function getStatusNameById($status) {
+    static function getStatusNameById($status)
+    {
         $class = get_called_class();
         $statuses = $class::getStatusesNames();
 
@@ -278,22 +294,23 @@ abstract class Entity implements \JsonSerializable{
      * 
      * @param int $status 
      * @return void 
-     */    
-    function setStatus(int $status){
+     */
+    function setStatus(int $status)
+    {
         $app = App::i();
 
-        
-        if($status != $this->status){
-            
-            switch($status){
+
+        if ($status != $this->status) {
+
+            switch ($status) {
                 case self::STATUS_ARCHIVED:
-                    if($this->usesArchive()){
+                    if ($this->usesArchive()) {
                         $this->checkPermission('archive');
                     }
                     break;
-                
+
                 case self::STATUS_TRASH:
-                    if($this->usesSoftDelete()){
+                    if ($this->usesSoftDelete()) {
                         $this->checkPermission('remove');
                     }
                     break;
@@ -319,36 +336,38 @@ abstract class Entity implements \JsonSerializable{
 
         $app->applyHookBoundTo($this, "{$hook_prefix}.setStatus({$status})", [&$status]);
 
-        if($this->usesPermissionCache() && !$this->__skipQueuingPCacheRecreation) {
+        if ($this->usesPermissionCache() && !$this->__skipQueuingPCacheRecreation) {
             $this->enqueueToPCacheRecreation();
         }
         $this->status = $status;
     }
 
-    protected function fetchByStatus($collection, $status, $order = null){
-        if(!is_object($collection) || !method_exists($collection, 'matching'))
-                return [];
+    protected function fetchByStatus($collection, $status, $order = null)
+    {
+        if (!is_object($collection) || !method_exists($collection, 'matching'))
+            return [];
 
         $criteria = Criteria::create()->where(Criteria::expr()->eq("status", $status));
-        if(is_array($order)){
+        if (is_array($order)) {
             $criteria = $criteria->orderBy($order);
         }
         return $collection->matching($criteria);
     }
 
-    protected function genericPermissionVerification($user){
-        
-        if($user->is('guest'))
+    protected function genericPermissionVerification($user)
+    {
+
+        if ($user->is('guest'))
             return false;
 
-        if($this->isUserAdmin($user)){
+        if ($this->isUserAdmin($user)) {
             return true;
         }
 
-        if($this->getOwnerUser()->id == $user->id)
+        if ($this->getOwnerUser()->id == $user->id)
             return true;
 
-        if($this->usesAgentRelation() && $this->userHasControl($user))
+        if ($this->usesAgentRelation() && $this->userHasControl($user))
             return true;
 
 
@@ -356,34 +375,36 @@ abstract class Entity implements \JsonSerializable{
         $permission = end($class_parts);
 
         $entity_user = $this->getOwnerUser();
-        if($user->isAttorney("manage{$permission}", $entity_user)){
+        if ($user->isAttorney("manage{$permission}", $entity_user)) {
             return true;
         }
 
         return false;
     }
 
-    protected function canUserView($user){
-        if($this->status > 0){
+    protected function canUserView($user)
+    {
+        if ($this->status > 0) {
             return true;
-        }else{
+        } else {
             return $this->canUser('@control', $user);
         }
     }
 
 
-    protected function canUserCreate($user){
+    protected function canUserCreate($user)
+    {
         $result = $this->genericPermissionVerification($user);
-        if($result && $this->usesOwnerAgent()){
+        if ($result && $this->usesOwnerAgent()) {
             $owner = $this->getOwner();
-            if(!$owner || $owner->status < 1){
+            if (!$owner || $owner->status < 1) {
                 $result = false;
             }
         }
 
-        if($result && $this->usesNested()){
+        if ($result && $this->usesNested()) {
             $parent = $this->getParent();
-            if($parent && $parent->status < 1){
+            if ($parent && $parent->status < 1) {
                 $result = false;
             }
         }
@@ -392,35 +413,37 @@ abstract class Entity implements \JsonSerializable{
     }
 
 
-    protected function canUserModify($user) {
+    protected function canUserModify($user)
+    {
         return $this->genericPermissionVerification($user);
     }
 
-    protected function canUserRemove($user){
-        if($user->is('guest'))
+    protected function canUserRemove($user)
+    {
+        if ($user->is('guest'))
             return false;
 
-        if($this->isUserAdmin($user) || $this->getOwnerUser()->id == $user->id) {
+        if ($this->isUserAdmin($user) || $this->getOwnerUser()->id == $user->id) {
             return true;
-
         }
 
         return false;
     }
 
-    protected function canUser_control($user) {
-        if ($this->usesAgentRelation() && $this->userHasControl($user)){
+    protected function canUser_control($user)
+    {
+        if ($this->usesAgentRelation() && $this->userHasControl($user)) {
             return true;
         }
-        
+
         if ($this->isUserAdmin($user)) {
             return true;
-        } 
-        
+        }
+
         if ($this->usesNested() && $this->parent && $this->parent->canUser('@control')) {
             return true;
-        } 
-        
+        }
+
         if (isset($this->owner) && $this->owner->canUser('@control')) {
             return true;
         }
@@ -428,15 +451,16 @@ abstract class Entity implements \JsonSerializable{
         return false;
     }
 
-    public function canUser($action, $userOrAgent = null){
+    public function canUser($action, $userOrAgent = null)
+    {
         $app = App::i();
-        if(!$app->isAccessControlEnabled()){
+        if (!$app->isAccessControlEnabled()) {
             return true;
         }
 
-        if(is_null($userOrAgent)){
+        if (is_null($userOrAgent)) {
             $user = $app->user;
-        } else if($userOrAgent instanceof UserInterface) {
+        } else if ($userOrAgent instanceof UserInterface) {
             $user = $userOrAgent;
         } else {
             $user = $userOrAgent->getOwnerUser();
@@ -449,7 +473,7 @@ abstract class Entity implements \JsonSerializable{
             $permission = end($class_parts);
 
             $entity_user = $this->getOwnerUser();
-            if($user->isAttorney("{$action}{$permission}", $entity_user) || $user->isAttorney("manage{$permission}", $entity_user)){
+            if ($user->isAttorney("{$action}{$permission}", $entity_user) || $user->isAttorney("manage{$permission}", $entity_user)) {
                 $result = true;
             } else {
                 if (strtolower($action) === '@control') {
@@ -464,12 +488,11 @@ abstract class Entity implements \JsonSerializable{
 
             $app->applyHookBoundTo($this, 'can(' . $this->getHookClassPath() . '.' . $action . ')', ['user' => $user, 'result' => &$result]);
             $app->applyHookBoundTo($this, $this->getHookPrefix() . '.canUser(' . $action . ')', ['user' => $user, 'result' => &$result]);
-
         }
 
         return $result;
     }
-    
+
     /**
      * Wether a user can access the private files owned by this entity
      * 
@@ -477,22 +500,24 @@ abstract class Entity implements \JsonSerializable{
      * 
      * Other entities can extend this method and change the verification
      * 
-     */ 
-    protected function canUserViewPrivateFiles($user) {
-        if($this->isPrivateEntity()) {
+     */
+    protected function canUserViewPrivateFiles($user)
+    {
+        if ($this->isPrivateEntity()) {
             return $this->canUser('view', $user);
-        }else {
+        } else {
             return $this->canUser('@control', $user);
         }
     }
 
-    public function isUserAdmin(UserInterface $user, $role = 'admin'){
+    public function isUserAdmin(UserInterface $user, $role = 'admin')
+    {
         $result = false;
-        if($this->usesOriginSubsite()){
-            if($user->is($role, $this->_subsiteId)){
+        if ($this->usesOriginSubsite()) {
+            if ($user->is($role, $this->_subsiteId)) {
                 $result = true;
             }
-        } else if($user->is($role)) {
+        } else if ($user->is($role)) {
             $result = true;
         }
 
@@ -504,15 +529,17 @@ abstract class Entity implements \JsonSerializable{
         return $result;
     }
 
-    public function checkPermission($action){
-        if(!$this->canUser($action))
+    public function checkPermission($action)
+    {
+        if (!$this->canUser($action))
             throw new Exceptions\PermissionDenied(App::i()->user, $this, $action);
     }
 
-    public static function getPropertiesLabels(){
+    public static function getPropertiesLabels()
+    {
         $result = [];
-        foreach(self::getPropertiesMetadata() as $key => $metadata){
-            if(isset($metadata['@select'])){
+        foreach (self::getPropertiesMetadata() as $key => $metadata) {
+            if (isset($metadata['@select'])) {
                 $key = $metadata['@select'];
             }
             $result[$key] = $metadata['label'];
@@ -520,22 +547,24 @@ abstract class Entity implements \JsonSerializable{
         return $result;
     }
 
-    public static function getPropertyLabel($property_name){
+    public static function getPropertyLabel($property_name)
+    {
         $labels = self::getPropertiesLabels();
 
         return isset($labels[$property_name]) ? $labels[$property_name] : '';
     }
 
-    public static function _getConfiguredPropertyLabel($property_name){
+    public static function _getConfiguredPropertyLabel($property_name)
+    {
         $app = App::i();
         $label = '';
 
         $prop_labels = $app->config['app.entityPropertiesLabels'];
 
-        if(isset($prop_labels [self::getClassName()][$property_name])){
+        if (isset($prop_labels[self::getClassName()][$property_name])) {
             $label = $prop_labels[self::getClassName()][$property_name];
-        }elseif(isset($prop_labels ['@default'][$property_name])){
-            $label = $prop_labels ['@default'][$property_name];
+        } elseif (isset($prop_labels['@default'][$property_name])) {
+            $label = $prop_labels['@default'][$property_name];
         }
 
         return $label;
@@ -543,7 +572,8 @@ abstract class Entity implements \JsonSerializable{
 
     private static $__permissions = [];
 
-    static function getPermissionsList() {
+    static function getPermissionsList()
+    {
         $class_name = self::getClassName();
         if (!isset(self::$__permissions[$class_name])) {
             $permissions = ['@control'];
@@ -559,7 +589,7 @@ abstract class Entity implements \JsonSerializable{
 
             self::$__permissions[$class_name] = $permissions;
         }
-        
+
         return self::$__permissions[$class_name];
     }
 
@@ -588,7 +618,8 @@ abstract class Entity implements \JsonSerializable{
      *
      * @return array the metadata of this entity properties.
      */
-    public static function getPropertiesMetadata($include_column_name = false){
+    public static function getPropertiesMetadata($include_column_name = false)
+    {
         $app = App::i();
 
         $__class = get_called_class();
@@ -601,7 +632,7 @@ abstract class Entity implements \JsonSerializable{
 
         $validations = $__class::getValidations();
 
-        foreach ($class_metadata as $key => $value){
+        foreach ($class_metadata as $key => $value) {
             $metadata = [
                 'isMetadata' => false,
                 'isEntityRelation' => false,
@@ -613,23 +644,23 @@ abstract class Entity implements \JsonSerializable{
             ];
 
             $metadata['isPK'] = $value['id'] ?? false;
-            
+
             if ($include_column_name && isset($value['columnName'])) {
                 $metadata['columnName'] = $value['columnName'];
             }
 
-            if($key[0] == '_'){
+            if ($key[0] == '_') {
                 $prop = substr($key, 1);
-                if(method_exists($class, 'get' . $prop)){
-                     $metadata['@select'] = $prop;
-                }else{
+                if (method_exists($class, 'get' . $prop)) {
+                    $metadata['@select'] = $prop;
+                } else {
                     continue;
                 }
             }
 
             if ($key == 'status') {
                 $options = [
-                    'draft' => self::STATUS_DRAFT, 
+                    'draft' => self::STATUS_DRAFT,
                     'enabled' => self::STATUS_ENABLED,
                 ];
                 if ($class::usesSoftDelete()) {
@@ -644,25 +675,25 @@ abstract class Entity implements \JsonSerializable{
             $result[$key] = $metadata;
         }
 
-        foreach ($class_relations as $key => $value){
+        foreach ($class_relations as $key => $value) {
             $result[$key] = [
                 'isMetadata' => false,
                 'isEntityRelation' => true,
 
-                'targetEntity' => str_replace('MapasCulturais\Entities\\','',$value['targetEntity']),
+                'targetEntity' => str_replace('MapasCulturais\Entities\\', '', $value['targetEntity']),
                 'isOwningSide' => $value['isOwningSide'],
                 'label' => $class::_getConfiguredPropertyLabel($key)
             ];
         }
 
-        if($class::usesMetadata()){
+        if ($class::usesMetadata()) {
             $result = $result + $class::getMetadataMetadata();
         }
-        
-        if($class::usesTypes()){
+
+        if ($class::usesTypes()) {
             $types = [];
             $types_order = [];
-            foreach($app->getRegisteredEntityTypes($class) as $type) {
+            foreach ($app->getRegisteredEntityTypes($class) as $type) {
                 $types[$type->id] = $type->name;
                 $types_order[] = $type->id;
             }
@@ -675,8 +706,10 @@ abstract class Entity implements \JsonSerializable{
             ] + $result['_type'];
         }
 
-        if(isset($result['location']) && isset($result['publicLocation'])){
-            $result['location']['private'] = function(){ return (bool) ! $this->publicLocation; };
+        if (isset($result['location']) && isset($result['publicLocation'])) {
+            $result['location']['private'] = function () {
+                return (bool) !$this->publicLocation;
+            };
         }
 
         $kook_prefix = $class::getHookPrefix();
@@ -685,11 +718,13 @@ abstract class Entity implements \JsonSerializable{
         return $result;
     }
 
-    static public function getValidations(){
+    static public function getValidations()
+    {
         return [];
     }
 
-    public function isPropertyRequired($entity,$property) {
+    public function isPropertyRequired($entity, $property)
+    {
         $app = App::i();
         $return = false;
 
@@ -697,12 +732,12 @@ abstract class Entity implements \JsonSerializable{
         $class = $__class::getClassName();
 
         $metadata = $class::getPropertiesMetadata();
-        if(array_key_exists($property,$metadata) && array_key_exists('required',$metadata[$property])) {
+        if (array_key_exists($property, $metadata) && array_key_exists('required', $metadata[$property])) {
             $return = $metadata[$property]['required'];
         }
 
         $v = $class::getValidations();
-        if(!$return && array_key_exists($property,$v) && array_key_exists('required',$v[$property])) {
+        if (!$return && array_key_exists($property, $v) && array_key_exists('required', $v[$property])) {
             $return = true;
         }
 
@@ -714,31 +749,36 @@ abstract class Entity implements \JsonSerializable{
      *
      * @return \MapasCulturais\Entity
      */
-    public function getEntity(){
+    public function getEntity()
+    {
         $data = [];
-        foreach ($this as $key => $value){
-            if($key[0] == '_')
+        foreach ($this as $key => $value) {
+            if ($key[0] == '_')
                 continue;
             $data[$key] = $value;
         }
         return $data;
     }
 
-    public function getSingleUrl(){
+    public function getSingleUrl()
+    {
         return App::i()->createUrl($this->controllerId, 'single', [$this->id]);
     }
 
-    public function getEditUrl(){
+    public function getEditUrl()
+    {
         return App::i()->createUrl($this->controllerId, 'edit', [$this->id]);
     }
 
-    public function getDeleteUrl(){
+    public function getDeleteUrl()
+    {
         return App::i()->createUrl($this->controllerId, 'delete', [$this->id]);
     }
 
-    static function getControllerClassName() {
+    static function getControllerClassName()
+    {
         $class = get_called_class();
-        
+
         return preg_replace('#\\\Entities\\\([^\\\]+)$#', '\\Controllers\\\$1', $class::getClassName());
     }
 
@@ -747,7 +787,8 @@ abstract class Entity implements \JsonSerializable{
      *
      * @return \MapasCulturais\Controller The controller
      */
-    public function getController(){
+    public function getController()
+    {
         return App::i()->getControllerByEntity($this);
     }
 
@@ -756,7 +797,8 @@ abstract class Entity implements \JsonSerializable{
      *
      * @return string
      */
-    public static function getControllerId() {
+    public static function getControllerId()
+    {
         $called_class = get_called_class();
         $class = $called_class::getClassName();
         return App::i()->getControllerIdByEntity($class) ?? '';
@@ -773,28 +815,33 @@ abstract class Entity implements \JsonSerializable{
      *
      * @return string
      */
-    public static function getHookClassPath($class = null){
-        if(!$class){
+    public static function getHookClassPath($class = null)
+    {
+        if (!$class) {
             $called_class = get_called_class();
             $class = $called_class::getClassName();
         }
-        return preg_replace('#^MapasCulturais\.Entities\.#','',str_replace('\\','.',$class));
+        return preg_replace('#^MapasCulturais\.Entities\.#', '', str_replace('\\', '.', $class));
     }
 
-    public static function getHookPrefix($class = null) {
+    public static function getHookPrefix($class = null)
+    {
         $hook_class_path = self::getHookClassPath($class);
         return "entity({$hook_class_path})";
     }
 
-    public function getEntityType(){
-        return str_replace('MapasCulturais\Entities\\','',$this->getClassName());
+    public function getEntityType()
+    {
+        return str_replace('MapasCulturais\Entities\\', '', $this->getClassName());
     }
 
-    public static function getEntityTypeLabel($plural = false): string {
+    public static function getEntityTypeLabel($plural = false): string
+    {
         return '';
     }
 
-    function getEntityState() {
+    function getEntityState()
+    {
         return App::i()->em->getUnitOfWork()->getEntityState($this);
     }
 
@@ -803,7 +850,8 @@ abstract class Entity implements \JsonSerializable{
      *
      * @param boolean $flush Flushes to the Database
      */
-    public function save($flush = false){
+    public function save($flush = false)
+    {
         $app = App::i();
 
         $requests = [];
@@ -816,9 +864,9 @@ abstract class Entity implements \JsonSerializable{
         } catch (Exceptions\WorkflowRequestTransport $e) {
             $requests[] = $e->request;
         }
-        
+
         if (method_exists($this, '_saveNested')) {
-           try {
+            try {
                 $this->_saveNested();
             } catch (Exceptions\WorkflowRequestTransport $e) {
                 $requests[] = $e->request;
@@ -827,64 +875,61 @@ abstract class Entity implements \JsonSerializable{
 
         if (method_exists($this, '_saveOwnerAgent')) {
             try {
-               $this->_saveOwnerAgent();                
+                $this->_saveOwnerAgent();
             } catch (Exceptions\WorkflowRequestTransport $e) {
                 $requests[] = $e->request;
             }
         }
-        try{
-            if($this->isNew()){
+        try {
+            if ($this->isNew()) {
                 $this->checkPermission('create');
                 $is_new = true;
 
-                if($this->usesOriginSubsite() && $app->getCurrentSubsiteId()){
+                if ($this->usesOriginSubsite() && $app->getCurrentSubsiteId()) {
                     $subsite = $app->repo('Subsite')->find($app->getCurrentSubsiteId());
                     $this->setSubsite($subsite);
                 }
-
-            }else{
+            } else {
                 $this->checkPermission('modify');
                 $is_new = false;
-
             }
 
             $app->applyHookBoundTo($this, "{$hook_prefix}.save:before");
             $app->em->persist($this);
             $app->applyHookBoundTo($this, "{$hook_prefix}.save:after");
 
-            if($flush){
+            if ($flush) {
                 $app->em->flush();
             }
 
-            if($this->usesMetadata()){
+            if ($this->usesMetadata()) {
                 $this->saveMetadata();
-                if($flush){
+                if ($flush) {
                     $app->em->flush();
                 }
             }
 
-            if($this->usesTaxonomies()){
+            if ($this->usesTaxonomies()) {
                 $this->saveTerms();
-                if($flush){
+                if ($flush) {
                     $app->em->flush();
                 }
             }
 
-            if($this->usesRevision()) {
-                if($is_new){
+            if ($this->usesRevision()) {
+                if ($is_new) {
                     $this->_newCreatedRevision();
                 } else {
                     $this->_newModifiedRevision();
                 }
             }
-
-        }catch(Exceptions\PermissionDenied $e){
-            if(!$requests)
+        } catch (Exceptions\PermissionDenied $e) {
+            if (!$requests)
                 throw $e;
         }
-        
-        if($requests){
-            foreach($requests as $request)
+
+        if ($requests) {
+            foreach ($requests as $request)
                 $request->save($flush);
             $e = new Exceptions\WorkflowRequest($requests);
             throw $e;
@@ -897,7 +942,6 @@ abstract class Entity implements \JsonSerializable{
         }
 
         $app->applyHookBoundTo($this, "{$hook_prefix}.save:finish", [$flush]);
-        
     }
 
     /**
@@ -905,28 +949,31 @@ abstract class Entity implements \JsonSerializable{
      *
      * @param boolean $flush Flushes to the database
      */
-    public function delete($flush = false){
+    public function delete($flush = false)
+    {
         $this->checkPermission('remove');
 
         App::i()->em->remove($this);
-        if($flush)
+        if ($flush)
             App::i()->em->flush();
     }
 
-    private function _isPropertySerializable($val, array $allowed_classes){
-        if(is_array($val)){
+    private function _isPropertySerializable($val, array $allowed_classes)
+    {
+        if (is_array($val)) {
             $nval = [];
-            foreach($val as $k => $v){
-                try{
+            foreach ($val as $k => $v) {
+                try {
                     $nval[$k] = $this->_isPropertySerializable($v, $allowed_classes);
-                }  catch (\Exception $e) {}
+                } catch (\Exception $e) {
+                }
             }
             $val = $nval;
-        }elseif(is_object($val) && !is_subclass_of($val, __CLASS__) && !in_array(\get_class($val), $allowed_classes)){
+        } elseif (is_object($val) && !is_subclass_of($val, __CLASS__) && !in_array(\get_class($val), $allowed_classes)) {
             throw new \Exception();
-        }elseif(is_object($val)){
+        } elseif (is_object($val)) {
 
-            if(in_array($val, Entity::$_jsonSerializeNestedObjects))
+            if (in_array($val, Entity::$_jsonSerializeNestedObjects))
                 throw new \Exception();
         }
 
@@ -938,9 +985,10 @@ abstract class Entity implements \JsonSerializable{
      * 
      * @return array
      */
-    public function jsonSerialize(): array {
+    public function jsonSerialize(): array
+    {
         $app = App::i();
-        
+
         $result = [
             '@entityType' => $this->getControllerId()
         ];
@@ -953,23 +1001,24 @@ abstract class Entity implements \JsonSerializable{
 
         Entity::$_jsonSerializeNestedObjects[$_uid] = $this;
 
-        foreach($this as $prop => $val){
-            if($prop[0] == '_')
+        foreach ($this as $prop => $val) {
+            if ($prop[0] == '_')
                 continue;
 
-            if($prop[0] == '_' && method_exists($this, 'get' . substr($prop, 1)))
-                $prop = substr ($prop, 1);
+            if ($prop[0] == '_' && method_exists($this, 'get' . substr($prop, 1)))
+                $prop = substr($prop, 1);
 
-            try{
+            try {
                 $val = $this->__get($prop);
                 $val = $this->_isPropertySerializable($val, $allowed_classes);
                 $result[$prop] = $val;
-            }  catch (\Exception $e){}
+            } catch (\Exception $e) {
+            }
         }
 
-        if($this->usesMetadata()){
+        if ($this->usesMetadata()) {
             $registered_metadata = $this->getRegisteredMetadata();
-            foreach($registered_metadata as $def){
+            foreach ($registered_metadata as $def) {
                 $meta_key = $def->key;
                 $meta_value = $this->$meta_key;
                 if ($meta_value instanceof Entity) {
@@ -988,17 +1037,17 @@ abstract class Entity implements \JsonSerializable{
             $result['terms'] = $this->terms;
         }
 
-        if($controller_id = $this->getControllerId()){
+        if ($controller_id = $this->getControllerId()) {
             $result['controllerId'] = $controller_id;
             $result['deleteUrl'] = $this->getDeleteUrl();
             $result['editUrl'] = $this->getEditUrl();
             $result['singleUrl'] = $this->getSingleUrl();
         }
 
-        if($this->usesSealRelation()) {
+        if ($this->usesSealRelation()) {
             $result['lockedFields'] = $this->lockedFields;
         }
-        
+
         unset(Entity::$_jsonSerializeNestedObjects[$_uid]);
 
         // adiciona as permissões do usuário sobre a entidade:
@@ -1019,11 +1068,12 @@ abstract class Entity implements \JsonSerializable{
      *
      * @return boolean
      */
-    protected function validateUniquePropertyValue($property_name){
+    protected function validateUniquePropertyValue($property_name)
+    {
         $class = get_called_class();
         $dql = "SELECT COUNT(e.$property_name) FROM $class e WHERE e.$property_name = :val";
         $params = ['val' => $this->$property_name];
-        if($this->id){
+        if ($this->id) {
             $dql .= ' AND e.id != :id';
             $params['id'] = $this->id;
         }
@@ -1052,27 +1102,28 @@ abstract class Entity implements \JsonSerializable{
      *
      * @return array
      */
-    public function getValidationErrors(){
+    public function getValidationErrors()
+    {
         $app = App::i();
 
         $errors = $this->_validationErrors;
         $class = get_called_class();
 
-        if(!method_exists($class, 'getValidations')) {
+        if (!method_exists($class, 'getValidations')) {
             return $errors;
         }
 
         $properties_validations = $class::getValidations();
 
-        $tags = ['style','script','embed','object','iframe','img','link'];
-        $validation = implode(',', array_map(function($tag){
+        $tags = ['style', 'script', 'embed', 'object', 'iframe', 'img', 'link'];
+        $validation = implode(',', array_map(function ($tag) {
             return "v::contains('<{$tag}')";
         }, $tags));
         $htmltags_validation = "v::noneOf($validation)";
 
-        foreach($this->getPropertiesMetadata() as $prop => $metadata){
-            if(!$metadata['isEntityRelation']){
-                if(!isset($properties_validations[$prop])){
+        foreach ($this->getPropertiesMetadata() as $prop => $metadata) {
+            if (!$metadata['isEntityRelation']) {
+                if (!isset($properties_validations[$prop])) {
                     $properties_validations[$prop] = [];
                 }
 
@@ -1081,69 +1132,66 @@ abstract class Entity implements \JsonSerializable{
         }
 
         $hook_prefix = $this->getHookPrefix();
-        
+
         $app->applyHookBoundTo($this, "{$hook_prefix}.validations", [&$properties_validations]);
 
-        foreach($properties_validations as $property => $validations){
+        foreach ($properties_validations as $property => $validations) {
 
-            if(!$this->$property && !key_exists('required', $validations))
+            if (!$this->$property && !key_exists('required', $validations))
                 continue;
 
 
 
-            foreach($validations as $validation => $error_message){
+            foreach ($validations as $validation => $error_message) {
                 $validation = trim($validation);
 
                 $ok = true;
 
-                if($validation == 'htmlentities'){
-                    if(!is_string($this->$property)){
+                if ($validation == 'htmlentities') {
+                    if (!is_string($this->$property)) {
                         continue;
                     }
-                    
+
                     $validation = $htmltags_validation;
                 }
 
-                if($validation == 'required'){
+                if ($validation == 'required') {
                     if (is_string($this->$property)) {
                         $ok = trim($this->$property) !== '';
                     } else {
                         $ok = (bool) $this->$property || $this->$property === 0;
                     }
-
-                }elseif($validation == 'unique'){
+                } elseif ($validation == 'unique') {
                     $ok = $this->validateUniquePropertyValue($property);
-
-                }elseif(strpos($validation,'v::') === 0){
+                } elseif (strpos($validation, 'v::') === 0) {
                     $validation = str_replace('v::', 'Respect\Validation\Validator::', $validation);
                     eval('$ok = ' . $validation . '->validate($this->' . $property . ');');
-                }else{
+                } else {
                     $value = $this->$property;
                     eval('$ok = ' . $validation . ';');
                 }
-                if(!$ok){
+                if (!$ok) {
                     if (!key_exists($property, $errors))
                         $errors[$property] = [];
 
                     $errors[$property][] = $error_message;
-
                 }
             }
         }
 
-        if($this->usesTypes() && !$this->_type)
+        if ($this->usesTypes() && !$this->_type)
             $errors['type'] = [\MapasCulturais\i::__('O Tipo é obrigatório')];
-        elseif($this->usesTypes() && !$this->validateType())
+        elseif ($this->usesTypes() && !$this->validateType())
             $errors['type'] = [\MapasCulturais\i::__('Tipo inválido')];
 
-        if($this->usesMetadata())
+        if ($this->usesMetadata())
             $errors = $errors + $this->getMetadataValidationErrors();
 
-        if($this->usesTaxonomies())
+        if ($this->usesTaxonomies())
             $errors = $errors + $this->getTaxonomiesValidationErrors();
 
         $app->applyHookBoundTo($this, "{$this->hookPrefix}.validationErrors", [&$errors]);
-        
+
         return $errors;
     }
 
@@ -1153,7 +1201,8 @@ abstract class Entity implements \JsonSerializable{
      *
      * @return \Doctrine\ORM\EntityRepository
      */
-    public function repo(){
+    public function repo()
+    {
         return App::i()->repo($this->getClassName());
     }
 
@@ -1183,9 +1232,10 @@ abstract class Entity implements \JsonSerializable{
      * @hook **entity.save:before**
      * @hook **entity({$entity_class}).save:before**
      */
-    public function prePersist($args = null){
+    public function prePersist($args = null)
+    {
         $app = App::i();
-        
+
         $this->computeChangeSets();
 
         $hook_prefix = $this->getHookPrefix();
@@ -1212,9 +1262,10 @@ abstract class Entity implements \JsonSerializable{
      * @hook **entity.save:after**
      * @hook **entity({$entity_class}).save:after**
      */
-    public function postPersist($args = null){
+    public function postPersist($args = null)
+    {
         $app = App::i();
-        
+
         $hook_prefix = $this->getHookPrefix();
 
         $app->applyHookBoundTo($this, "{$hook_prefix}.insert:after");
@@ -1234,9 +1285,10 @@ abstract class Entity implements \JsonSerializable{
      * @hook **entity.remove:before**
      * @hook **entity({$entity_class}).remove:before**
      */
-    public function preRemove($args = null){
+    public function preRemove($args = null)
+    {
         $app = App::i();
-        
+
         $hook_prefix = $this->getHookPrefix();
 
         $app->applyHookBoundTo($this, "{$hook_prefix}.remove:before");
@@ -1251,22 +1303,23 @@ abstract class Entity implements \JsonSerializable{
      * @hook **entity.remove:after**
      * @hook **entity({$entity_class}).remove:after**
      */
-    public function postRemove($args = null){
+    public function postRemove($args = null)
+    {
         $app = App::i();
-        
+
         $hook_prefix = $this->getHookPrefix();
 
         $app->applyHookBoundTo($this, "{$hook_prefix}.remove:after");
 
-        if($this->usesRevision()) {
+        if ($this->usesRevision()) {
             //$this->_newDeletedRevision();
         }
 
-        if($this->usesPermissionCache()){
+        if ($this->usesPermissionCache()) {
             $this->deletePermissionsCache();
         }
 
-        if($this->usesRevision()) {
+        if ($this->usesRevision()) {
             //$this->_newDeletedRevision();
         }
     }
@@ -1282,14 +1335,15 @@ abstract class Entity implements \JsonSerializable{
      * @hook **entity.save:before**
      * @hook **entity({$entity_class}).save:before**
      */
-    public function preUpdate($args = null){
+    public function preUpdate($args = null)
+    {
         $app = App::i();
         $this->computeChangeSets();
         $hook_prefix = $this->getHookPrefix();
         $app->applyHookBoundTo($this, "{$hook_prefix}.update:before");
 
         $this->computeChangeSets();
-        
+
         if (property_exists($this, 'updateTimestamp')) {
             $this->updateTimestamp = new \DateTime;
         }
@@ -1314,7 +1368,8 @@ abstract class Entity implements \JsonSerializable{
      *
      * @ORM\PostUpdate
      */
-    public function postUpdate($args = null){
+    public function postUpdate($args = null)
+    {
         $app = App::i();
         $hook_prefix = $this->getHookPrefix();
 
