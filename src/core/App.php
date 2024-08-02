@@ -2315,15 +2315,15 @@ class App {
         // all file groups
         $file_groups = [
             'downloads' => new Definitions\FileGroup('downloads'),
-            'avatar' => new Definitions\FileGroup('avatar', ['^image/(jpeg|png)$'], i::__('O arquivo enviado não é uma imagem válida.'), true),
-            'header' => new Definitions\FileGroup('header', ['^image/(jpeg|png)$'], i::__('O arquivo enviado não é uma imagem válida.'), true),
-            'gallery' => new Definitions\FileGroup('gallery', ['^image/(jpeg|png)$'], i::__('O arquivo enviado não é uma imagem válida.'), false),
+            'avatar' => new Definitions\FileGroup('avatar', ['^image/(jpeg|png)$'], i::__('Formato de imagem inválido. Insira imagens nos formatos JPG ou PNG.'), true),
+            'header' => new Definitions\FileGroup('header', ['^image/(jpeg|png)$'], i::__('Formato de imagem inválido. Insira imagens nos formatos JPG ou PNG.'), true),
+            'gallery' => new Definitions\FileGroup('gallery', ['^image/(jpeg|png)$'], i::__('Formato de imagem inválido. Insira imagens nos formatos JPG ou PNG.'), false),
             'registrationFileConfiguration' => new Definitions\FileGroup('registrationFileTemplate', ['^application/.*'], i::__('O arquivo enviado não é um documento válido.'), true),
             'rules' => new Definitions\FileGroup('rules', ['^application/.*'], i::__('O arquivo enviado não é um documento válido.'), true),
-            'logo'  => new Definitions\FileGroup('logo',['^image/(jpeg|png)$'], i::__('O arquivo enviado não é uma imagem válida.'), true),
-            'background' => new Definitions\FileGroup('background',['^image/(jpeg|png)$'], i::__('O arquivo enviado não é uma imagem válida.'),true),
-            'share' => new Definitions\FileGroup('share',['^image/(jpeg|png)$'], i::__('O arquivo enviado não é uma imagem válida.'),true),
-            'institute'  => new Definitions\FileGroup('institute',['^image/(jpeg|png)$'], i::__('O arquivo enviado não é uma imagem válida.'), true),
+            'logo'  => new Definitions\FileGroup('logo',['^image/(jpeg|png)$'], i::__('Formato de imagem inválido. Insira imagens nos formatos JPG ou PNG.'), true),
+            'background' => new Definitions\FileGroup('background',['^image/(jpeg|png)$'], i::__('Formato de imagem inválido. Insira imagens nos formatos JPG ou PNG.'),true),
+            'share' => new Definitions\FileGroup('share',['^image/(jpeg|png)$'], i::__('Formato de imagem inválido. Insira imagens nos formatos JPG ou PNG.'),true),
+            'institute'  => new Definitions\FileGroup('institute',['^image/(jpeg|png)$'], i::__('Formato de imagem inválido. Insira imagens nos formatos JPG ou PNG.'), true),
             'favicon'  => new Definitions\FileGroup('favicon',['^image/(jpeg|png|x-icon|vnd.microsoft.icon)$'], i::__('O arquivo enviado não é uma imagem válida.'), true),
             'zipArchive'  => new Definitions\FileGroup('zipArchive',['^application/zip$'], i::__('O arquivo não é um ZIP.'), true, null, true),
         ];
