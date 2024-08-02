@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @var MapasCulturais\App $app
  * @var MapasCulturais\Themes\BaseV2\Theme $this
@@ -42,7 +43,7 @@ $this->import('
                             </select>
                         </div>
                         <div class="foundResults">
-                            {{entities.metadata.count}} {{entityType}} <?= i::__('encontrados') ?> 
+                            {{entities.metadata.count}} {{entityType}} <?= i::__('encontrados') ?>
                         </div>
                     </div>
                 </div>
@@ -66,10 +67,10 @@ $this->import('
                             </select>
                         </div>
                         <div v-if="entityType=='Oportunidades'" class="foundResults">
-                            {{entities.metadata.count}} {{entityType}} <?= i::__('encontradas') ?> 
+                            {{entities.metadata.count}} {{entityType}} <?= i::__('encontradas') ?>
                         </div>
                         <div v-if="entityType!='Oportunidades'" class="foundResults">
-                            {{entities.metadata.count}} {{entityType}} <?= i::__('encontrados') ?> 
+                            {{entities.metadata.count}} {{entityType}} <?= i::__('encontrados') ?>
                         </div>
                     </div>
 
