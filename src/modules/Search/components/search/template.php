@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @var MapasCulturais\App $app
  * @var MapasCulturais\Themes\BaseV2\Theme $this
@@ -21,7 +22,7 @@ $this->import('
                 <div :class="['search__header--content-left-icon', entityType+'__background']">
                     <mc-icon :name="entityType"></mc-icon>
                 </div>
-                
+
                 <mc-title tag="h1" class="bold"> {{pageTitle}} </mc-title>
             </div>
 

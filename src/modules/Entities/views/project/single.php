@@ -35,6 +35,7 @@ $this->breadcrumb = [
     ['label' => $label, 'url' => $app->createUrl('search', 'projects')],
     ['label' => $entity->name, 'url' => $app->createUrl('project', 'single', [$entity->id])],
 ];
+
 ?>
 
 <div class="main-app">
@@ -44,7 +45,7 @@ $this->breadcrumb = [
             <dl v-if="entity.id && global.showIds[entity.__objectType]" class="metadata__id">
                 <dt class="metadata__id--id"><?= i::__('ID') ?></dt>
                 <dd><strong>{{entity.id}}</strong></dd>
-            </dl> 
+            </dl>
             <dl v-if="entity.type">
                 <dt><?= i::__('Tipo') ?></dt>
                 <dd :class="[entity.__objectType+'__color', 'type']"> {{entity.type.name}} </dd>
@@ -68,7 +69,7 @@ $this->breadcrumb = [
                                 <div v-if="entity.telefonePublico" class="additional-info__item">
                                     <p class="additional-info__item__title"><?php i::_e("telefone:"); ?></p>
                                     <p class="additional-info__item__content">{{entity.telefonePublico}}</p>
-                                </div>  
+                                </div>
 
                                 <div v-if="entity.emailPublico" class="additional-info__item">
                                     <p class="additional-info__item__title"><?php i::_e("email:"); ?></p>
@@ -105,25 +106,24 @@ $this->breadcrumb = [
                 </mc-container>
             </div>
         </mc-tab>
-
-        <mc-tab label="<?= i::_e('Subprojetos') ?>" slug="subprojects">
+        <mc-tab label="<?= i::_e('Subprojetos') ?> (<?= count($entity->children) ?>)" slug=" subprojects">
             <div class="single-project__subproject">
                 <mc-container>
                     <main class="grid-12">
-                        <mc-entities v-if="entity.children" type="project" select="name,type,shortDescription,files.avatar,seals,terms" :query="{id: `IN(${entity.children})`}" :limit="20" watch-query>
+                        <mc-entities v-if="entity.children" type="project" select="name,type,shortDescription,files.avatar,seals,terms" :query="{id: `IN(${entity.children.map((c) => c._id)})`}" :limit="20" watch-query>
                             <template #default="{entities}">
                                 <entity-card :entity="entity" v-for="entity in entities" :key="entity.__objectId" class="col-12">
                                     <template #avatar>
                                         <mc-avatar :entity="entity" size="medium"></mc-avatar>
                                     </template>
-                                    <template #type> 
-                                        <span> 
-                                            <?= i::__('TIPO: ') ?> 
+                                    <template #type>
+                                        <span>
+                                            <?= i::__('TIPO: ') ?>
                                             <span :class="['upper', entity.__objectType+'__color']">{{entity.type.name}}</span>
                                         </span>
                                     </template>
                                 </entity-card>
-                            </template>                                
+                            </template>
                         </mc-entities>
 
                         <div v-if="!entity.children" class="single-project__not-found">

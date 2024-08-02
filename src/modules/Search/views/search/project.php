@@ -26,9 +26,9 @@ $this->breadcrumb = [
         </create-project>
     </template>
     <template #default="{pseudoQuery}">
-        <div class="tabs-component__panels">
+        <div class="tabs-component__panels" style="margin-top: 90px;">
             <div class="search__tabs--list">
-                <search-list :pseudo-query="pseudoQuery" type="project" select="name,type,shortDescription,files.avatar,seals,terms" >
+                <search-list :pseudo-query="pseudoQuery" type="project" select="name,type,shortDescription,files.avatar,seals,terms">
                     <template #filter>
                         <search-filter-project :pseudo-query="pseudoQuery"></search-filter-project>
                     </template>
