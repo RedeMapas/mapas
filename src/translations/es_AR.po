@@ -7806,6 +7806,10 @@ msgstr "Puedes <strong>publicar</strong> nuevamente para desarchivarla."
 msgid "Adicionar nova"
 msgstr "Agregar nueva"
 
+#: src/modules/Entities/components/entity-terms/template.php:32
+msgid "Não é possível adicionar uma tag vazia"
+msgstr "No es posible agregar una etiqueta vacía"
+
 #: src/modules/Entities/components/entity-terms/template.php:34
 msgid "Adicione uma nova tag"
 msgstr "Agregar una nueva etiqueta"

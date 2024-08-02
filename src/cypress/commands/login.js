@@ -1,23 +1,27 @@
-const { confirmRecaptcha } = require("./recaptcha");
+import { confirmRecaptcha } from "./recaptcha";
 
-function login () {
+export function login() {
   cy.visit("/autenticacao/");
   cy.get("input[id='email']").type("Admin@local");
   cy.get("input[id='password']").type("mapas123");
   confirmRecaptcha();
-  cy.wait(1000);
+  cy.wait(2000);
   cy.get("button[type='submit']").click();
   cy.url().should("include", "/painel");
 }
 
-function loginWith (username, password) {
-  cy.get("input[id='email']").type(username);
-  if (password) {
-    cy.get("input[id='password']").type(password);
-  }
+export function loginWith(email, password) {
+  cy.visit("/autenticacao/");
+  cy.get("input[id='email']").type(email);
+  cy.get("input[id='password']").type(password);
   confirmRecaptcha();
-  cy.wait(1000);
+  cy.wait(2000);
   cy.get("button[type='submit']").click();
 }
 
-module.exports = { login, loginWith };
+export function loginPasswordChange(email) {
+  cy.get("input[id='email']").type(email);
+  confirmRecaptcha();
+  cy.wait(2000);
+  cy.get("button[type='submit']").click();
+}

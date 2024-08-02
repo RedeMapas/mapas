@@ -94,6 +94,9 @@ class AgentFixtures extends Fixture implements DependentFixtureInterface
 
             $this->setReference(sprintf('%s-%s', self::AGENT_ID_PREFIX, $agentData['id']), $agent);
             $manager->persist($agent);
+
+            $this->setProperty($user, 'profile', $agent);
+            $manager->persist($user);
         }
 
         $manager->flush();

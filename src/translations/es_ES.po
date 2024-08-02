@@ -14217,6 +14217,9 @@ msgstr "Acerca del Sitio"
 #~ msgid "A descrição curta deve ter no máximo 2000 caracteres"
 #~ msgstr "La breve descripción debe tener un máximo de 2000 caracteres"
 
+#~ msgid "Não é possível adicionar uma tag vazia"
+#~ msgstr "No es posible añadir una etiqueta vacía"
+
 #~ msgid "Seguir"
 #~ msgstr "Seguir"
 

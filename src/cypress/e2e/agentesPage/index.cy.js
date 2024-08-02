@@ -65,13 +65,19 @@ describe("Agents Page", () => {
         cy.contains("Agente Coletivo");
         cy.wait(1000);
         
+        //Pega o número de agentes totais depois de aplicar o filtro para 'Agente Coletivo'
         cy.get(".foundResults").invoke('text').then((text) => {
-            // Extraia o número da string
-            expectedCount = parseInt(text.match(/\d+/)[0], 10);
-            
-            // Agora, verifique se o número de agentes do tipo coletivo encontrados é igual ao esperado
-            cy.get(".upper.agent__color").should('have.length', expectedCount);
-            cy.contains(expectedCount + " Agentes encontrados")
+            // Extraia o número da string e converte para int
+            const expectedCount = parseInt(text.match(/\d+/)[0], 10);
+
+            // Pega o número de agentes totais na tabela de cima
+            cy.get(".entity-cards-cards__number").eq(2).invoke('text').then((text2) => {
+                          
+              // Converte o texto para int
+              const elementNumber = parseInt(text2, 10);
+              // Compara para ver se os números são iguais
+              expect(elementNumber).to.equal(expectedCount);
+            });
         });
 
 
@@ -80,13 +86,19 @@ describe("Agents Page", () => {
         cy.wait(1000);
 
         cy.get(".foundResults").invoke('text').then((text) => {
-            // Extraia o número da string
-            expectedCount = parseInt(text.match(/\d+/)[0], 10);
+            // Extraia o número da string e converte para int
+            const expectedCount = parseInt(text.match(/\d+/)[0], 10);
             
-            // Agora, verifique se o número de agentes do tipo individual encontrados é igual ao esperado
-            cy.get(".upper.agent__color").should('have.length', expectedCount);
-            cy.contains(expectedCount + " Agentes encontrados");
-        });
+            // Pega o número de agentes totais na tabela de cima
+            cy.get(".entity-cards-cards__number").eq(1).invoke('text').then((text2) => {
+
+          
+                // Converte o texto para int
+                const elementNumber = parseInt(text2, 10);
+                // Compara para ver se os números são iguais
+                expect(elementNumber).to.equal(expectedCount);
+              });
+          });
 
     });
 

@@ -4,31 +4,24 @@ declare(strict_types=1);
 
 namespace App\Service;
 
-use App\Enum\EntityStatusEnum;
-use App\Exception\ResourceNotFoundException;
-use App\Repository\OpportunityRepository;
+use App\Repository\Interface\OpportunityRepositoryInterface;
+use App\Service\Interface\OpportunityServiceInterface;
 use MapasCulturais\Entities\Opportunity;
-use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
-use Symfony\Component\Serializer\Serializer;
 use Symfony\Component\Serializer\SerializerInterface;
 
-class OpportunityService
+class OpportunityService implements OpportunityServiceInterface
 {
-    protected OpportunityRepository $repository;
-
     public const FILE_TYPES = '/src/conf/opportunity-types.php';
 
-    private SerializerInterface $serializer;
-
-    public function __construct()
-    {
-        $this->repository = new OpportunityRepository();
-        $this->serializer = new Serializer([new ObjectNormalizer()]);
+    public function __construct(
+        private readonly OpportunityRepositoryInterface $repository,
+        private readonly SerializerInterface $serializer
+    ) {
     }
 
     public function getTypes(): array
     {
-        $typesFromConf = (require dirname(__DIR__, 3).'/src/conf/opportunity-types.php')['items'] ?? [];
+        $typesFromConf = (require dirname(__DIR__, 3).self::FILE_TYPES)['items'] ?? [];
 
         return array_map(
             fn ($key, $item) => ['id' => $key, 'name' => $item['name']],
@@ -40,11 +33,6 @@ class OpportunityService
     public function update(int $id, object $data): Opportunity
     {
         $opportunityFromDB = $this->repository->find($id);
-
-        if (null === $opportunityFromDB || EntityStatusEnum::TRASH->getValue() === $opportunityFromDB->status) {
-            throw new ResourceNotFoundException('Opportunity not found');
-        }
-
         $opportunityUpdated = $this->serializer->denormalize(
             data: $data,
             type: Opportunity::class,
@@ -57,7 +45,7 @@ class OpportunityService
         return $opportunityUpdated;
     }
 
-    public function create($data): Opportunity
+    public function create(mixed $data): Opportunity
     {
         $opportunity = new Opportunity();
 
@@ -65,19 +53,19 @@ class OpportunityService
         $opportunity->setName($data['name']);
         $opportunity->terms['area'] = $data['terms']['area'];
 
-        if (isset($data['project'])) {
+        if (true === isset($data['project'])) {
             $opportunity->setObjectType("MapasCulturais\Entities\Project");
             $opportunity->setProject($data['project']);
         }
-        if (isset($data['event'])) {
+        if (true === isset($data['event'])) {
             $opportunity->setObjectType("MapasCulturais\Entities\Event");
             $opportunity->setEvent($data['event']);
         }
-        if (isset($data['space'])) {
+        if (true === isset($data['space'])) {
             $opportunity->setObjectType("MapasCulturais\Entities\Space");
             $opportunity->setSpace($data['space']);
         }
-        if (isset($data['agent'])) {
+        if (true === isset($data['agent'])) {
             $opportunity->setObjectType("MapasCulturais\Entities\Agent");
             $opportunity->setAgent($data['agent']);
         }
@@ -85,5 +73,11 @@ class OpportunityService
         $this->repository->save($opportunity);
 
         return $opportunity;
+    }
+
+    public function removeById(int $id): void
+    {
+        $opportunity = $this->repository->find($id);
+        $this->repository->remove($opportunity);
     }
 }

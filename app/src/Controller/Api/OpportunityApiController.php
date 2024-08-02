@@ -4,24 +4,19 @@ declare(strict_types=1);
 
 namespace App\Controller\Api;
 
-use App\Repository\OpportunityRepository;
+use App\Repository\Interface\OpportunityRepositoryInterface;
 use App\Request\OpportunityRequest;
-use App\Service\OpportunityService;
-use Exception;
+use App\Service\Interface\OpportunityServiceInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 
-class OpportunityApiController
+class OpportunityApiController extends AbstractApiController
 {
-    private OpportunityRequest $opportunityRequest;
-    private OpportunityService $opportunityService;
-    private OpportunityRepository $repository;
-
-    public function __construct()
-    {
-        $this->repository = new OpportunityRepository();
-        $this->opportunityRequest = new OpportunityRequest();
-        $this->opportunityService = new OpportunityService();
+    public function __construct(
+        private readonly OpportunityRepositoryInterface $repository,
+        private readonly OpportunityServiceInterface $opportunityService,
+        private readonly OpportunityRequest $opportunityRequest
+    ) {
     }
 
     public function getList(): JsonResponse
@@ -33,33 +28,30 @@ class OpportunityApiController
 
     public function getOne(array $params): JsonResponse
     {
-        $opportunity = $this->repository->find((int) $params['id']);
+        $id = $this->extractIdParam($params);
+        $opportunity = $this->repository->find($id);
 
         return new JsonResponse($opportunity);
     }
 
     public function post(): JsonResponse
     {
-        try {
-            $opportunityData = $this->opportunityRequest->validatePost();
-            $opportunity = $this->opportunityService->create((object) $opportunityData);
+        $opportunityData = $this->opportunityRequest->validatePost();
+        $opportunity = $this->opportunityService->create((object) $opportunityData);
 
-            $responseData = [
-                'id' => $opportunity->getId(),
-                'name' => $opportunity->getName(),
-                'terms' => $opportunity->getTerms(),
-                '_type' => $opportunity->getType(),
-            ];
+        $responseData = [
+            'id' => $opportunity->getId(),
+            'name' => $opportunity->getName(),
+            'terms' => $opportunity->getTerms(),
+            '_type' => $opportunity->getType(),
+        ];
 
-            return new JsonResponse($responseData, Response::HTTP_CREATED);
-        } catch (Exception $exception) {
-            return new JsonResponse(['error' => $exception->getMessage()], Response::HTTP_BAD_REQUEST);
-        }
+        return new JsonResponse($responseData, Response::HTTP_CREATED);
     }
 
     public function getOpportunitiesByAgent(array $params): JsonResponse
     {
-        $agentId = (int) $params['id'];
+        $agentId = $this->extractIdParam($params);
         $opportunities = $this->repository->findOpportunitiesByAgentId($agentId);
 
         return new JsonResponse($opportunities);
@@ -67,25 +59,18 @@ class OpportunityApiController
 
     public function patch(array $params): JsonResponse
     {
-        try {
-            $opportunityData = $this->opportunityRequest->validateUpdate();
-            $opportunity = $this->opportunityService->update((int) $params['id'], (object) $opportunityData);
+        $id = $this->extractIdParam($params);
+        $opportunityData = $this->opportunityRequest->validateUpdate();
+        $opportunity = $this->opportunityService->update($id, (object) $opportunityData);
 
-            return new JsonResponse($opportunity, Response::HTTP_CREATED);
-        } catch (Exception $exception) {
-            return new JsonResponse(['error' => $exception->getMessage()], Response::HTTP_BAD_REQUEST);
-        }
+        return new JsonResponse($opportunity, Response::HTTP_CREATED);
     }
 
-    public function delete(array $params): JsonResponse
+    public function remove(array $params): JsonResponse
     {
-        try {
-            $opportunity = $this->opportunityRequest->validateDelete($params);
-            $this->repository->softDelete($opportunity);
+        $id = $this->extractIdParam($params);
+        $this->opportunityService->removeById($id);
 
-            return new JsonResponse([], Response::HTTP_NO_CONTENT);
-        } catch (Exception $exception) {
-            return new JsonResponse(['error' => $exception->getMessage()], Response::HTTP_BAD_REQUEST);
-        }
+        return new JsonResponse(status: Response::HTTP_NO_CONTENT);
     }
 }

@@ -13,7 +13,7 @@ return [
     ],
     '/api/v2/spaces/{id}' => [
         Request::METHOD_GET => [SpaceApiController::class, 'getOne'],
-        Request::METHOD_DELETE => [SpaceApiController::class, 'delete'],
+        Request::METHOD_DELETE => [SpaceApiController::class, 'remove'],
         Request::METHOD_PATCH => [SpaceApiController::class, 'patch'],
     ],
     '/api/v2/spaces/{id}/events' => [

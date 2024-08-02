@@ -1,0 +1,38 @@
+type: object
+properties:
+  "@entityType":
+      type: string
+      example: "term"
+      description: Tipo de entidade
+  id:
+    type: integer
+    example: 1
+    description: Identificador único do termo
+  taxonomy:
+    type: string
+    example: "area"
+    description: Tipo de termo
+  term:
+    type: string
+    example: "Artes Circenses"
+    description: Nome do termo
+  description:
+    type: string
+    example: "Artes circenses são manifestações artísticas que combinam elementos de circo, teatro, dança e música."
+    description: Texto descritivo do termo
+  controllerId:
+    type: string
+    example: "term"
+    description: Identificador do controlador
+  deleteUrl:
+    type: string
+    example: "http://localhost/term/apaga/1/"
+    description: URL para apagar o termo
+  editUrl:
+    type: string
+    example: "http://localhost/term/edita/1/"
+    description: URL para editar o termo
+  singleUrl:
+    type: string
+    example: "http://localhost/term/acesso/1/"
+    description: URL para acessar o termo

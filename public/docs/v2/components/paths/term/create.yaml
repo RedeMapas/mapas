@@ -1,0 +1,16 @@
+tags:
+  - Termos
+summary: Cria um termo
+description: Cria um novo termo a partir dos dados fornecidos
+requestBody:
+  content:
+    application/json:
+      schema:
+        $ref: '../../requestBodies/term/post.yaml'
+responses:
+  '201':
+    description: Termo criado com sucesso.
+    content:
+      application/json:
+        schema:
+          $ref: '../../responses/term/created.yaml'

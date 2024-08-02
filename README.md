@@ -26,11 +26,12 @@ Agradecemos profundamente a todos que contribuíram até a última versão do pr
 - [Nova Arquitetura](./app/README.md) de arquivos e diretórios
 - [Conexão](./app/README.md) com o Banco de Dados
 - [Como colaborar](./help/CREATE-ISSUES.md) criando issues
-- [Como implementar](./app/CREATE-PULL-REQUESTS.md) novos códigos através de pull requests
+- [Como implementar](./help/CREATE-PULL-REQUESTS.md) novos códigos através de pull requests
+- [Fluxo](./help/DEV-FLOW.md) de Desenvolvimento  
 
 ## Tecnologias
 
-- PHP7^
+- PHP8.1^
   - Symfony packages
   - Slim packages
   - Doctrine

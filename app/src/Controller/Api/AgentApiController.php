@@ -4,27 +4,20 @@ declare(strict_types=1);
 
 namespace App\Controller\Api;
 
-use App\Exception\ResourceNotFoundException;
-use App\Repository\AgentRepository;
+use App\Exception\FieldRequiredException;
+use App\Repository\Interface\AgentRepositoryInterface;
 use App\Request\AgentRequest;
-use App\Service\AgentService;
-use Exception;
+use App\Service\Interface\AgentServiceInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 
-class AgentApiController
+class AgentApiController extends AbstractApiController
 {
-    public AgentService $agentService;
-    private AgentRequest $agentRequest;
-
-    private AgentRepository $repository;
-
-    public function __construct()
-    {
-        $this->repository = new AgentRepository();
-
-        $this->agentService = new AgentService();
-        $this->agentRequest = new AgentRequest();
+    public function __construct(
+        private readonly AgentRepositoryInterface $repository,
+        private readonly AgentServiceInterface $agentService,
+        private readonly AgentRequest $agentRequest
+    ) {
     }
 
     public function getList(): JsonResponse
@@ -36,63 +29,55 @@ class AgentApiController
 
     public function getOne(array $params): JsonResponse
     {
-        $agent = $this->repository->find((int) $params['id']);
+        $id = $this->extractIdParam($params);
 
-        return new JsonResponse($agent);
+        return new JsonResponse(
+            $this->repository->find($id)
+        );
     }
 
     public function getTypes(): JsonResponse
     {
-        $types = $this->agentService->getTypes();
-
-        return new JsonResponse($types);
+        return new JsonResponse(
+            $this->agentService->getTypes()
+        );
     }
 
     public function post(): JsonResponse
     {
-        try {
-            $agentData = $this->agentRequest->validatePost();
+        $agentData = $this->agentRequest->validatePost();
 
-            $agent = $this->agentService->create((object) $agentData);
-
-            $responseData = [
-                'id' => $agent->getId(),
-                'name' => $agent->getName(),
-                'shortDescription' => $agent->getShortDescription(),
-                'terms' => $agent->getTerms(),
-                'type' => $agent->getType(),
-            ];
-
-            return new JsonResponse($responseData, Response::HTTP_CREATED);
-        } catch (Exception $exception) {
-            return new JsonResponse(['error' => $exception->getMessage()], Response::HTTP_BAD_REQUEST);
+        if (true === empty($agentData['name'])) {
+            throw new FieldRequiredException('name');
         }
+
+        $agent = $this->agentService->create((object) $agentData);
+
+        $responseData = [
+            'id' => $agent->getId(),
+            'name' => $agent->getName(),
+            'shortDescription' => $agent->getShortDescription(),
+            'terms' => $agent->getTerms(),
+            'type' => $agent->getType(),
+        ];
+
+        return new JsonResponse($responseData, Response::HTTP_CREATED);
     }
 
     public function patch(array $params): JsonResponse
     {
-        try {
-            $agentData = $this->agentRequest->validateUpdate();
-            $agent = $this->agentService->update((int) $params['id'], (object) $agentData);
+        $id = $this->extractIdParam($params);
+        $agentData = $this->agentRequest->validateUpdate();
+        $agent = $this->agentService->update($id, (object) $agentData);
 
-            return new JsonResponse($agent, Response::HTTP_CREATED);
-        } catch (ResourceNotFoundException $exception) {
-            return new JsonResponse(['error' => $exception->getMessage()], Response::HTTP_NOT_FOUND);
-        } catch (Exception $exception) {
-            return new JsonResponse(['error' => $exception->getMessage()], Response::HTTP_BAD_REQUEST);
-        }
+        return new JsonResponse($agent, Response::HTTP_CREATED);
     }
 
-    public function delete(array $params): JsonResponse
+    public function remove(array $params): JsonResponse
     {
-        try {
-            $this->agentService->discard((int) $params['id']);
+        $id = $this->extractIdParam($params);
+        $this->agentService->removeById($id);
 
-            return new JsonResponse(status: Response::HTTP_NO_CONTENT);
-        } catch (ResourceNotFoundException $exception) {
-            return new JsonResponse(['error' => $exception->getMessage()], Response::HTTP_NOT_FOUND);
-        } catch (Exception $exception) {
-            return new JsonResponse(['error' => $exception->getMessage()], Response::HTTP_BAD_REQUEST);
-        }
+        return new JsonResponse(status: Response::HTTP_NO_CONTENT);
     }
 }

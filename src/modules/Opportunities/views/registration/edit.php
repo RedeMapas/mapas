@@ -16,12 +16,13 @@ $this->import('
     mc-icon
     opportunity-header
     registration-actions
+    registration-form
+    request-agent-avatar 
     registration-related-agents
     registration-related-space
     registration-related-project
     registration-steps
     select-entity
-    v1-embed-tool
 ');
 
 $this->useOpportunityAPI();
@@ -47,6 +48,7 @@ $this->breadcrumb = $breadcrumb;
 
  $this->import('
     entity-field
+    entity-renew-lock
     mc-avatar
     opportunity-header
     registration-info
@@ -55,12 +57,18 @@ $this->breadcrumb = $breadcrumb;
 ?>
 
 <div class="main-app registration edit">
+    <entity-renew-lock :entity="entity"></entity-renew-lock>
     <mc-breadcrumb></mc-breadcrumb>
     <opportunity-header :opportunity="entity.opportunity"></opportunity-header>
 
-    <h1 class="registration__title">
-        <?= i::__('Formulário de inscrição') ?>
-    </h1>
+    <div class="registration__title">
+        <h1>
+            <?= i::__('Formulário de inscrição') ?>
+        </h1>
+        <h3>
+            <?= $opportunity->name ?>
+        </h3>
+    </div>
 
     <div class="registration__content">
         <div class="registration__steps">
@@ -78,15 +86,22 @@ $this->breadcrumb = $breadcrumb;
 
                     <div class="section__content">                         
                         <div class="card owner">                            
-                            <h3 class="card__title"> 
-                                <?= i::__('Agente responsável') ?> 
-                            </h3>
-
                             <div class="card__content">
                                 <div class="owner">
-                                    <mc-avatar :entity="entity.owner" size="small"></mc-avatar>
-                                    <div class="owner__name">
-                                        {{entity.owner.name}}
+                                    <mc-avatar v-if="!entity.opportunity.requestAgentAvatar" :entity="entity.owner" size="small"></mc-avatar>
+                                    <request-agent-avatar v-if="entity.opportunity.requestAgentAvatar" :entity="entity"></request-agent-avatar>
+                                    <div class="owner__content">
+                                        <div class="owner__content--title">
+                                            <h3 class="card__title"> 
+                                                <?= i::__('Agente responsável') ?> 
+                                            </h3>
+                                            <div class="owner__name">
+                                                {{entity.owner.name}}
+                                            </div>
+                                        </div>
+                                        <div v-if="entity.opportunity.requestAgentAvatar" class="card__mandatory"> 
+                                            <div class="obrigatory"> <?= i::__('*obrigatório') ?> </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -109,7 +124,7 @@ $this->breadcrumb = $breadcrumb;
                 </section>
 
                 <section class="section">
-                    <v1-embed-tool iframe-id="registration-form" route="registrationform" :id="entity.id"></v1-embed-tool>
+                    <registration-form :registration="entity"></registration-form>
                 </section>
             </main>
 

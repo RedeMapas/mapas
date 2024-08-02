@@ -1,0 +1,31 @@
+post:
+  tags:
+    - Autenticação
+  summary: Faz o login de um usuário.
+  description: O login permite a geração de um token de acesso para acesso a API.
+  requestBody:
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            email:
+              type: string
+              example: chiquim@email.com
+              description: O email do usuário
+            password:
+              type: string
+              example: 12345678
+              description: A senha do usuário
+  responses:
+    '200':
+      description: O token de acesso para este usuário.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              token:
+                type: string
+                example: jbca87tg2hr928yf6gy2db8yug6q
+                description: O token de acesso

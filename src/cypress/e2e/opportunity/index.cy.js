@@ -36,7 +36,7 @@ describe("Opportunity Page", () => {
     it("Garante que os filtros de oportunidades funcionam quando existem resultados para a busca textual", () => {
         cy.visit("/oportunidades");
 
-        cy.get(".search-filter__actions--form-input").type("UFPR");
+        cy.get(".search-filter__actions--form-input").type("teste");
 
         cy.wait(1000);
 

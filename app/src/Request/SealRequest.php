@@ -7,20 +7,16 @@ namespace App\Request;
 use App\DTO\SealDto;
 use App\Exception\ValidatorException;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
-use Symfony\Component\Serializer\Serializer;
-use Symfony\Component\Validator\Validation;
+use Symfony\Component\Serializer\SerializerInterface;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class SealRequest
 {
-    protected Request $request;
-
-    protected Serializer $serializer;
-
-    public function __construct()
-    {
-        $this->request = new Request();
-        $this->serializer = new Serializer([new ObjectNormalizer()]);
+    public function __construct(
+        private readonly Request $request,
+        private readonly ValidatorInterface $validator,
+        private readonly SerializerInterface $serializer
+    ) {
     }
 
     public function validatePost(): array
@@ -32,9 +28,7 @@ class SealRequest
 
         $seal = $this->serializer->denormalize($data, SealDto::class);
 
-        $validation = Validation::createValidatorBuilder()->enableAttributeMapping()->getValidator();
-
-        $violations = $validation->validate($seal, groups: ['post']);
+        $violations = $this->validator->validate($seal, groups: ['post']);
 
         if (0 < count($violations)) {
             throw new ValidatorException(violations: $violations);
@@ -52,9 +46,7 @@ class SealRequest
 
         $seal = $this->serializer->denormalize($data, SealDto::class);
 
-        $validation = Validation::createValidatorBuilder()->enableAttributeMapping()->getValidator();
-
-        $violations = $validation->validate($seal, groups: ['patch']);
+        $violations = $this->validator->validate($seal, groups: ['patch']);
 
         if (0 < count($violations)) {
             throw new ValidatorException(violations: $violations);

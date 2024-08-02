@@ -1,0 +1,14 @@
+type: object
+properties:
+  taxonomy:
+    type: string
+    example: "area"
+    description: Tipo de termo
+  term:
+    type: string
+    example: "Artes Circenses"
+    description: Nome do termo
+  description:
+    type: string
+    example: "Artes circenses são manifestações artísticas que combinam elementos de circo, teatro, dança e música."
+    description: Texto descritivo do termo

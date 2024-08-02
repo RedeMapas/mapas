@@ -4,26 +4,19 @@ declare(strict_types=1);
 
 namespace App\Controller\Api;
 
-use App\Repository\EventRepository;
+use App\Repository\Interface\EventRepositoryInterface;
 use App\Request\EventRequest;
-use App\Service\EventService;
-use Exception;
+use App\Service\Interface\EventServiceInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 
-class EventApiController
+class EventApiController extends AbstractApiController
 {
-    private EventService $eventService;
-    private EventRepository $repository;
-    private EventRequest $eventRequest;
-
-    public function __construct()
-    {
-        $this->eventService = new EventService();
-
-        $this->repository = new EventRepository();
-
-        $this->eventRequest = new EventRequest();
+    public function __construct(
+        private readonly EventRepositoryInterface $repository,
+        private readonly EventServiceInterface $eventService,
+        private readonly EventRequest $eventRequest
+    ) {
     }
 
     public function getList(): JsonResponse
@@ -35,7 +28,8 @@ class EventApiController
 
     public function getOne(array $params): JsonResponse
     {
-        $event = $this->repository->find((int) $params['id']);
+        $id = $this->extractIdParam($params);
+        $event = $this->repository->find($id);
 
         return new JsonResponse($event);
     }
@@ -49,53 +43,34 @@ class EventApiController
 
     public function getEventsBySpace(array $params): JsonResponse
     {
-        $events = $this->repository->findEventsBySpaceId((int) $params['id']);
+        $id = $this->extractIdParam($params);
+        $events = $this->repository->findEventsBySpaceId($id);
 
         return new JsonResponse($events);
     }
 
     public function post(): JsonResponse
     {
-        try {
-            $eventData = $this->eventRequest->validatePost();
+        $eventData = $this->eventRequest->validatePost();
+        $event = $this->eventService->create((object) $eventData);
 
-            $event = $this->eventService->create((object) $eventData);
-
-            $responseData = [
-                'id' => $event->getId(),
-                'name' => $event->getName(),
-                'shortDescription' => $event->getShortDescription(),
-                'classificacaoEtaria' => $event->getMetadata('classificacaoEtaria'),
-                'terms' => $event->getTerms(),
-            ];
-
-            return new JsonResponse($responseData, Response::HTTP_CREATED);
-        } catch (Exception $exception) {
-            return new JsonResponse(['error' => $exception->getMessage()], Response::HTTP_BAD_REQUEST);
-        }
+        return new JsonResponse($event, Response::HTTP_CREATED);
     }
 
     public function patch(array $params): JsonResponse
     {
-        try {
-            $eventData = $this->eventRequest->validateUpdate();
-            $event = $this->eventService->update((int) $params['id'], (object) $eventData);
+        $id = $this->extractIdParam($params);
+        $eventData = $this->eventRequest->validateUpdate();
+        $event = $this->eventService->update($id, (object) $eventData);
 
-            return new JsonResponse($event, Response::HTTP_CREATED);
-        } catch (Exception $exception) {
-            return new JsonResponse(['error' => $exception->getMessage()], Response::HTTP_BAD_REQUEST);
-        }
+        return new JsonResponse($event, Response::HTTP_OK);
     }
 
-    public function delete($params): JsonResponse
+    public function remove(array $params): JsonResponse
     {
-        try {
-            $event = $this->eventRequest->validateEventExistent($params);
-            $this->repository->softDelete($event);
+        $id = $this->extractIdParam($params);
+        $this->eventService->removeById($id);
 
-            return new JsonResponse([], Response::HTTP_OK);
-        } catch (Exception $exception) {
-            return new JsonResponse(['error' => $exception->getMessage()], Response::HTTP_BAD_REQUEST);
-        }
+        return new JsonResponse(status: Response::HTTP_NO_CONTENT);
     }
 }

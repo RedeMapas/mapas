@@ -6,24 +6,21 @@ function checkFilterCountOf(element) {
                 var resultsCount = Number(resultsTextArray[0]);
                 const resultsCountPerPage = resultsCount < countPerPage ? resultsCount : countPerPage;
 
+                cy.get("span.upper").should("have.length", resultsCountPerPage);
+                cy.wait(1000);
+
                 switch (element) {
                         case "opportunity":
-                                cy.get("span.upper." + element + "__color").should("have.length", resultsCountPerPage);
-                                cy.wait(1000);
                                 cy.contains(resultsCount + " Oportunidades encontradas");
                                 
                                 break;
                         
                         case "project":
-                                cy.get("span.upper." + element + "__color").should("have.length", resultsCountPerPage);
-                                cy.wait(1000);
                                 cy.contains(resultsCount + " Projetos encontrados");
         
                                 break;
                         
                         case "space":
-                                cy.get("span.upper." + element + "__color").should("have.length", resultsCountPerPage);
-                                cy.wait(1000);
                                 cy.contains(resultsCount + " Espaços encontrados");
                 
                                 break;

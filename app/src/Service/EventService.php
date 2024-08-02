@@ -4,28 +4,19 @@ declare(strict_types=1);
 
 namespace App\Service;
 
-use App\Enum\EntityStatusEnum;
-use App\Repository\EventRepository;
-use App\Request\EventRequest;
+use App\Repository\Interface\EventRepositoryInterface;
+use App\Service\Interface\EventServiceInterface;
 use MapasCulturais\Entities\Event;
-use Symfony\Component\Routing\Exception\ResourceNotFoundException;
-use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
-use Symfony\Component\Serializer\Serializer;
 use Symfony\Component\Serializer\SerializerInterface;
 
-class EventService
+class EventService implements EventServiceInterface
 {
-    protected EventRepository $repository;
-    protected EventRequest $eventRequest;
-
     public const FILE_TYPES = '/src/conf/event-types.php';
-    private SerializerInterface $serializer;
 
-    public function __construct()
-    {
-        $this->repository = new EventRepository();
-        $this->eventRequest = new EventRequest();
-        $this->serializer = new Serializer([new ObjectNormalizer()]);
+    public function __construct(
+        private readonly EventRepositoryInterface $repository,
+        private readonly SerializerInterface $serializer
+    ) {
     }
 
     public function getTypes(): array
@@ -35,7 +26,7 @@ class EventService
         return array_map(fn ($key, $item) => ['id' => $key, 'name' => $item['name']], array_keys($typesFromConf), $typesFromConf);
     }
 
-    public function create($data): Event
+    public function create(mixed $data): Event
     {
         $event = new Event();
 
@@ -53,10 +44,6 @@ class EventService
     {
         $eventFromDB = $this->repository->find($id);
 
-        if (null === $eventFromDB || EntityStatusEnum::TRASH->getValue() === $eventFromDB->status) {
-            throw new ResourceNotFoundException('Event not found or already deleted.');
-        }
-
         $eventUpdated = $this->serializer->denormalize(
             data: $data,
             type: Event::class,
@@ -67,5 +54,11 @@ class EventService
         $this->repository->update($eventUpdated);
 
         return $eventUpdated;
+    }
+
+    public function removeById(int $id): void
+    {
+        $event = $this->repository->find($id);
+        $this->repository->remove($event);
     }
 }

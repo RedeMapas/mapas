@@ -1,0 +1,58 @@
+name: tests
+
+on:
+  pull_request:
+    branches:
+      - develop
+
+jobs:
+  CODE_STYLE:
+    name: CODE STYLE
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run PHP-CS-Fixer
+        uses: erkenes/php-cs-fixer-action@main
+        with:
+          args: '--dry-run --diff -vvv'
+
+  PHP_UNIT:
+    name: PHP UNIT
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4.1.1
+
+      - name: Checkout submodules
+        run: git submodule update --init --recursive
+
+      - name: Ajustar branch do MultipleLocalAuth
+        run: cd src/plugins/MultipleLocalAuth && git checkout v3.0.0
+
+      - name: Inicializar o mapa em modo develop
+        run: cd dev && docker-compose run -d --service-ports mapas
+
+      - name: Esperar o serviço inicializar
+        run: sleep 60
+
+      - name: Instalar os pacotes
+        run: docker exec -t $(docker-compose -f dev/docker-compose.yml ps -q mapas) composer.phar install
+
+      - name: Criar o arquivo .env na pasta app
+        run: docker exec -t $(docker-compose -f dev/docker-compose.yml ps -q mapas) cp app/.env.example app/.env
+
+      - name: Configurar o arquivo .env na pasta app
+        run: docker exec -t $(docker-compose -f dev/docker-compose.yml ps -q mapas) sed -i 's/APP_ENV=/APP_ENV=local/g' app/.env
+
+      - name: Executando as migrations do banco de dados
+        run: docker exec -t $(docker-compose -f dev/docker-compose.yml ps -q mapas) php app/bin/doctrine migrations:migrate -n
+
+      - name: Executar as fixtures
+        run: docker exec -t $(docker-compose -f dev/docker-compose.yml ps -q mapas) php app/bin/console app:fixtures
+
+      - name: Executar os testes
+        uses: php-actions/phpunit@master
+        with:
+          version: 10.5
+          php_version: 8.2
+          bootstrap: vendor/autoload.php
+          args: app/tests

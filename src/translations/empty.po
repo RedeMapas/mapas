@@ -6835,6 +6835,10 @@ msgstr ""
 msgid "Adicione uma nova tag"
 msgstr ""
 
+#: modules/Entities/components/entity-terms/template.php:33
+msgid "Não é possível inserir uma tag vazia."
+msgstr ""
+
 #: modules/Entities/views/agent/edit-1.php:47
 #: modules/Entities/views/agent/edit-2.php:46
 #: modules/Entities/views/agent/single-1.php:42

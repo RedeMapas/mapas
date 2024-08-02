@@ -5,11 +5,13 @@ declare(strict_types=1);
 namespace App\Repository;
 
 use App\Enum\EntityStatusEnum;
+use App\Exception\ResourceNotFoundException;
+use App\Repository\Interface\EventRepositoryInterface;
 use Doctrine\Persistence\ObjectRepository;
 use MapasCulturais\Entities\Event;
 use MapasCulturais\Entities\EventOccurrence;
 
-class EventRepository extends AbstractRepository
+class EventRepository extends AbstractRepository implements EventRepositoryInterface
 {
     private ObjectRepository $repository;
 
@@ -23,18 +25,29 @@ class EventRepository extends AbstractRepository
     {
         return $this->repository
             ->createQueryBuilder('events')
+            ->where('events.status = :status')
+            ->setParameter('status', EntityStatusEnum::ENABLED->getValue())
             ->getQuery()
             ->getArrayResult();
     }
 
-    public function find(int $id): ?Event
+    public function find(int $id): Event
     {
-        return $this->repository->find($id);
+        $event = $this->repository->findOneBy([
+            'id' => $id,
+            'status' => EntityStatusEnum::ENABLED->getValue(),
+        ]);
+
+        if (null === $event) {
+            throw new ResourceNotFoundException();
+        }
+
+        return $event;
     }
 
     public function findEventsBySpaceId(int $spaceId): array
     {
-        $queryBuilder = $this->getEntityManager()
+        $queryBuilder = $this->entityManager
             ->createQueryBuilder()
             ->select([
                 'e.id',
@@ -61,10 +74,11 @@ class EventRepository extends AbstractRepository
         $event->save();
     }
 
-    public function softDelete(Event $event): void
+    public function remove(Event $event): void
     {
         $event->setStatus(EntityStatusEnum::TRASH->getValue());
-        $this->save($event);
+        $this->mapaCulturalEntityManager->persist($event);
+        $this->mapaCulturalEntityManager->flush();
     }
 
     public function update(Event $event): void

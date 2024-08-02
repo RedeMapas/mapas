@@ -4,27 +4,19 @@ declare(strict_types=1);
 
 namespace App\Controller\Api;
 
-use App\Exception\ResourceNotFoundException;
-use App\Repository\ProjectRepository;
+use App\Repository\Interface\ProjectRepositoryInterface;
 use App\Request\ProjectRequest;
-use App\Service\ProjectService;
-use Exception;
+use App\Service\Interface\ProjectServiceInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 
-class ProjectApiController
+class ProjectApiController extends AbstractApiController
 {
-    public ProjectService $projectService;
-    private ProjectRequest $projectRequest;
-
-    private ProjectRepository $repository;
-
-    public function __construct()
-    {
-        $this->repository = new ProjectRepository();
-
-        $this->projectService = new ProjectService();
-        $this->projectRequest = new ProjectRequest();
+    public function __construct(
+        private readonly ProjectRepositoryInterface $repository,
+        private readonly ProjectServiceInterface $projectService,
+        private readonly ProjectRequest $projectRequest
+    ) {
     }
 
     public function getList(): JsonResponse
@@ -36,54 +28,42 @@ class ProjectApiController
 
     public function getOne(array $params): JsonResponse
     {
-        $project = $this->repository->find((int) $params['id']);
+        $id = $this->extractIdParam($params);
+        $project = $this->repository->find($id);
 
         return new JsonResponse($project);
     }
 
     public function post(): JsonResponse
     {
-        try {
-            $projectData = $this->projectRequest->validatePost();
+        $projectData = $this->projectRequest->validatePost();
 
-            $project = $this->projectService->create((object) $projectData);
+        $project = $this->projectService->create((object) $projectData);
 
-            $responseData = [
-                'id' => $project->getId(),
-                'name' => $project->getName(),
-                'shortDescription' => $project->getShortDescription(),
-                'type' => $project->getType(),
-            ];
+        $responseData = [
+            'id' => $project->getId(),
+            'name' => $project->getName(),
+            'shortDescription' => $project->getShortDescription(),
+            'type' => $project->getType(),
+        ];
 
-            return new JsonResponse($responseData, status: Response::HTTP_CREATED);
-        } catch (Exception $exception) {
-            return new JsonResponse(['error' => $exception->getMessage()], status: Response::HTTP_BAD_REQUEST);
-        }
+        return new JsonResponse($responseData, status: Response::HTTP_CREATED);
     }
 
     public function patch(array $params): JsonResponse
     {
-        try {
-            $projectData = $this->projectRequest->validateUpdate();
+        $id = $this->extractIdParam($params);
+        $projectData = $this->projectRequest->validateUpdate();
+        $project = $this->projectService->update($id, (object) $projectData);
 
-            $project = $this->projectService->update((int) $params['id'], (object) $projectData);
-
-            return new JsonResponse($project, Response::HTTP_CREATED);
-        } catch (Exception $exception) {
-            return new JsonResponse(['error' => $exception->getMessage()], Response::HTTP_BAD_REQUEST);
-        }
+        return new JsonResponse($project, Response::HTTP_CREATED);
     }
 
-    public function delete(array $params): JsonResponse
+    public function remove(array $params): JsonResponse
     {
-        try {
-            $this->projectService->discard((int) $params['id']);
+        $id = $this->extractIdParam($params);
+        $this->projectService->removeById($id);
 
-            return new JsonResponse(status: Response::HTTP_NO_CONTENT);
-        } catch (ResourceNotFoundException $exception) {
-            return new JsonResponse(['error' => $exception->getMessage()], Response::HTTP_NOT_FOUND);
-        } catch (Exception $exception) {
-            return new JsonResponse(['error' => $exception->getMessage()], Response::HTTP_BAD_REQUEST);
-        }
+        return new JsonResponse(status: Response::HTTP_NO_CONTENT);
     }
 }

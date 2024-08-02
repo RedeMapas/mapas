@@ -4,6 +4,15 @@ declare(strict_types=1);
 
 namespace App;
 
+use App\Exception\FieldInvalidException;
+use App\Exception\FieldRequiredException;
+use App\Exception\InvalidRequestException;
+use App\Exception\RequiredIdParamException;
+use App\Exception\ResourceNotFoundException as InternalResourceNotFoundException;
+use App\Exception\ValidatorException;
+use DI\ContainerBuilder;
+use Error;
+use Exception;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Exception\MethodNotAllowedException;
@@ -33,13 +42,13 @@ class Kernel
             $matcher = new UrlMatcher($this->routes, $context);
 
             $this->dispatchAction($matcher);
-        } catch (MethodNotAllowedException $exception) {
+        } catch (MethodNotAllowedException) {
             (new JsonResponse([
                 'error' => 'Method not allowed: '.$_SERVER['REQUEST_METHOD'],
             ], status: Response::HTTP_METHOD_NOT_ALLOWED))->send();
 
             exit;
-        } catch (ResourceNotFoundException $exception) {
+        } catch (ResourceNotFoundException) {
             return;
         }
     }
@@ -58,7 +67,26 @@ class Kernel
 
         unset($parameters['_route']);
 
-        $response = (new $controller())->$method($parameters);
+        $builder = new ContainerBuilder();
+        $builder->addDefinitions(dirname(__DIR__).'/config/di.php');
+        $container = $builder->build();
+
+        $controller = $container->get($controller);
+
+        try {
+            $response = $controller->$method($parameters);
+        } catch (InternalResourceNotFoundException $exception) {
+            $response = new JsonResponse(['error' => $exception->getMessage()], Response::HTTP_NOT_FOUND);
+        } catch (ValidatorException $exception) {
+            $response = new JsonResponse([
+                'error' => $exception->getMessage(),
+                'fields' => $exception->getFields(),
+            ], Response::HTTP_BAD_REQUEST);
+        } catch (FieldInvalidException|FieldRequiredException|RequiredIdParamException|InvalidRequestException $exception) {
+            $response = new JsonResponse(['error' => $exception->getMessage()], Response::HTTP_BAD_REQUEST);
+        } catch (Exception|Error $exception) {
+            $response = new JsonResponse(['error' => $exception->getMessage()], Response::HTTP_BAD_REQUEST);
+        }
 
         if ($response instanceof Response) {
             $response->send();

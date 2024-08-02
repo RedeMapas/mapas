@@ -1,0 +1,14 @@
+type: object
+properties:
+  id:
+    type: integer
+    example: 1819
+    description: Um id numérico que representa o usuário
+  name:
+    type: string
+    example: Chiquim da Silva
+    description: O nome do usuário
+  email:
+    type: string
+    example: chiquim@email.com
+    description: O email do usuário

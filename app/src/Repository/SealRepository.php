@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace App\Repository;
 
 use App\Enum\EntityStatusEnum;
+use App\Exception\ResourceNotFoundException;
+use App\Repository\Interface\SealRepositoryInterface;
 use Doctrine\Persistence\ObjectRepository;
 use MapasCulturais\Entities\Seal;
 
-class SealRepository extends AbstractRepository
+class SealRepository extends AbstractRepository implements SealRepositoryInterface
 {
     private ObjectRepository $repository;
 
@@ -23,13 +25,24 @@ class SealRepository extends AbstractRepository
     {
         return $this->repository
             ->createQueryBuilder('seal')
+            ->where('seal.status = :status')
+            ->setParameter('status', EntityStatusEnum::ENABLED->getValue())
             ->getQuery()
             ->getArrayResult();
     }
 
-    public function find(int $id): ?Seal
+    public function find(int $id): Seal
     {
-        return $this->repository->find($id);
+        $seal = $this->repository->findOneBy([
+            'id' => $id,
+            'status' => EntityStatusEnum::ENABLED->getValue(),
+        ]);
+
+        if (null === $seal) {
+            throw new ResourceNotFoundException();
+        }
+
+        return $seal;
     }
 
     public function save(Seal $seal): void
@@ -38,10 +51,10 @@ class SealRepository extends AbstractRepository
         $this->mapaCulturalEntityManager->flush();
     }
 
-    public function softDelete(Seal $space): void
+    public function remove(Seal $seal): void
     {
-        $space->setStatus(EntityStatusEnum::TRASH->getValue());
-        $this->mapaCulturalEntityManager->persist($space);
+        $seal->setStatus(EntityStatusEnum::TRASH->getValue());
+        $this->mapaCulturalEntityManager->persist($seal);
         $this->mapaCulturalEntityManager->flush();
     }
 }

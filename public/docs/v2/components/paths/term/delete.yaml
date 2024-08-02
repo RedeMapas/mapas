@@ -1,0 +1,11 @@
+tags:
+  - Termos
+summary: Apaga um termo
+description: Apaga um termo existente
+parameters:
+  - $ref: '../../parameters/path/id.yaml'
+responses:
+  '204':
+    description: O termo foi excluído com sucesso.
+  '404':
+    $ref: '../../responses/error/404.yaml'

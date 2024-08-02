@@ -4,14 +4,64 @@
 require dirname(__DIR__, 2).'/vendor/autoload.php';
 require dirname(__DIR__, 2).'/public/bootstrap.php';
 
+use App\Application\Environment;
+use Doctrine\Migrations\Configuration\Configuration as MigrationsConfiguration;
+use Doctrine\Migrations\Configuration\EntityManager\ExistingEntityManager;
+use Doctrine\Migrations\Configuration\Migration\ExistingConfiguration;
+use Doctrine\Migrations\DependencyFactory;
+use Doctrine\Migrations\Metadata\Storage\TableMetadataStorageConfiguration;
+use Doctrine\Migrations\Tools\Console\Command as MigrationsCommand;
 use Doctrine\ORM\Tools\Console\ConsoleRunner;
 use Doctrine\ORM\Tools\Console\EntityManagerProvider\SingleManagerProvider;
+use Doctrine\ORM\Tools\Console\Command\SchemaTool;
 
 $entityManager = $app->em ?? null;
 
-$commands = [];
-
-ConsoleRunner::run(
-    new SingleManagerProvider($entityManager),
-    $commands
+$application = ConsoleRunner::createApplication(
+    new SingleManagerProvider($entityManager)
 );
+
+$configuration = new MigrationsConfiguration();
+$configuration->addMigrationsDirectory(
+    'App\Migrations',
+    './app/migrations'
+);
+$configuration->setAllOrNothing(true);
+$configuration->setCheckDatabasePlatform(false);
+
+$storageConfiguration = new TableMetadataStorageConfiguration();
+$storageConfiguration->setTableName('doctrine_migration_versions');
+$configuration->setMetadataStorageConfiguration($storageConfiguration);
+
+$dependencyFactory = DependencyFactory::fromEntityManager(
+    new ExistingConfiguration($configuration),
+    new ExistingEntityManager($entityManager)
+);
+
+$application->setCatchExceptions(true);
+
+$application->addCommands([
+    new MigrationsCommand\CurrentCommand($dependencyFactory),
+    new MigrationsCommand\DiffCommand($dependencyFactory),
+    new MigrationsCommand\DumpSchemaCommand($dependencyFactory),
+    new MigrationsCommand\ExecuteCommand($dependencyFactory),
+    new MigrationsCommand\GenerateCommand($dependencyFactory),
+    new MigrationsCommand\LatestCommand($dependencyFactory),
+    new MigrationsCommand\ListCommand($dependencyFactory),
+    new MigrationsCommand\MigrateCommand($dependencyFactory),
+    new MigrationsCommand\RollupCommand($dependencyFactory),
+    new MigrationsCommand\StatusCommand($dependencyFactory),
+    new MigrationsCommand\SyncMetadataCommand($dependencyFactory),
+    new MigrationsCommand\UpToDateCommand($dependencyFactory),
+    new MigrationsCommand\VersionCommand($dependencyFactory),
+]);
+
+if (true === Environment::isLocal()) {
+    $application->addCommands([
+        new SchemaTool\UpdateCommand(),
+        new SchemaTool\CreateCommand(),
+        new SchemaTool\DropCommand(),
+    ]);
+}
+
+$application->run();

@@ -1,4 +1,4 @@
-function confirmRecaptcha () {
+export function confirmRecaptcha() {
   cy.get("iframe")
     .first()
     .its("0.contentDocument.body")
@@ -9,5 +9,3 @@ function confirmRecaptcha () {
     .should("be.visible")
     .click();
 }
-
-module.exports = { confirmRecaptcha };

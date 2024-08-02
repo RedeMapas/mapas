@@ -16,6 +16,6 @@ return [
     '/api/v2/events/{id}' => [
         Request::METHOD_GET => [EventApiController::class, 'getOne'],
         Request::METHOD_PATCH => [EventApiController::class, 'patch'],
-        Request::METHOD_DELETE => [EventApiController::class, 'delete'],
+        Request::METHOD_DELETE => [EventApiController::class, 'remove'],
     ],
 ];

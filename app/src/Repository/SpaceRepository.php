@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace App\Repository;
 
 use App\Enum\EntityStatusEnum;
+use App\Exception\ResourceNotFoundException;
+use App\Repository\Interface\SpaceRepositoryInterface;
 use Doctrine\Persistence\ObjectRepository;
 use MapasCulturais\Entities\Space;
 
-class SpaceRepository extends AbstractRepository
+class SpaceRepository extends AbstractRepository implements SpaceRepositoryInterface
 {
     private ObjectRepository $repository;
 
@@ -30,16 +32,27 @@ class SpaceRepository extends AbstractRepository
     {
         return $this->repository
             ->createQueryBuilder('space')
+            ->where('space.status = :status')
+            ->setParameter('status', EntityStatusEnum::ENABLED->getValue())
             ->getQuery()
             ->getArrayResult();
     }
 
-    public function find(int $id): ?Space
+    public function find(int $id): Space
     {
-        return $this->repository->find($id);
+        $space = $this->repository->findOneBy([
+            'id' => $id,
+            'status' => EntityStatusEnum::ENABLED->getValue(),
+        ]);
+
+        if (null === $space) {
+            throw new ResourceNotFoundException();
+        }
+
+        return $space;
     }
 
-    public function softDelete(Space $space): void
+    public function remove(Space $space): void
     {
         $space->setStatus(EntityStatusEnum::TRASH->getValue());
         $this->mapaCulturalEntityManager->persist($space);

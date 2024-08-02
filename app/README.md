@@ -278,6 +278,43 @@ public function __construct()
 
 ---
 
+## Migrations
+Migrations são a forma (correta) de fazer um versionamento do banco de dados, nesta parte da aplicação isso é fornecido pela biblioteca `doctrine/migrations` mas no core do MapaCultural isso ainda é feito por uma decisão técnica interna chamada `db-updates.php`
+
+<details>
+<summary>Como criar uma nova migration</summary>
+
+#### Passo 1 - Criar uma nova classe no diretório `/app/migrations`
+
+```php
+<?php
+
+declare(strict_types=1);
+
+namespace App\Migrations;
+
+use Doctrine\DBAL\Schema\Schema;
+use Doctrine\Migrations\AbstractMigration;
+
+final class Version20241231235959 extends AbstractMigration
+{
+    public function up(Schema $schema): void
+    {
+        //$this->addSql('CREATE TABLE ...');
+    }
+    
+    public function down(Schema $schema): void
+    {
+        //$this->addSql('DROP TABLE ...');
+    }
+}
+```
+
+Note que o nome da classe deve informar o momento de sua criação, para que seja mantida uma sequencia temporal da evolução do esquema do banco de dados.
+
+> Documentação oficial das migrations do Doctrine: <https://www.doctrine-project.org/projects/doctrine-migrations/en/3.8/reference/generating-migrations.html>
+</details>
+
 ## Command
 Comandos são entradas via CLI (linha de comando) que permitem automatizar alguns processos, como rodar testes, veririfcar estilo de código, e debugar rotas
 
@@ -388,7 +425,7 @@ Para criar um no cenário de teste funcional, basta adicionar sua nova classe no
 ```php
 <?php
 
-namespace App\Tests;
+namespace App\Tests\Functional;
 
 class MeuTest extends AbstractTestCase
 {
@@ -417,8 +454,38 @@ Para executar os testes veja a seção <a href="#console-commands">Console Comma
 
 ---
 
+## DI (Injeção de dependência)
+Com a injeção de dependência diminuímos o acoplamento das nossas classes. E a razão para isso ser tão importante está no princípio da inversão de dependência em que o código deve depender de abstrações e não de implementações concretas.
+
+Documentação PHP-DI: https://php-di.org
+
+Todo o código se encontra no diretório `/app/config`, no arquivo `di.php`.
+
 ## Console Commands
 
+<details>
+<summary>CACHE CLEAR</summary>
+
+### Limpar cache
+Para executar o comando de limpar cache basta entrar no container da aplicação e executar o seguinte comando:
+
+```shell
+php app/bin/console cache:clear
+```
+
+</details>
+
+<details>
+<summary>COMMAND SQL</summary>
+
+### Executar código SQL
+Para executar um comando SQL basta entrar no container da aplicação e executar o seguinte comando:
+
+```shell
+php app/bin/console database:sql {sql}
+```
+O argumento chamado de `sql` é requerido e é o comando a ser executar no banco de dados.
+</details>
 
 <details>
 <summary>TESTS</summary>
@@ -451,11 +518,36 @@ php app/bin/console app:code-style
 
 :memo: Fixtures são dados falsos com a finalidade de testes.
 
+#### Configuração do ambiente
+
+Antes de executar os fixtures, é necessário criar um arquivo `.env` dentro da pasta app (/app/.env). Este arquivo deve conter a configuração de ambiente necessária. Um arquivo de exemplo chamado `.env.example` foi fornecido para facilitar esse processo.
+
+1. Copie o arquivo `.env.example` para `.env`:
+
+    ```sh
+    cp .env.example .env
+    ```
+
+2. Abra o arquivo `.env` e configure as variáveis de ambiente. Para fins de desenvolvimento, você pode definir a variável `APP_ENV` como `local`:
+
+    ```sh
+    APP_ENV=local
+    ```
+
+
+#### Executando os Fixtures
+
 
 Para executar o conjunto de fixtures basta entrar no container da aplicação e executar
 ```
 php app/bin/console app:fixtures
 ```
+> **Observação:**
+> Se o arquivo `.env` não for encontrado, você verá a seguinte mensagem de erro:
+>
+> ```sh
+> Please create a .env file in the root directory (/app/.env)
+> ```
 </details>
 
 <details>

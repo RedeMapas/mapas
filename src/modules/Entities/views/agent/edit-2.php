@@ -19,6 +19,7 @@ $this->import('
     entity-owner
     entity-profile
     entity-related-agents
+    entity-renew-lock
     entity-social-media
     entity-status
     entity-terms
@@ -38,12 +39,13 @@ $this->breadcrumb = [
 ?>
 
 <div class="main-app">
+    <entity-renew-lock :entity="entity"></entity-renew-lock>
     <mc-breadcrumb></mc-breadcrumb>
     <entity-header :entity="entity" editable></entity-header>
 
     <mc-tabs class="tabs" sync-hash>
         <?php $this->applyTemplateHook('tabs','begin') ?>
-        <mc-tab label="<?= i::_e('Informações') ?>" slug="info">
+        <mc-tab label="<?= i::_e('Meu Perfil') ?>" slug="info">
             <mc-container>
                 <entity-status :entity="entity"></entity-status>
                 <mc-card class="feature">
@@ -135,6 +137,11 @@ $this->breadcrumb = [
                 </aside>
             </mc-container>
         </mc-tab>
+        <mc-tab label="<?= i::_e('Selos') ?>" slug="seals"></mc-tab>
+        <mc-tab label="<?= i::_e('Administração') ?>" slug="admin"></mc-tab>
+        <mc-tab label="<?= i::_e('Organizações') ?>" slug="organization"></mc-tab>
+        <mc-tab label="<?= i::_e('Propriedades') ?>" slug="properties"></mc-tab>
+        <mc-tab label="<?= i::_e('Documentos') ?>" slug="documents"></mc-tab>
         <?php $this->applyTemplateHook('tabs','end') ?>
     </mc-tabs>
     

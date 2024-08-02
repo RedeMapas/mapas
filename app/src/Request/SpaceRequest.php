@@ -4,16 +4,15 @@ declare(strict_types=1);
 
 namespace App\Request;
 
-use Exception;
+use App\Exception\FieldRequiredException;
+use App\Exception\InvalidRequestException;
 use Symfony\Component\HttpFoundation\Request;
 
 class SpaceRequest
 {
-    protected Request $request;
-
-    public function __construct()
-    {
-        $this->request = new Request();
+    public function __construct(
+        private Request $request
+    ) {
     }
 
     public function validatePost(): array
@@ -24,13 +23,13 @@ class SpaceRequest
         $requiredFields = ['name', 'terms', 'type', 'shortDescription'];
 
         foreach ($requiredFields as $field) {
-            if (!isset($data[$field])) {
-                throw new Exception(ucfirst($field).' is required');
+            if (false === isset($data[$field])) {
+                throw new FieldRequiredException(ucfirst($field));
             }
         }
 
-        if (!is_array($data['terms']) || !is_array($data['terms']['area'])) {
-            throw new Exception('the terms field must be an object with a property "area" which is an array');
+        if (false === is_array($data['terms']) || false === is_array($data['terms']['area'])) {
+            throw new InvalidRequestException('the terms field must be an object with a property "area" which is an array');
         }
 
         return $data;

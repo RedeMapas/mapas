@@ -19,7 +19,7 @@ class OpportunityFixtures extends Fixture implements DependentFixtureInterface
     public const OPPORTUNITY_ID_3 = 3;
     public const OPPORTUNITY_ID_4 = 4;
 
-    public const EVENT_OPPORTUNITTIES = [
+    public const EVENT_OPPORTUNITIES = [
         [
             'id' => self::OPPORTUNITY_ID_1,
             'name' => 'Concurso Teste',
@@ -33,6 +33,7 @@ class OpportunityFixtures extends Fixture implements DependentFixtureInterface
                 'Artes',
                 'Teste',
             ],
+            'type' => 23,
         ],
         [
             'id' => self::OPPORTUNITY_ID_2,
@@ -47,10 +48,11 @@ class OpportunityFixtures extends Fixture implements DependentFixtureInterface
                 'Artes',
                 'Teste',
             ],
+            'type' => 23,
         ],
     ];
 
-    public const PROJECT_OPPORTUNITTIES = [
+    public const PROJECT_OPPORTUNITIES = [
         [
             'id' => self::OPPORTUNITY_ID_3,
             'name' => 'Projeto de Verão',
@@ -64,6 +66,7 @@ class OpportunityFixtures extends Fixture implements DependentFixtureInterface
                 'Artes',
                 'Teste',
             ],
+            'type' => 24,
         ],
         [
             'id' => self::OPPORTUNITY_ID_4,
@@ -78,6 +81,7 @@ class OpportunityFixtures extends Fixture implements DependentFixtureInterface
                 'Artes',
                 'Teste',
             ],
+            'type' => 24,
         ],
     ];
 
@@ -98,7 +102,7 @@ class OpportunityFixtures extends Fixture implements DependentFixtureInterface
         $event = $this->getReference(EventFixtures::EVENT_ID_PREFIX.'-'.EventFixtures::EVENT_ID_1);
         $project = $this->getReference(ProjectFixtures::PROJECT_ID_PREFIX.'-'.ProjectFixtures::PROJECT_ID_3);
 
-        foreach (self::EVENT_OPPORTUNITTIES as $opportunityData) {
+        foreach (self::EVENT_OPPORTUNITIES as $opportunityData) {
             /** @var EventOpportunity $opportunity */
             $opportunity = $this->getSerializer()->denormalize($opportunityData, EventOpportunity::class);
             $opportunity->setRegistrationTo(new DateTime());
@@ -111,7 +115,7 @@ class OpportunityFixtures extends Fixture implements DependentFixtureInterface
             $manager->persist($opportunity);
         }
 
-        foreach (self::PROJECT_OPPORTUNITTIES as $opportunityData) {
+        foreach (self::PROJECT_OPPORTUNITIES as $opportunityData) {
             /** @var ProjectOpportunity $opportunity */
             $opportunity = $this->getSerializer()->denormalize($opportunityData, ProjectOpportunity::class);
             $opportunity->setRegistrationTo(new DateTime());

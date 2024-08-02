@@ -25,10 +25,8 @@ class FixturesCommand extends Command
     {
         $output->writeLn([
             PHP_EOL,
-            '==============================',
-            '== RUN DATA FIXTURES ==',
-            '==============================',
-            PHP_EOL,
+            '=================================',
+            '=== RUNNING DATA FIXTURES ',
         ]);
 
         $loader = new Loader();
@@ -36,6 +34,12 @@ class FixturesCommand extends Command
 
         $executor = new ORMExecutor($this->entityManager, new ORMPurger());
         $executor->execute($loader->getFixtures(), true);
+
+        $output->writeln([
+            '=== '.count($loader->getFixtures()).' fixtures executed',
+            '=================================',
+            PHP_EOL,
+        ]);
 
         return Command::SUCCESS;
     }

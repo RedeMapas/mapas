@@ -29,6 +29,7 @@ $this->import('
 
         <!-- Modo Tags -->
         <template #default="{toggle}">
+            <small class="warning-message" v-if="warningMessage" style="color: red; font-weight: bold"><?= i::__('Não é possível adicionar uma tag vazia') ?></small>
             <div class="entity-terms__tags">
                 <form class="entity-terms__tags--form" @submit.prevent="insertTag(toggle)">
                     <input type="text"  class="input" placeholder="<?= i::__('Adicione uma nova tag') ?>" v-model="filter">

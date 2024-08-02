@@ -4,33 +4,27 @@ declare(strict_types=1);
 
 namespace App\Request;
 
-use Exception;
+use App\Exception\FieldRequiredException;
 use Symfony\Component\HttpFoundation\Request;
 
 class AgentRequest
 {
-    protected Request $request;
-
-    public function __construct()
-    {
-        $this->request = new Request();
+    public function __construct(
+        private readonly Request $request
+    ) {
     }
 
     public function validatePost(): array
     {
         $jsonData = $this->request->getContent();
-        $data = json_decode($jsonData, true);
+        $data = json_decode($jsonData, associative: true);
 
-        $requiredFields = ['type', 'name', 'shortDescription', 'terms'];
+        $requiredFields = ['type', 'name', 'shortDescription'];
 
         foreach ($requiredFields as $field) {
-            if (!isset($data[$field])) {
-                throw new Exception(ucfirst($field).' is required');
+            if (false === isset($data[$field])) {
+                throw new FieldRequiredException(ucfirst($field));
             }
-        }
-
-        if (!isset($data['type']) || !is_array($data['terms']) || !is_array($data['terms']['area'])) {
-            throw new Exception('The "terms" field must be an object with a property "area" which is an array.');
         }
 
         return $data;

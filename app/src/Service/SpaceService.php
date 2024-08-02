@@ -4,25 +4,19 @@ declare(strict_types=1);
 
 namespace App\Service;
 
-use App\Enum\EntityStatusEnum;
-use App\Exception\ResourceNotFoundException;
-use App\Repository\SpaceRepository;
+use App\Repository\Interface\SpaceRepositoryInterface;
+use App\Service\Interface\SpaceServiceInterface;
 use MapasCulturais\Entities\Space;
-use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
-use Symfony\Component\Serializer\Serializer;
 use Symfony\Component\Serializer\SerializerInterface;
 
-class SpaceService
+class SpaceService implements SpaceServiceInterface
 {
-    protected SpaceRepository $repository;
-    private SerializerInterface $serializer;
-
     public const FILE_TYPES = '/src/conf/space-types.php';
 
-    public function __construct()
-    {
-        $this->repository = new SpaceRepository();
-        $this->serializer = new Serializer([new ObjectNormalizer()]);
+    public function __construct(
+        private readonly SerializerInterface $serializer,
+        private readonly SpaceRepositoryInterface $repository
+    ) {
     }
 
     public function getTypes(): array
@@ -36,7 +30,7 @@ class SpaceService
         );
     }
 
-    public function create($data): Space
+    public function create(mixed $data): Space
     {
         $space = new Space();
 
@@ -51,21 +45,19 @@ class SpaceService
         return $space;
     }
 
-    /**
-     * @throws ResourceNotFoundException
-     */
-    public function update($id, $data): Space
+    public function update(int $id, object $data): Space
     {
         $spaceFromDB = $this->repository->find($id);
-
-        if (null === $spaceFromDB || EntityStatusEnum::TRASH->getValue() === $spaceFromDB->status) {
-            throw new ResourceNotFoundException('Space not found');
-        }
-
-        $spaceUpdated = $this->serializer->denormalize($data, Space::class, null, ['object_to_populate' => $spaceFromDB]);
+        $spaceUpdated = $this->serializer->denormalize($data, Space::class, context: ['object_to_populate' => $spaceFromDB]);
 
         $this->repository->save($spaceUpdated);
 
         return $spaceUpdated;
+    }
+
+    public function removeById(int $id): void
+    {
+        $space = $this->repository->find($id);
+        $this->repository->remove($space);
     }
 }

@@ -1,6 +1,6 @@
 module.exports = {
   extends: [
-    'semistandard',
+    "semistandard",
     "plugin:cypress/recommended"
   ],
   rules: {

@@ -19,6 +19,7 @@ app.component('entity-terms', {
             terms: this.definition.terms || [],
             label: this.title || this.definition.name,
             filter: '',
+            warningMessage: false,
         };
     },
 
@@ -84,8 +85,14 @@ app.component('entity-terms', {
 
     methods: {
         insertTag(toggleModal) {
-            this.addTerm(this.filter);
+            if (0 === this.filter.trim().length) {
+                this.warningMessage = true;
+                return;
+            }
+
+            this.addTerm(this.filter.trim());
             this.filter = '';
+            this.warningMessage = false;
             toggleModal();
         },
         loadTerms() {

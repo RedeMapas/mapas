@@ -83,4 +83,39 @@ class Term extends \MapasCulturais\Entity
     public function preUpdate($args = null){ parent::preUpdate($args); }
     /** @ORM\PostUpdate */
     public function postUpdate($args = null){ parent::postUpdate($args); }
+
+    public function getId(): int
+    {
+        return $this->id;
+    }
+
+    public function getTaxonomy(): string
+    {
+        return $this->taxonomy;
+    }
+
+    public function setTaxonomy(string $taxonomy): void
+    {
+        $this->taxonomy = $taxonomy;
+    }
+
+    public function getTerm(): string
+    {
+        return $this->term;
+    }
+
+    public function setTerm(string $term): void
+    {
+        $this->term = $term;
+    }
+
+    public function getDescription(): string
+    {
+        return $this->description;
+    }
+
+    public function setDescription(string $description): void
+    {
+        $this->description = $description;
+    }
 }

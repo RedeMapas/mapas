@@ -1,0 +1,23 @@
+tags:
+  - Termos
+summary: Atualiza um termo
+description: Atualiza um termo no sistema com as informações fornecidas.
+parameters:
+  - in: path
+    name: id
+    required: true
+    description: ID do termo a ser atualizado
+    example: 1
+requestBody:
+  required: true
+  content:
+    application/json:
+      schema:
+        $ref: '../../requestBodies/term/post.yaml'
+responses:
+  '201':
+    description: Termo atualizado com sucesso
+    content:
+      application/json:
+        schema:
+          $ref: '../../responses/term/created.yaml'

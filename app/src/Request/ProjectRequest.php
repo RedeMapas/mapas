@@ -4,16 +4,14 @@ declare(strict_types=1);
 
 namespace App\Request;
 
-use Exception;
+use App\Exception\FieldRequiredException;
 use Symfony\Component\HttpFoundation\Request;
 
 class ProjectRequest
 {
-    protected Request $request;
-
-    public function __construct()
-    {
-        $this->request = new Request();
+    public function __construct(
+        private readonly Request $request
+    ) {
     }
 
     public function validatePost(): array
@@ -24,8 +22,8 @@ class ProjectRequest
         $requiredFields = ['name', 'shortDescription', 'type'];
 
         foreach ($requiredFields as $field) {
-            if (!isset($data[$field])) {
-                throw new Exception(ucfirst($field).' is required');
+            if (false === isset($data[$field])) {
+                throw new FieldRequiredException(ucfirst($field));
             }
         }
 

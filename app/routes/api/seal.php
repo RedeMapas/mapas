@@ -13,6 +13,6 @@ return [
     '/api/v2/seals/{id}' => [
         Request::METHOD_GET => [SealApiController::class, 'getOne'],
         Request::METHOD_PATCH => [SealApiController::class, 'patch'],
-        Request::METHOD_DELETE => [SealApiController::class, 'delete'],
+        Request::METHOD_DELETE => [SealApiController::class, 'remove'],
     ],
 ];

@@ -4,27 +4,19 @@ declare(strict_types=1);
 
 namespace App\Controller\Api;
 
-use App\Exception\ResourceNotFoundException;
-use App\Exception\ValidatorException;
-use App\Repository\SealRepository;
+use App\Repository\Interface\SealRepositoryInterface;
 use App\Request\SealRequest;
-use App\Service\SealService;
-use Exception;
-use InvalidArgumentException;
+use App\Service\Interface\SealServiceInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 
-class SealApiController
+class SealApiController extends AbstractApiController
 {
-    private SealRepository $repository;
-    private SealService $sealService;
-    private SealRequest $sealRequest;
-
-    public function __construct()
-    {
-        $this->repository = new SealRepository();
-        $this->sealService = new SealService();
-        $this->sealRequest = new SealRequest();
+    public function __construct(
+        private readonly SealRepositoryInterface $repository,
+        private readonly SealServiceInterface $sealService,
+        private readonly SealRequest $sealRequest
+    ) {
     }
 
     public function getList(): JsonResponse
@@ -36,55 +28,34 @@ class SealApiController
 
     public function getOne(array $params): JsonResponse
     {
-        $seal = $this->repository->find((int) $params['id']);
+        $id = $this->extractIdParam($params);
+        $seal = $this->repository->find($id);
 
         return new JsonResponse($seal);
     }
 
     public function post(): JsonResponse
     {
-        try {
-            $sealData = $this->sealRequest->validatePost();
-            $seal = $this->sealService->create($sealData);
+        $sealData = $this->sealRequest->validatePost();
+        $seal = $this->sealService->create($sealData);
 
-            return new JsonResponse($seal, Response::HTTP_CREATED);
-        } catch (ValidatorException $exception) {
-            return new JsonResponse([
-                'error' => $exception->getMessage(),
-                'fields' => $exception->getFields(),
-            ], Response::HTTP_BAD_REQUEST);
-        } catch (InvalidArgumentException $exception) {
-            return new JsonResponse(['error' => $exception->getMessage()], Response::HTTP_BAD_REQUEST);
-        }
+        return new JsonResponse($seal, Response::HTTP_CREATED);
     }
 
     public function patch(array $params): JsonResponse
     {
-        try {
-            $sealData = $this->sealRequest->validatePatch();
-            $seal = $this->sealService->update((int) $params['id'], (object) $sealData);
+        $id = $this->extractIdParam($params);
+        $sealData = $this->sealRequest->validatePatch();
+        $seal = $this->sealService->update($id, (object) $sealData);
 
-            return new JsonResponse($seal, Response::HTTP_CREATED);
-        } catch (ResourceNotFoundException $exception) {
-            return new JsonResponse(['error' => $exception->getMessage()], Response::HTTP_NOT_FOUND);
-        } catch (ValidatorException $exception) {
-            return new JsonResponse([
-                'error' => $exception->getMessage(),
-                'fields' => $exception->getFields(),
-            ], Response::HTTP_BAD_REQUEST);
-        } catch (Exception $exception) {
-            return new JsonResponse(['error' => $exception->getMessage()], Response::HTTP_BAD_REQUEST);
-        }
+        return new JsonResponse($seal, Response::HTTP_CREATED);
     }
 
-    public function delete(array $params): JsonResponse
+    public function remove(array $params): JsonResponse
     {
-        try {
-            $this->sealService->delete((int) $params['id']);
+        $id = $this->extractIdParam($params);
+        $this->sealService->removeById($id);
 
-            return new JsonResponse(null, Response::HTTP_NO_CONTENT);
-        } catch (ResourceNotFoundException $exception) {
-            return new JsonResponse(['error' => $exception->getMessage()], Response::HTTP_NOT_FOUND);
-        }
+        return new JsonResponse(status: Response::HTTP_NO_CONTENT);
     }
 }
