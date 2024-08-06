@@ -1,6 +1,7 @@
 <?php
 require __DIR__ . '/functions.php';
 
+define('APP_BASE_URL', 'http://localhost:4242');
 define('MINUTE_IN_SECONDS', 60);
 define('HOUR_IN_SECONDS', MINUTE_IN_SECONDS * 60);
 define('DAY_IN_SECONDS', HOUR_IN_SECONDS * 24);
