@@ -34,7 +34,7 @@ services:
     build: 
       context: .
       dockerfile: .nixpacks/Dockerfile
-    restart: unless-stopped
+    restart: '${DOCKER_RESTART_POLICY:-always}'
     depends_on:
       - database
     environment:
@@ -50,6 +50,7 @@ services:
 
   database:
     image: kartoza/postgis:14
+    restart: '${DOCKER_RESTART_POLICY:-always}'
     environment:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
@@ -57,7 +58,7 @@ services:
       DATADIR: ${DATADIR}
     volumes:
       - db_data:/opt/postgres/data
-      - ./dev/db:/docker-entrypoint-initdb.d
+      # - ./dev/db:/docker-entrypoint-initdb.d
     ports:
       - 5432
     healthcheck:
@@ -71,7 +72,7 @@ services:
 
   redis:
     image: redis:6
-    restart: unless-stopped
+    restart: '${DOCKER_RESTART_POLICY:-always}'
     command: --maxmemory 128Mb --maxmemory-policy allkeys-lru
     volumes:
       - redis:/data
@@ -80,6 +81,7 @@ services:
 
   mailhog:
     image: mailhog/mailhog
+    restart: '${DOCKER_RESTART_POLICY:-always}'
     ports:
       - 8025
 
@@ -90,6 +92,7 @@ services:
       - database
     environment:
       <<: *environment
+    restart: '${DOCKER_RESTART_POLICY:-no}'
     volumes:
       - var-files:/app/var/
       - assets-files:/app/public/assets
@@ -107,6 +110,7 @@ services:
       - database
     environment:
       <<: *environment
+    restart: '${DOCKER_RESTART_POLICY:-no}'
     volumes:
       - var-files:/app/var/
       - assets-files:/app/public/assets
