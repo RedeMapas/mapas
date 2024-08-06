@@ -2570,7 +2570,7 @@ ALTER TABLE file ADD COLUMN path	2019-03-07 23:54:06.885661
 recreate *_meta indexes	2019-03-07 23:54:06.885661
 create permission cache pending table2	2019-03-07 23:54:06.885661
 create opportunity tables	2019-03-07 23:54:06.885661
-DROP CONSTRAINT registration_project_fk");	2019-03-07 23:54:06.885661
+DROP CONSTRAINT registration_project_fk	2019-03-07 23:54:06.885661
 fix opportunity parent FK	2019-03-07 23:54:06.885661
 fix opportunity type 35	2019-03-07 23:54:06.885661
 create opportunity sequence	2019-03-07 23:54:06.885661
