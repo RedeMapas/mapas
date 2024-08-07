@@ -1,6 +1,7 @@
 <?php
 require __DIR__ . '/functions.php';
 
+define('APP_BASE_URL', 'http://localhost:4242');
 define('MINUTE_IN_SECONDS', 60);
 define('HOUR_IN_SECONDS', MINUTE_IN_SECONDS * 60);
 define('DAY_IN_SECONDS', HOUR_IN_SECONDS * 24);
@@ -21,6 +22,9 @@ define('CONFIG_PATH', PROTECTED_PATH . 'config/');
 
 define('DOCTRINE_PROXIES_PATH', VAR_PATH . 'DoctrineProxies/');
 define('PRIVATE_FILES_PATH', env('PRIVATE_FILES_PATH', VAR_PATH . 'private-files/'));
+if(!is_dir(PRIVATE_FILES_PATH)){
+    mkdir(PRIVATE_FILES_PATH);
+}
 define('SESSIONS_SAVE_PATH', env('SESSIONS_SAVE_PATH', VAR_PATH . 'sessions/'));
 
 define('SESSION_TIMEOUT', intval(env('SESSION_TIMEOUT', 12 * HOUR_IN_SECONDS)));
@@ -47,7 +51,7 @@ if(!is_dir(PRIVATE_FILES_PATH)){
 }
 
 if(!is_dir(DOCTRINE_PROXIES_PATH)){
-    mkdir(DOCTRINE_PROXIES_PATH, 0755);
+    mkdir(DOCTRINE_PROXIES_PATH);
 }
 
 if (REDIS_SESSION) {

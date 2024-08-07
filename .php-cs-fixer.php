@@ -9,7 +9,7 @@ $finder = (new Finder())
     ->ignoreDotFiles(false)
     ->ignoreVCSIgnored(true)
     ->exclude(['logs', 'var', 'vendor'])
-    ->in(__DIR__.'/app')
+    ->in(__DIR__.'/src/core')
 ;
 
 return (new Config())
