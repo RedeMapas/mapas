@@ -17,7 +17,7 @@ $this->import('
 
     <label v-if="title" class="entity-file__title">
         {{title}}
-        <span v-if="required" class="required">*<?php i::_e('obrigatório') ?></span>
+        <span v-if="required" class="required">*</span>
     </label>
     
     <div v-if="file && hasSlot('label') && !downloadOnly" class="entity-file__label semibold">

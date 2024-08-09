@@ -41,7 +41,7 @@ $this->import('
             <div class="field col-6">
                 <label class="field__title">
                     <?php i::_e('Estado')?>
-                    <span v-if="isRequired('En_Estado')" class="required">*<?php i::_e('obrigatório') ?></span>
+                    <span v-if="isRequired('En_Estado')" class="required">*</span>
                 </label>
                 <select @change="citiesList(); address()" v-model="entity.En_Estado">
                     <option v-for="state in states" :value="state.value">{{state.label}}</option>
@@ -50,7 +50,7 @@ $this->import('
             <div class="field col-6">
                 <label class="field__title">
                     <?php i::_e('Município')?>
-                    <span v-if="isRequired('En_Municipio')" class="required">*<?php i::_e('obrigatório') ?></span>
+                    <span v-if="isRequired('En_Municipio')" class="required">*</span>
                 </label>
                 <select @change="address()" v-model="entity.En_Municipio">
                     <option v-for="city in cities" :value="city">{{city}}</option>
@@ -64,7 +64,7 @@ $this->import('
             <div class="field col-6">
                     <label class="field__title">
                     <?php i::_e('Estado')?>
-                    <span v-if="isRequired('En_Estado')" class="required">*<?php i::_e('obrigatório') ?></span>
+                    <span v-if="isRequired('En_Estado')" class="required">*</span>
                 </label>
                 <input :id="propId('En_Estado')" v-model="entity.En_Estado" type="text" @change="address()" autocomplete="off">
             </div>
@@ -72,7 +72,7 @@ $this->import('
             <div class="field col-6">
                 <label class="field__title">
                     <?php i::_e('Município')?>
-                    <span v-if="isRequired('En_Municipio')" class="required">*<?php i::_e('obrigatório') ?></span>
+                    <span v-if="isRequired('En_Municipio')" class="required">*</span>
                 </label>
                 <input v-model="entity.En_Municipio" :id="propId('En_Municipio')"  type="text" @change="address()" autocomplete="off">
             </div>
