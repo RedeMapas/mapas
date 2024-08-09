@@ -1,5 +1,7 @@
 <?php
+
 use MapasCulturais\i;
+
 $this->layout = 'entity';
 
 $this->import('
@@ -18,6 +20,7 @@ $this->breadcrumb = [
     ['label' => i::__('Meus Selos'), 'url' => $app->createUrl('panel', 'seals')],
     ['label' => $entity->name, 'url' => $app->createUrl('seal', 'single', [$entity->id])],
 ];
+
 ?>
 
 <div class="main-app single">
@@ -27,21 +30,21 @@ $this->breadcrumb = [
         <main>
             <div class="grid-12">
                 <div v-if="entity.validPeriod" class="col-12">
-                    <h2 class="entity-seals__valid--label"><?php i::_e('Validade do certificado do selo');?></h2>
+                    <h2 class="entity-seals__valid--label"><?php i::_e('Validade do certificado do selo'); ?></h2>
                     <p class="entity-seals__valid--content">{{ entity.createTimestamp.format({ year: 'numeric', month: 'long', day: 'numeric' }) + ' a ' + entity.createTimestamp.addDays(entity.validPeriod / 12 * 365) }}</p>
                 </div>
                 <div v-if="entity.longDescription" class="col-12">
-                    <h2><?php i::_e('Descrição');?></h2>
+                    <h2><?php i::_e('Descrição'); ?></h2>
                     <p class="description" v-html="entity.longDescription"></p>
                 </div>
-                <entity-files-list :entity="entity" classes="col-12" group="downloads"  title="<?php i::esc_attr_e('Arquivos para download');?>"></entity-files-list>
+                <entity-files-list :entity="entity" classes="col-12" group="downloads" title="<?php i::esc_attr_e('Arquivos para download'); ?>"></entity-files-list>
                 <entity-links :entity="entity" classes="col-12" title="<?php i::_e('Links'); ?>"></entity-links>
             </div>
         </main>
         <aside>
             <div class="grid-12">
-                <entity-owner classes="col-12"  title="<?php i::esc_attr_e('Publicado por');?>" :entity="entity"></entity-owner>
-                <entity-related-agents :entity="entity" classes="col-12" title="<?php i::esc_attr_e('Agentes Relacionados');?>"></entity-related-agents>
+                <entity-owner classes="col-12" title="<?php i::esc_attr_e('Publicado por'); ?>" :entity="entity"></entity-owner>
+                <entity-related-agents :entity="entity" classes="col-12" title="<?php i::esc_attr_e('Agentes Relacionados'); ?>"></entity-related-agents>
             </div>
         </aside>
     </mc-container>
