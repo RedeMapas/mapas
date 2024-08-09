@@ -200,7 +200,11 @@ properties:
   pinterest:
     type: string
     nullable: true
-    description: Pinterest associado ao Projeto
+    description: Pinterest associado ao 
+  tiktok:
+    type: string
+    nullable: true
+    description: TikTok associado ao Projeto
   emailPublico:
     type: string
     nullable: true

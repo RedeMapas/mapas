@@ -94,6 +94,7 @@ class Module extends \MapasCulturais\Module
                 'LINKEDIN' => ['linkedin'],
                 'SPOTIFY' => ['spotify'],
                 'PINTEREST' => ['pinterest'],
+                'TIKTOK' => ['tiktok'],
                 'EVENT_ATTENDANCE' => [i::__('total_de_publico'), i::__('total de publico')],
                 'INSCRICOES' => [i::__('inscricoes'), i::__('inscrições')],
                 'CLASSIFICATION' => [i::__('faixa etária'),'classification', 'rating',i::__('clasificação etária'), i::__('classificação'),i::__('faixa_etária'),i::__('todos os dias')],
@@ -136,6 +137,7 @@ class Module extends \MapasCulturais\Module
                     'LINKEDIN' => 'linkedin' ,
                     'SPOTIFY' => 'spotify' ,
                     'PINTEREST' => 'pinterest' ,
+                    'tiktok' => 'tiktok' ,
                     'INSCRICOES' => 'registrationInfo' ,
                     'SHORT_DESCRIPTION' => 'shortDescription' ,
                     'LONG_DESCRIPTION' => 'longDescription' ,
@@ -219,6 +221,10 @@ class Module extends \MapasCulturais\Module
                 i::__('PINTEREST') => [
                     i::__('Informar o link do Pinterest do evento'),
                     i::__('https://pinterest.com.br/evento')
+                ],
+                i::__('TIKTOK') => [
+                    i::__('Informar o link do TikTok do evento'),
+                    i::__('https://tiktok.com.br/evento')
                 ],
                 i::__('TOTAL_DE_PUBLICO')  => [
                     i::__('Informar o número que corresponde ao total de público que o evento suporta'),

@@ -14,12 +14,17 @@ $this->import('
 <div v-if="entity.metalists.links || editable" :class="['entity-links', classes]">
     <label class="entity-links__title"> {{title}} </label>
 
-    <ul v-if="entity.metalists.links" class="entity-links__links">
-        <li class="entity-links__links--item" v-for="metalist in entity.metalists.links">
-            <a class="link" :class="{'editable': editable}" :href="metalist.value" target="_blank" >
-                <mc-icon name="link"></mc-icon> 
-                {{metalist.title}}
-            </a>            
+
+    <div class="grid-12" style="margin: 10px;"  v-for="metalist in entity.metalists.links">
+        <div class="field col-5">
+            <label><?php i::_e('Link (URL)') ?></label>
+            <input :value="metalist.value" type="text">
+        </div>
+        <div class="field col-5">
+            <label><?php i::_e('Descrição do link') ?></label>
+            <input :value="metalist.title" type="text">
+        </div>
+        <div class="col-2">
             <div v-if="editable" class="edit">
                 <mc-popover openside="down-right" title="<?php i::_e('Editar link')?>">
                     <template #button="popover">
@@ -59,14 +64,14 @@ $this->import('
                 </mc-confirm-button>
                 
             </div>
-        </li>
-    </ul>
-
+        </div>        
+    </div>           
+            
     <mc-popover v-if="editable" openside="down-right" title="<?php i::esc_attr_e('Adicionar Link')?>">
         <template #button="popover">
             <a @click="popover.toggle()" class="button button--primary button--icon button--primary-outline">
                 <mc-icon name="add"></mc-icon>
-                <?php i::_e("Adicionar Link")?>
+                <?php i::_e("Adicionar outro Link")?>
             </a>
         </template>
 

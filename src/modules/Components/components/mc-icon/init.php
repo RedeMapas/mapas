@@ -16,14 +16,15 @@ $iconset = [
     // redes sociais
     'facebook' => 'brandico:facebook',
     'github' => 'la:github-alt',
-    'instagram' => 'fa6-brands:instagram',
+    'instagram' => 'carbon:logo-instagram',
     'linkedin' => 'akar-icons:linkedin-box-fill',
     'pinterest' => 'fa6-brands:pinterest-p',
+    'tiktok' => 'fa6-brands:tiktok',
     'spotify' => 'akar-icons:spotify-fill',
     'telegram' => 'cib:telegram-plane',
-    'twitter' => 'akar-icons:twitter-fill',
+    'twitter' => 'bi:twitter-x',
     'whatsapp' => 'akar-icons:whatsapp-fill',
-    'vimeo' => 'brandico:vimeo',
+    'vimeo' => 'mdi:vimeo',
     'youtube' => 'akar-icons:youtube-fill',
 
 
@@ -74,7 +75,7 @@ $iconset = [
     'help-outline' => 'material-symbols:help-outline',
     'history' => 'material-symbols:history',
     'home' => 'ci:home-fill',
-    'image' => 'bi:image-fill',
+    'image' => 'fluent:camera-add-24-regular',
     'info-full' => 'material-symbols:info-rounded',
     'info' => 'material-symbols:info-outline-rounded',
     'lamp' => 'mdi:lightbulb-on-outline',

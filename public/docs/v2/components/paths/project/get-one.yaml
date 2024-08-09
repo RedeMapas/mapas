@@ -213,6 +213,10 @@ responses:
               type: string
               nullable: true
               description: Pinterest associado ao Projeto
+            tiktok:
+              type: string
+              nullable: true
+              description: TikTok associado ao Projeto
             emailPublico:
               type: string
               nullable: true

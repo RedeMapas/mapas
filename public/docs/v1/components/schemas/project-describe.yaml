@@ -228,6 +228,11 @@ properties:
     example: "https://pinterest.com/example"
     description: Pinterest associado ao Projeto
     required: false
+  tiktok:
+    type: string
+    example: "https://tiktok.com/example"
+    description: TikTok associado ao Projeto
+    required: false
   emailPublico:
     type: string
     example: "public@example.com"

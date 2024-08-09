@@ -149,3 +149,10 @@ $col-columns: 12;
         flex-direction: column;
     }
 }
+
+.edit--profile{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding-bottom: size(15);
+}

@@ -427,11 +427,14 @@ return array(
         ],
 
         'site' => array(
-            'label' => \MapasCulturais\i::__('Site'),
+            'label' => \MapasCulturais\i::__('Link (URL)'),
             'validations' => array(
                 "v::url()" => \MapasCulturais\i::__("A URL informada é inválida. Informe no formato https://www.site.com e tente novamente."),
             ),
             'available_for_opportunities' => true
+        ),
+        'siteDescription' => array(
+            'label' => \MapasCulturais\i::__('Descrição do link'),
         ),
         'facebook' => array(
             'type' => "socialMedia",
@@ -447,7 +450,7 @@ return array(
         ),
         'twitter' => array(
             'type' => "socialMedia",
-            'label' => \MapasCulturais\i::__('Twitter'),
+            'label' => \MapasCulturais\i::__('X (antigo twitter)'),
             'serialize' =>function($value){
                 return Utils::parseSocialMediaUser('twitter.com', $value);
             },
@@ -529,6 +532,18 @@ return array(
             'placeholder' => "nomedousuario",
             'available_for_opportunities' => true
         ),
+        'tiktok' => array(
+            'type' => "socialMedia",
+            'label' => \MapasCulturais\i::__('TikTok'),
+            'validations' => array(
+                "v::oneOf(v::urlDomain('tiktok.com'), v::regex('/^@?([\w\d\.]+)$/i'))" => \MapasCulturais\i::__("O valor deve ser uma URL ou usuário válido.")
+            ),
+            'serialize' =>function($value){
+                return Utils::parseSocialMediaUser('tiktok.com', $value);
+            },
+            'placeholder' => "nomedousuario",
+            'available_for_opportunities' => true
+        ),
         // DADOS BANCÁRIOS
         'payment_bank_account_type' => array(
             'private' => true,
@@ -541,13 +556,13 @@ return array(
         ),
         'payment_bank_account_number' => array(
             'private' => true,
-            'label' => \MapasCulturais\i::__('Número da conta bancária para pagamentos'),
+            'label' => \MapasCulturais\i::__('Número da conta bancária'),
             'type' => 'text',
             'dafault' => '[]',
         ),
         'payment_bank_branch' => array(
             'private' => true,
-            'label' => \MapasCulturais\i::__('Agência bancária para pagamentos'),
+            'label' => \MapasCulturais\i::__('Número da agência bancária'),
             'type' => 'text',
             'dafault' => '[]',
         ),
@@ -774,13 +789,13 @@ return array(
         ),
         'payment_bank_dv_branch' => array(
             'private' => true,
-            'label' => \MapasCulturais\i::__('Dígito verificador da agéncia bancária'),
+            'label' => \MapasCulturais\i::__('Dígito verificador'),
             'type' => 'text',
             'dafault' => '[]',
         ),
         'payment_bank_dv_account_number' => array(
             'private' => true,
-            'label' => \MapasCulturais\i::__('Dígito verificador da conta bancária'),
+            'label' => \MapasCulturais\i::__('Dígito verificador'),
             'type' => 'text',
             'dafault' => '[]',
         ),

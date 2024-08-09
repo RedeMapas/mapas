@@ -211,6 +211,10 @@ properties:
     type: string
     example: null
     description: O Pinterest do proprietário
+  tiktok:
+    type: string
+    example: null
+    description: O TikTok do proprietário
   payment_bank_account_type:
     type: string
     example: null

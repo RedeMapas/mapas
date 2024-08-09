@@ -11,20 +11,103 @@
 }
 
 .controller-agent.action-edit {
-    .mc-card__title {
-        p {
-            font-family: 'Open Sans';
-            font-style: normal;
-            font-weight: 600;
-            font-size: size(14);
-            line-height: size(19);
+    .mc-card {
+        padding: 0;
+        background-color: var(--mc-white);
+        border-radius: var(--mc-border-radius-sm);
+        width: 100%;
+
+        &__title {
+            margin-bottom: 0;
+            padding-bottom: 0;
+
+            h3 {
+                padding: size(25);
+                color: var(--mc-primary-500);   
+                border-bottom: 1px solid #bbbbbb;  
+            }
+    
+            label {
+                font-weight: 700;
+                font-size: size(24);
+                line-height: size(28);
+            }
+    
+            p {
+                margin: size(8) 0 0;
+                font-size: size(14);
+                line-height: size(19);
+            }
         }
+
+        &.feature__full {
+            grid-column-start: 1;
+            grid-column-end: 3;
+            
+            @media (max-width: size(800)) {
+                grid-template-columns: 100%;
+                grid-column-end: 2;
+            }
+    
+            .mc-card__content {
+                display: grid;
+                flex-wrap: wrap;
+                padding-left: size(24);
+                padding-right: size(24);
+    
+                @media (max-width: size(800)) {
+                    grid-template-columns: 100%;
+                    gap: size(20);
+                }
+    
+                .card_profile {
+                    margin-top: -65px;
+                }
+                
+                .left {
+                    display: flex;
+                    flex-direction: column;
+                    width: 100%;
+                }
+        
+                .divider {
+                    padding: size(30) 0 0 size(30);
+                    border-bottom: 1px solid #bbbbbb;
+                }
+
+                h4 {
+                    font-size: 1.125rem;
+                    line-height: 1.5625rem;
+                    margin-top: size(25);
+                    margin-bottom: size(25);
+                }
+        
+                .right {
+                    display: flex;
+                    flex-direction: column;
+                    gap: size(40);
+                    width: 100%;
+                }
+            }  
+        }
+    
+    }
+
+    .mc-card__card_info {
+        padding-top: size(18);
+        padding-bottom: size(18);
+        font-family: 'Open Sans';
+        font-style: normal;
+        font-size: size(14);
+        line-height: size(19);
+        color: #1E1E1E;
+        border-bottom: 1px solid #bbbbbb;  
     }
 
     .content {
         display: grid;
         grid-template-columns: 1fr 1fr;
-        gap: size(21) 0;
+        gap: size(25);
         justify-items: start;
     }
 
@@ -46,11 +129,38 @@
         }
     }
 
+    .itinerante {
+        position: relative;
+        div.field.col-6.sm\:col-12 > label:nth-child(2){
+            left: 0px;
+        }
+        div.field.col-6.sm\:col-12 > label:nth-child(3){
+            left: 145px;
+        }
+        div.field.col-6.sm\:col-12 > label:nth-child(4){
+            left: 222px;
+        }
+        .input__label{
+            display: inline-block;
+            margin-right: 35px;
+            margin-top: 30px;
+            position: absolute;
+        }
+
+        input{
+            margin-right: 10px;
+        }
+    }   
+
     /* .field {
         label {
             margin: 0;
         }
     } */
+
+    .field__longdescription {
+        height: size(150);
+    }
 }
 
 .agent-data {

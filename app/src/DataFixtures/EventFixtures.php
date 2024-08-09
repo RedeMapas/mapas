@@ -35,6 +35,7 @@ class EventFixtures extends Fixture implements DependentFixtureInterface
             'linkedin' => 'teste',
             'vimeo' => 'teste',
             'spotify' => 'teste',
+            'tiktok' => 'teste',
             'youtube' => 'cultura',
             'pinterest' => 'teste',
             'event_attendance' => 50,
@@ -62,6 +63,7 @@ class EventFixtures extends Fixture implements DependentFixtureInterface
             'linkedin' => 'teste',
             'vimeo' => 'teste',
             'spotify' => 'teste',
+            'tiktok' => 'teste',
             'youtube' => 'cultura',
             'pinterest' => 'teste',
             'event_attendance' => 50,
@@ -90,6 +92,7 @@ class EventFixtures extends Fixture implements DependentFixtureInterface
             'vimeo' => 'teste',
             'spotify' => 'teste',
             'youtube' => 'cultura',
+            'tiktok' => 'teste',
             'pinterest' => 'teste',
             'event_attendance' => 50,
             'terms' => [

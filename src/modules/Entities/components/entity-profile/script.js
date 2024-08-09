@@ -5,6 +5,11 @@ app.component('entity-profile', {
         entity: {
             type: Entity,
             required: true
+        },
+        label: {
+            type: Boolean,
+            required: false,
+            default: true
         }
     },
 });

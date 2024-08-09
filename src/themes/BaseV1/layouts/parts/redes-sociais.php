@@ -1,4 +1,4 @@
-<?php if ($this->isEditable() || $entity->twitter || $entity->facebook || $entity->instagram || $entity->linkedin || $entity->spotify || $entity->youtube || $entity->pinterest): ?>
+<?php if ($this->isEditable() || $entity->twitter || $entity->facebook || $entity->instagram || $entity->linkedin || $entity->spotify || $entity->youtube || $entity->pinterest || $entity->tiktok): ?>
     <div class="widget social-card">
         <h3><?php \MapasCulturais\i::_e("REDES SOCIAIS");?></h3>
 
@@ -55,6 +55,14 @@
             <a class="icon icon-pinterest js-editable" data-edit="pinterest" data-notext="true" data-original-title="<?php \MapasCulturais\i::esc_attr_e("Perfil no Pinterest");?>"
                href="<?php echo $entity->pinterest; ?>"
                data-value="<?php echo $entity->pinterest; ?>"></a>
+        </span>
+        <?php endif; ?>
+
+        <?php if ($this->isEditable() || $entity->tiktok): ?>
+        <span <?php if($this->isEditable()):?> class="editable-social" <?php endif; ?> >
+            <a class="icon icon-tiktok js-editable" data-edit="tiktok" data-notext="true" data-original-title="<?php \MapasCulturais\i::esc_attr_e("Perfil no TikTok");?>"
+               href="<?php echo $entity->tiktok; ?>"
+               data-value="<?php echo $entity->tiktok; ?>"></a>
         </span>
         <?php endif; ?>
     </div>

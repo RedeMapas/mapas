@@ -15,7 +15,7 @@ $this->import('
 <div v-if="propExists()" class="field" :class="[{error: hasErrors}, classes]">
     <label class="field__title" v-if="!hideLabel && !is('checkbox')" :for="propId">
         <slot>{{label || description.label}}</slot>
-        <span v-if="description.required && !hideRequired" class="required">*<?php i::_e('obrigatório') ?></span>
+        <span v-if="description.required && !hideRequired" class="required">*</span>
     </label>
     <slot name="input" >
         <?php //@todo implementar registro de tipos de campos (#1895) ?>
@@ -63,6 +63,29 @@ $this->import('
                 </label>
             </div>
         </template>
+
+        <template v-if="is('pcd')">
+            <div class="field__group">
+                <!-- Yes/No Choice -->
+                <div>
+                    <label>
+                        <input type="radio" v-model="showCheckboxes" value="yes" @change="handleRadioChange"> Yes
+                    </label>
+                    <label>
+                        <input type="radio" v-model="showCheckboxes" value="no" @change="handleRadioChange"> No
+                    </label>
+                </div>
+
+                <!-- Checkboxes, shown only if 'showCheckboxes' is 'yes' -->
+                <div v-if="showCheckboxes === 'yes'" class="field__group">
+                    <label class="input__label input__checkboxLabel input__multiselect" v-for="optionValue in description.optionsOrder" :key="optionValue">
+                    <input type="checkbox" :value="optionValue" :checked="value?.includes(optionValue)" @change="handleChange($event, optionValue)"/>
+                    {{ description.options[optionValue] }}
+                    </label>
+                </div>
+            </div>
+        </template>
+        
 
         <template v-if="is('checkbox')">
             <div class="field__group">

@@ -61,7 +61,7 @@ $this->import('
             <slot name="button"> 
                 <a @click="popover.toggle()" class="button button--primary button--icon button--primary-outline button-up">
                     <mc-icon name="upload"></mc-icon>
-                    <?php i::_e("Enviar")?>
+                    <?php i::_e("adicionar")?>
                 </a>
             </slot>
         </template>

@@ -19,10 +19,12 @@
         }
 
         &--img {
+            z-index: 99;
             align-items: center;
-            background-color: var(--mc-gray-500);
+            border: 1px solid #666666;
+            background-color: var(--mc-white);
             border-radius: 50%;
-            color: var(--mc-white);
+            color: var(--mc-primary-500);
             cursor: pointer;
             display: flex;
             font-size: size(50);

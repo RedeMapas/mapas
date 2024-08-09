@@ -93,3 +93,7 @@ properties:
     type: string
     example: "www.pinterest.com"
     description: Pinterest do Agente
+  tiktok:
+    type: string
+    example: "www.tiktok.com"
+    description: TikTok do Agente

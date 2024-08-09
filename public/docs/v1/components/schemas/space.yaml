@@ -286,6 +286,9 @@ properties:
   pinterest:
     type: string
     description: Pinterest (se houver)
+  tiktok:
+    type: string
+    description: TikTok (se houver)
   sentNotification:
     type: integer
     description: Notificação enviada (se houver)

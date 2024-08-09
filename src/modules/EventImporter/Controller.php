@@ -705,6 +705,7 @@ class Controller extends \MapasCulturais\Controller
          $event->youtube = $value['YOUTUBE'];
          $event->linkedin = $value['LINKEDIN'];
          $event->spotify = $value['SPOTIFY'];
+         $event->tiktok = $value['TIKTOK'];
          $event->pinterest = $value['PINTEREST'];
          $event->registrationInfo = $value['INSCRICOES'];
          $event->shortDescription = $value['SHORT_DESCRIPTION'];

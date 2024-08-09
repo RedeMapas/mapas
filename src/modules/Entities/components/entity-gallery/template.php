@@ -61,7 +61,7 @@ $this->import('
             <template #default='uploader'>
                 <a class="button button--primary button--icon button--primary-outline">
                     <mc-icon name="add"></mc-icon>
-                    <?php i::_e("Adicionar imagem")?>
+                    <?php i::_e("adicionar")?>
                 </a>
             </template>
         </mc-image-uploader>

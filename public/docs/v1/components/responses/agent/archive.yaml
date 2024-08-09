@@ -111,6 +111,9 @@ content:
           example: null
         pinterest:
           type: string
+          example: 
+        tiktok:
+          type: string
           example: null
         sentNotification:
           type: string

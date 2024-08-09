@@ -58,6 +58,10 @@ properties:
     type: string
     example: "pinterest"
     description: Pinterest do projeto
+  tiktok:
+    type: string
+    example: "tiktok"
+    description: TikTOk do projeto
   emailPublico:
     type: string
     example: "email.publico@email.com"

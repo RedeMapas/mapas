@@ -378,6 +378,7 @@ return [
             "spotify",
             "youtube",
             "pinterest",
+            "tiktok",
         ];
 
         $entities = [

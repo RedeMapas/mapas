@@ -430,6 +430,10 @@ properties:
     type: string
     example: "teste"
     description: Pinterest do Agente
+  tiktok:
+    type: string
+    example: "teste"
+    description: TikTok do Agente
   payment_bank_account_type:
     type: string
     example: "Conta Corrente"

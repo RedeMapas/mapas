@@ -112,6 +112,9 @@ content:
         pinterest:
           type: string
           example: null
+        tiktok:
+          type: string
+          example: null
         sentNotification:
           type: string
           example: null

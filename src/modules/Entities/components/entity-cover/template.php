@@ -20,8 +20,7 @@ $this->import('
                     <label class="label" for="header<?= date("Ymd") ?>"> <?php i::_e("Alterar Imagem de Capa") ?> </label>
                 </div>
                 <div v-if="!entity.files.header" class="entity-cover__cover--newImg">
-                    <mc-icon name="image"></mc-icon>
-                    <label class="label"> <?php i::_e("Adicionar Imagem de Capa") ?> </label>
+                    <label class="label"><mc-icon name="image"></mc-icon> <?php i::_e("Adicionar Imagem de Capa") ?> </label>
                 </div>
             </div>
         </template>

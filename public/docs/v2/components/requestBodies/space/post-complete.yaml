@@ -153,6 +153,10 @@ properties:
     type: string
     example: null
     description: O Pinterest do espaço
+  tiktok:
+    type: string
+    example: null
+    description: O TikTok do espaço
   sentNotification:
     type: string
     example: null

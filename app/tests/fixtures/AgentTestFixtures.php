@@ -24,6 +24,7 @@ final class AgentTestFixtures extends AbstractTestFixtures implements TestFixtur
             'youtube' => 'agent',
             'spotify' => 'agent',
             'pinterest' => 'agent',
+            'tiktok' => 'agent',
         ]);
     }
 

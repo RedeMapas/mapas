@@ -2,7 +2,7 @@
 
 .entity-cover {
     align-items: center;    
-    border: size(1) dashed var(--mc-gray-500);
+    border: size(1) solid var(--mc-gray-500);
     border-radius: var(--mc-border-radius-sm);
     cursor: pointer;
     display: flex;
@@ -10,6 +10,14 @@
     justify-content: center;
     overflow: hidden;
     width: 100%;
+    height: size(130);
+
+    & > * {
+        cursor: pointer;
+    }
+    &:hover {
+        background-color: rgba(0, 0, 0, .2);
+    }
 
     .mc-image-uploader {
         width: 100%;
@@ -40,7 +48,7 @@
                 opacity: 0;
                 padding: size(5) size(10);
                 position: absolute;
-                background-color: rgba(0, 0, 0, .3);
+                // background-color: rgba(0, 0, 0, .3);
                 transition: opacity .1s ease-in;
                 z-index: 1;
             }
@@ -82,11 +90,11 @@
             flex-direction: column;
             gap: size(10);
             padding: size(25) 0;
+            color: var(--mc-primary-500);
+            font-weight: bold;
+
             & > * {
                 cursor: pointer;
-            }
-            &:hover {
-                background-color: rgba(0, 0, 0, .2);
             }
         }
     }

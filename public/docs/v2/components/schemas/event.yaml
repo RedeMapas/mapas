@@ -98,6 +98,10 @@ properties:
     type: string
     example: "Pinterest"
     description: O Pinterest do Evento.
+  tiktok:
+    type: string
+    example: "TikTok"
+    description: O TikTok do Evento.
   event_attendance:
     type: integer
     example: 50
