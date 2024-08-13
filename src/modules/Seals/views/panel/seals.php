@@ -1,4 +1,5 @@
 <?php
+
 use MapasCulturais\i;
 
 $this->import('
@@ -20,14 +21,14 @@ $this->import('
             <?= i::_e('Nesta seção você visualiza e gerencia seu perfil de usuário e outros selos criados') ?>
         </p>
         <div class="panel-page__header-actions">
-            <create-seal #default="{modal}"  >
+            <create-seal #default="{modal}">
                 <button @click="modal.open()" class="button button--primary button--icon">
                     <mc-icon name="add"></mc-icon>
-                    <span><?=i::__('Criar selo')?></span>
+                    <span><?= i::__('Criar selo') ?></span>
                 </button>
             </create-seal>
         </div>
     </header>
-    
+
     <panel--entity-tabs type="seal"></panel--entity-tabs>
 </div>

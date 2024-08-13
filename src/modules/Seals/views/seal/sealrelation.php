@@ -1,5 +1,7 @@
 <?php
+
 use MapasCulturais\i;
+
 $this->layout = 'seal-relation';
 
 $this->import('

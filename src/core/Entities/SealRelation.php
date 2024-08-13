@@ -112,27 +112,27 @@ abstract class SealRelation extends \MapasCulturais\Entity
      * @ORM\Column(name="renovation_request", type="boolean", nullable=false)
      */
     protected $renovationRequest;
-    
-    function setSeal(Seal $seal){
-        if($this->isNew()){
+
+    function setSeal(Seal $seal)
+    {
+        if ($this->isNew()) {
             $this->seal = $seal;
 
             $period = new \DateInterval("P" . ((string)$seal->validPeriod) . "M");
             $this->validateDate = clone $this->createTimestamp;
             $this->validateDate->add($period);
-            
         } else {
             throw new \Exception();
         }
     }
 
-    function jsonSerialize(): array {
+    function jsonSerialize(): array
+    {
         $result = parent::jsonSerialize();
         $result['@entityType'] = 'sealRelation';
         $result['owner'] = $this->owner->simplify('className,id,name,avatar,singleUrl');
-        $result['seal'] = $this->seal->simplify('id,name,files,singleUrl,validateDate');
+        $result['seal'] = $this->seal->simplify('id,name,files,singleUrl,validateDate,owner,shortDescription,validPeriod');
         $result['certificateText'] = $this->getCertificateText(true);
-        
         $result['requestSealRelationUrl'] = $this->requestSealRelationUrl;
         $result['renewSealRelationUrl'] = $this->renewSealRelationUrl;
         $result['ownerSealUserId'] = $this->ownerSealUserId;
@@ -143,16 +143,19 @@ abstract class SealRelation extends \MapasCulturais\Entity
         return $result;
     }
 
-    function getRequestSealRelationUrl() {
+    function getRequestSealRelationUrl()
+    {
         return $this->owner->getRequestSealrelationUrl($this->id);
     }
-    function getRenewSealRelationUrl() {
+    function getRenewSealRelationUrl()
+    {
         return $this->owner->getRenewSealRelationUrl($this->id);
     }
-    function getOwnerSealUserId() {
+    function getOwnerSealUserId()
+    {
         return $this->seal->ownerUser->id;
     }
-    
+
     /**
      * Retorna 0 se o certificado está expirado, 
      * Retorna 1 se o certificado não está expirado
@@ -160,26 +163,28 @@ abstract class SealRelation extends \MapasCulturais\Entity
      * 
      * @return int 
      */
-    function getToExpire() {
-        if($this->seal->validPeriod > 0){
+    function getToExpire()
+    {
+        if ($this->seal->validPeriod > 0) {
             $expirationDate = $this->validateDate;
             $now = new \DateTime();
 
             // Expired
-            if($expirationDate < $now) { 
+            if ($expirationDate < $now) {
                 return 0;
-            // To Expire
+                // To Expire
             } else {
                 return 1;
             }
-        
-        // Don't Expire
+
+            // Don't Expire
         } else {
             return 2;
         }
     }
 
-    protected function canUserCreate($user){
+    protected function canUserCreate($user)
+    {
         $app = App::i();
 
         $can = !$app->isWorkflowEnabled() || $this->seal->canUser('@control', $user);
@@ -187,52 +192,55 @@ abstract class SealRelation extends \MapasCulturais\Entity
         return $this->owner->canUser('createSealRelation', $user) && $can;
     }
 
-    protected function canUserModify($user){
+    protected function canUserModify($user)
+    {
         return $this->canUserCreate($user);
     }
 
-    protected function canUserRemove($user){
+    protected function canUserRemove($user)
+    {
         $app = App::i();
 
         $can = !$app->isWorkflowEnabled() || $this->seal->canUser('@control', $user);
 
         return $this->owner->canUser('removeSealRelation', $user) || $can;
     }
-    
-    protected function canUserPrint($user) {
+
+    protected function canUserPrint($user)
+    {
         return $this->owner->canUser('@control', $user) || $this->seal->canUser('@control', $user);
     }
-    
-    public function isExpired() {
-        if($this->seal->validPeriod > 0) {
-            
+
+    public function isExpired()
+    {
+        if ($this->seal->validPeriod > 0) {
+
             $today = new \DateTime();
             $expirationDate = $this->validateDate;
             return $expirationDate < $today;
-            
         } else {
             return false;
         }
     }
 
-    public function save($flush = false) {
+    public function save($flush = false)
+    {
         $app = App::i();
         try {
-            if($this->owner instanceof Agent){
+            if ($this->owner instanceof Agent) {
                 $this->ownerRelation = $this->owner;
             } else {
                 $this->ownerRelation = $this->owner->owner;
             }
             parent::save($flush);
-            
         } catch (\MapasCulturais\Exceptions\PermissionDenied $e) {
             if (!App::i()->isWorkflowEnabled())
                 throw $e;
 
             $app = App::i();
             $app->disableAccessControl();
-            $this->status = self::STATUS_PENDING;      
-            
+            $this->status = self::STATUS_PENDING;
+
             parent::save($flush);
             $app->enableAccessControl();
 
@@ -244,76 +252,84 @@ abstract class SealRelation extends \MapasCulturais\Entity
         }
     }
 
-    function delete($flush = false) {
+    function delete($flush = false)
+    {
         $this->checkPermission('remove');
         // ($originType, $originId, $destinationType, $destinationId, $metadata)
         $ruid = RequestSealRelation::generateRequestUid($this->owner->getClassName(), $this->owner->id, $this->seal->getClassName(), $this->seal->id, ['class' => $this->getClassName(), 'relationId' => $this->id]);
         $requests = App::i()->repo('RequestSealRelation')->findBy(['requestUid' => $ruid]);
-        foreach($requests as $r)
+        foreach ($requests as $r)
             $r->delete($flush);
 
         parent::delete($flush);
     }
 
-    function generateLink($url, $texto){
-      return '<a href=' . $url . ' rel="noopener noreferrer"><i>' . $texto .'</i></a>';
+    function generateLink($url, $texto)
+    {
+        return '<a href=' . $url . ' rel="noopener noreferrer"><i>' . $texto . '</i></a>';
     }
-    
+
     /**
      * Retorna a mensagem de impressão do certificado. Se uma mensagem não foi definida pelo usuário, retorna uma mensagem padrão com todos os campos
      *
      * @param addLinks
      * @return mensagem de impressão
      */
-    public function getCertificateText($addLinks = false){
-        
+    public function getCertificateText($addLinks = false)
+    {
         $app = App::i();
         $mensagem = $this->seal->certificateText;
         $entity = $this->seal;
-        $nomeSelo = $addLinks ? $this->generateLink($app->createUrl('seal', 'single', ['id'=>$this->seal->id],
-                    $this->seal->name), $this->seal->name) : $this->seal->name;
+        $nomeSelo = $addLinks ? $this->generateLink($app->createUrl(
+            'seal',
+            'single',
+            ['id' => $this->seal->id],
+            $this->seal->name
+        ), $this->seal->name) : $this->seal->name;
 
-        $donoSelo = $addLinks ? $this->generateLink($this->seal->owner->getSingleUrl(),
-                    $this->seal->owner->name) : $this->owner->name;
+        $donoSelo = $addLinks ? $this->generateLink(
+            $this->seal->owner->getSingleUrl(),
+            $this->seal->owner->name
+        ) : $this->owner->name;
 
-        $nomeEntidade = $addLinks ? $this->generateLink($this->owner->getSingleUrl(),
-        $this->owner->name) : $this->owner->name;
+        $nomeEntidade = $addLinks ? $this->generateLink(
+            $this->owner->getSingleUrl(),
+            $this->owner->name
+        ) : $this->owner->name;
 
         $dateInicio = $this->createTimestamp->format("d/m/Y");
         $seloExpira = isset($expirationDate);
-        
-        
-        if($entity->validPeriod > 0){
+
+
+        if ($entity->validPeriod > 0) {
             $dateFim = $this->validateDate->format('d/m/Y');
         }
 
-        if(!empty($mensagem)){
-            $mensagem = str_replace("\t","&nbsp;&nbsp;&nbsp;&nbsp",$mensagem);
-            $mensagem = str_replace("[sealName]",$nomeSelo,$mensagem);
-            $mensagem = str_replace("[sealOwner]",$donoSelo,$mensagem);
-            $mensagem = str_replace("[sealShortDescription]",$this->seal->shortDescription,$mensagem);
-            $mensagem = str_replace("[sealRelationLink]",$app->createUrl('seal','printsealrelation',[$this->id]),$mensagem);
-            $mensagem = str_replace("[entityDefinition]",$this->owner->entityTypeLabel,$mensagem);
-            $mensagem = str_replace("[entityName]",$nomeEntidade,$mensagem);
-            $mensagem = str_replace("[dateIni]",$dateInicio,$mensagem);
+        if (!empty($mensagem)) {
+            $mensagem = str_replace("\t", "&nbsp;&nbsp;&nbsp;&nbsp", $mensagem);
+            $mensagem = str_replace("[sealName]", $nomeSelo, $mensagem);
+            $mensagem = str_replace("[sealOwner]", $donoSelo, $mensagem);
+            $mensagem = str_replace("[sealShortDescription]", $this->seal->shortDescription, $mensagem);
+            $mensagem = str_replace("[sealRelationLink]", $app->createUrl('seal', 'printsealrelation', [$this->id]), $mensagem);
+            $mensagem = str_replace("[entityDefinition]", $this->owner->entityTypeLabel, $mensagem);
+            $mensagem = str_replace("[entityName]", $nomeEntidade, $mensagem);
+            $mensagem = str_replace("[dateIni]", $dateInicio, $mensagem);
 
-            if($entity->validPeriod > 0){
-                $mensagem = str_replace("[dateFin]",$dateFim,$mensagem);
+            if ($entity->validPeriod > 0) {
+                $mensagem = str_replace("[dateFin]", $dateFim, $mensagem);
             } else {
-                $mensagem = str_replace("[dateFin]",'',$mensagem);
+                $mensagem = str_replace("[dateFin]", '', $mensagem);
             }
-            
-            $mensagem = preg_replace('/\v+|\\\r\\\n/','<br/>',$mensagem);
-            
-        }
-        else{
-            $mensagem = '<p>' . \MapasCulturais\i::__('<b>Nome do Selo</b>') . ': ' . $nomeSelo .'</p>';
+
+            $mensagem = preg_replace('/\v+|\\\r\\\n/', '<br/>', $mensagem);
+        } else {
+            $mensagem = '<p>' . \MapasCulturais\i::__('<b>Nome do Selo</b>') . ': ' . $nomeSelo . '</p>';
             $mensagem = $mensagem . '<p>' . \MapasCulturais\i::__('<b>Dono do Selo</b>') . ': ' . $donoSelo . '</p>';
-            $mensagem = $mensagem . '<p>' . \MapasCulturais\i::__('<b>Descrição Curta</b>') . ': ' . $this->seal->shortDescription .'</p>';
-            $mensagem = $mensagem . '<p>' . \MapasCulturais\i::__('<b>Tipo de Entidade</b>') . ': ' . $this->owner->entityTypeLabel .'</p>';
-            $mensagem = $mensagem . '<p>' . \MapasCulturais\i::__('<b>Nome da Entidade</b>') . ': ' . $nomeEntidade .'</p>';
-            $mensagem = $mensagem . '<p>' . \MapasCulturais\i::__('<b>Data de Criação</b>') . ': ' . $dateInicio .'</p>';
-            
+            $mensagem = $mensagem . '<p>' . \MapasCulturais\i::__('<b>Descrição Curta</b>') . ': ' . $this->seal->shortDescription . '</p>';
+            $mensagem = $mensagem . '<p>' . \MapasCulturais\i::__('<b>Tipo de Entidade</b>') . ': ' . $this->owner->entityTypeLabel . '</p>';
+            $mensagem = $mensagem . '<p>' . \MapasCulturais\i::__('<b>Nome da Entidade</b>') . ': ' . $nomeEntidade . '</p>';
+            $mensagem = $mensagem . '<p>' . \MapasCulturais\i::__('<b>Data de Criação</b>') . ': ' . $dateInicio . '</p>';
+
             // Tirando daqui porque já está na view/seal/sealrelation.php
             //if($entity->validPeriod > 0){
             //    $mensagem = $mensagem . \MapasCulturais\i::__('Data de Expiração') . ': ' . $dateFim;
@@ -325,7 +341,4 @@ abstract class SealRelation extends \MapasCulturais\Entity
 
         return $mensagem;
     }
-    
-    
-    
 }
