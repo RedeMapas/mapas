@@ -1,21 +1,27 @@
-var
-public/router.php
-src/modules/Components/assets/js/media-query.js
-src/modules/Components/assets/js/media-query/
-**/node_modules
-mix-manifest.json
-.pnpm-store
-dev/docker-data/
-src/themes/BaseV1/assets/css/main.css
-src/themes/BaseV1/assets/css/main.css.map
-.idea
+.idea/
+# IDE
+.vscode/
+nbproject/
+.DS_STORE
+/coverage/
+# Vendor
+/vendor/
+# Logs
+/logs/*
+!/logs/README.md
+# Cache
+/var/*
 .phpunit.result.cache
-.php-cs-fixer.cache
-docker-data
-media-query.js.LICENSE.txt
-public/assets/
-src/.phpdoc
-.phpunit*
-.phpdocs*
+cache.properties
+.php_cs.cache
+# Composer
+composer.phar
+composer.lock
+public/assets
+**/assets/css/*
+**/assets/js/*
+src/modules/Components/images/**
+node_modules
 .env
-vendor/
+mix-manifest.json
+.php-cs-fixer.cache

@@ -13,7 +13,7 @@ x-defaults: &defaults
     BUILD_ASSETS: ${BUILD_ASSETS}
     PENDING_PCACHE_RECREATION_INTERVAL: ${PENDING_PCACHE_RECREATION_INTERVAL}
     JOBS_INTERVAL: ${JOBS_INTERVAL}
-    # REDIS_CACHE: ${REDIS_CACHE} 
+    # REDIS_CACHE: ${REDIS_CACHE}
     MAILER_TRANSPORT: ${MAILER_TRANSPORT}
     MAILER_FROM: ${MAILER_FROM}
     NUM_PROCESSES: ${NUM_PROCESSES}
@@ -31,10 +31,10 @@ services:
   web:
     <<: *defaults
     image: ghcr.io/redemapas/mapas
-    build: 
+    build:
       context: .
       dockerfile: .nixpacks/Dockerfile
-    restart: unless-stopped
+    restart: '${DOCKER_RESTART_POLICY:-always}'
     depends_on:
       - database
     environment:
@@ -50,6 +50,7 @@ services:
 
   database:
     image: kartoza/postgis:14
+    restart: '${DOCKER_RESTART_POLICY:-always}'
     environment:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
@@ -59,7 +60,7 @@ services:
       - db_data:/opt/postgres/data
       - ./dev/db:/docker-entrypoint-initdb.d
     ports:
-      - 5432
+      - 5432:5432
     healthcheck:
       test: "PGPASSWORD=${POSTGRES_PASSWORD} pg_isready -h 127.0.0.1 -U ${POSTGRES_USER} -d ${POSTGRES_DB}"
 
@@ -71,7 +72,7 @@ services:
 
   redis:
     image: redis:6
-    restart: unless-stopped
+    restart: '${DOCKER_RESTART_POLICY:-always}'
     command: --maxmemory 128Mb --maxmemory-policy allkeys-lru
     volumes:
       - redis:/data
@@ -80,12 +81,17 @@ services:
 
   mailhog:
     image: mailhog/mailhog
+    restart: '${DOCKER_RESTART_POLICY:-always}'
     ports:
       - 8025
 
   recreate-pending-pcache:
     <<: *defaults
     image: ghcr.io/redemapas/mapas
+    build:
+      context: .
+      dockerfile: .nixpacks/Dockerfile
+    restart: '${DOCKER_RESTART_POLICY:-always}'
     depends_on:
       - database
     environment:
@@ -103,6 +109,10 @@ services:
   execute-job:
     <<: *defaults
     image: ghcr.io/redemapas/mapas
+    build:
+      context: .
+      dockerfile: .nixpacks/Dockerfile
+    restart: '${DOCKER_RESTART_POLICY:-always}'
     depends_on:
       - database
     environment:
@@ -121,10 +131,14 @@ services:
     <<: *defaults
     image: ghcr.io/redemapas/mapas
     command: ./scripts/db-update.sh -d localhost
-    environment:
-      <<: *environment
+    build:
+      context: .
+      dockerfile: .nixpacks/Dockerfile
+    restart: '${DOCKER_RESTART_POLICY:-no}'
     depends_on:
       - database
+    environment:
+      <<: *environment
     volumes:
       - var-files:/app/var/
       - assets-files:/app/public/assets
@@ -136,10 +150,14 @@ services:
     <<: *defaults
     image: ghcr.io/redemapas/mapas
     command: ./scripts/mc-db-updates.sh
-    environment:
-      <<: *environment
+    build:
+      context: .
+      dockerfile: .nixpacks/Dockerfile
+    restart: '${DOCKER_RESTART_POLICY:-no}'
     depends_on:
       - database
+    environment:
+      <<: *environment
     volumes:
       - var-files:/app/var/
       - assets-files:/app/public/assets
@@ -151,10 +169,14 @@ services:
     <<: *defaults
     image: ghcr.io/redemapas/mapas
     command: php ./src/tools/doctrine.php orm:generate-proxies
-    environment:
-      <<: *environment
+    build:
+      context: .
+      dockerfile: .nixpacks/Dockerfile
+    restart: '${DOCKER_RESTART_POLICY:-no}'
     depends_on:
       - database
+    environment:
+      <<: *environment
     volumes:
       - var-files:/app/var/
       - assets-files:/app/public/assets
@@ -193,26 +215,6 @@ services:
   #     - sessions:/data
   #   ports:
   #     - 6379
-
-  # phpunit:
-  #   image: ghcr.io/redemapas/mapas-php
-  #   build: 
-  #     context: .
-  #   restart: no
-  #   volumes:
-  #     - .:/app
-  #   working_dir: /app
-
-  # pgadmin:
-  #   image: dpage/pgadmin4
-  #   environment:
-  #     PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-pgadmin4@pgadmin.org}
-  #     PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin}
-  #     PGADMIN_CONFIG_SERVER_MODE: 'False'
-  #   volumes:
-  #     - pgadmin:/var/lib/pgadmin
-  #   ports:
-  #     - 80
 
 volumes:
   var-files:

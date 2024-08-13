@@ -1,37 +1,29 @@
-dev
-var/*/*
-# **/*.log
-# # **/*.md
-# **/*.php~
-# **/*.dist.php
-# **/*.dist
-# **/*.cache
-# **/._*
-# **/.dockerignore
-# **/.DS_Store
-# **/.git/
-# **/.gitattributes
-# **/.gitignore
-# **/.gitmodules
-# **/compose.*.yaml
-# **/compose.*.yml
-# **/compose.yaml
-# **/compose.yml
-# **/docker-compose.*.yaml
-# **/docker-compose.*.yml
-# **/docker-compose.yaml
-# **/docker-compose.yml
-# **/Dockerfile
-# **/Thumbs.db
-# .github/
-# docs/
-# public/bundles/
-# tests/
-var/
-vendor/
-**/node_modules
-# .editorconfig
-# .env.*.local
-# .env.local
-# .env.local.php
-# .env.test
+**/*.log
+# **/*.md
+**/*.php~
+**/*.dist.php
+**/*.dist
+**/*.cache
+**/._*
+**/.dockerignore
+**/.DS_Store
+**/.git/
+**/.gitattributes
+**/.gitignore
+**/.gitmodules
+**/compose.*.yaml
+**/compose.*.yml
+**/compose.yaml
+**/compose.yml
+**/docker-compose.*.yaml
+**/docker-compose.*.yml
+**/docker-compose.yaml
+**/docker-compose.yml
+**/Dockerfile
+**/Thumbs.db
+.github/
+.editorconfig
+.env.*.local
+.env.local
+.env.local.php
+.env.test
