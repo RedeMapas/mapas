@@ -18,7 +18,7 @@ $this->import('
         </div>
     </div>
     <mc-loading :condition="loading && page == 1"></mc-loading>
-    <div v-if="!loading || page > 1 && occurrences.length == 0" class="col-9 search-list__cards--no-occurrence">
+    <div v-if="!loading && occurrences.length == 0" class="col-9 search-list__cards--no-occurrence">
         <p><?= i::__('Não existem eventos cadastrados para os filtros selecionados.') ?></p>
     </div>
     <div v-if="!loading || page > 1 && occurrences" class="col-9 search-list__cards">
