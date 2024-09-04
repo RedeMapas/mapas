@@ -169,7 +169,11 @@ app.component('search-filter-event', {
             this.pseudoQuery['@to'] = new McDate(new Date(this.date[1])).date('sql');
             delete this.pseudoQuery['event:@verified'];
             this.pseudoQuery['event:classificacaoEtaria'].length = 0;
-            this.pseudoQuery['event:term:linguagem'].length = 0;       
+            this.pseudoQuery['event:term:linguagem'].length = 0;
+            const inputFields = document.querySelectorAll('.mc-multiselect--input');
+            inputFields.forEach(inputField => {
+                inputField.value = '';
+            });       
         },
         dateFormat(date) {
             const d0 = new Date(date[0]);
