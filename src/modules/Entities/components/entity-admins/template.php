@@ -22,8 +22,13 @@ $this->import('
             <div v-for="relation in group" class="agent">
                 <mc-relation-card :relation="relation">
                     <template #default="{open, close, toggle}">
-                        <a class="agent__img" @click="$event.preventDefault(); toggle()">
-                           <mc-avatar :entity="relation.agent" size="small"></mc-avatar>
+                        <a class="entity-owner__owner"  @click="$event.preventDefault(); toggle()">
+                            <div class="agent__img">
+                                <mc-avatar :entity="relation.agent" size="small"></mc-avatar>
+                            </div>
+                            <div class="entity-owner__owner--name">
+                                {{relation.agent.name}}
+                            </div>
                         </a>
                     </template>
                 </mc-relation-card>
