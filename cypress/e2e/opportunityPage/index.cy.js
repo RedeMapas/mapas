@@ -5,7 +5,7 @@ describe("Oportunidade", () => {
         cy.get(".mc-header-menu__btn-mobile").click();
         cy.contains(".mc-header-menu__itens a", "Oportunidades").click();
         cy.url().should("include", "/oportunidades");
-        cy.get(".search-filter__actions--form-input").type("f");
+        cy.get(".search-filter__actions--form-input").type("TesteCypress");
         cy.wait(1000);
         cy.get(':nth-child(3) > .entity-card__footer > .entity-card__footer--action > .button').click();
         cy.url().should("include", "/oportunidade/");
@@ -16,7 +16,7 @@ describe("Oportunidade", () => {
         cy.get(':nth-child(1) > .entity-cards-cards__content > .entity-cards-cards__info > .entity-cards-cards__label').should('have.text', 'Oportunidades criadas');
         cy.get(':nth-child(2) > .entity-cards-cards__content > .entity-cards-cards__info > .entity-cards-cards__label').should('have.text', 'Oportunidades certificadas');
 
-        cy.wait(1000);
+        cy.wait(2000);
 
         cy.get(".foundResults").invoke('text').then((text) => {
             let expectedCount = Number(text.match(/\d+/), 10);

@@ -9,7 +9,7 @@ function checkFilterCount() {
 
     	switch (resultsType) {
         	case "Oportunidades":
-        	    cy.get('.upper').should("have.length", resultsCountPerPage);
+        	    cy.get('span.upper').should("have.length", resultsCountPerPage);
         	    cy.contains(resultsCount + " Oportunidades encontradas");
 			
         	    break;
