@@ -8,3 +8,4 @@
 [submodule "src/plugins/Metabase"]
 	path = src/plugins/Metabase
 	url = https://github.com/RedeMapas/plugin-Metabase
+	branch = main
