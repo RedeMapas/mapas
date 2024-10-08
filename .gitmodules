@@ -5,3 +5,6 @@
 [submodule "src/plugins/AdminLoginAsUser"]
 	path = src/plugins/AdminLoginAsUser
 	url = https://github.com/mapasculturais/plugin-AdminLoginAsUser
+[submodule "src/plugins/Metabase"]
+	path = src/plugins/Metabase
+	url = https://github.com/RedeMapas/plugin-Metabase
