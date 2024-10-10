@@ -1,5 +1,5 @@
 services:
-  web:
+  backend:
     image: ghcr.io/redemapas/mapas-php
     build:
       context: .
@@ -21,9 +21,6 @@ services:
       - doctrine-files:/app/var/DoctrineProxies/
     command: php -S 0.0.0.0:80 -q -t /app/public /app/router.php
 
-  tmui-postgres:
-    image: achristmascarl/rainfrog:latest
-
   recreate-pending-pcache:
     image: ghcr.io/redemapas/mapas-php
     restart: no
@@ -42,22 +39,28 @@ services:
     volumes:
     - ./:/app
 
-  db-update:
-    image: ghcr.io/redemapas/mapas-php
+  frontend:
+    image: node:20               # Usando a imagem oficial do Node.js 20
+    working_dir: /usr/src/app     # Define o diretório de trabalho dentro do container
     restart: no
-    build:
-      context: .
-      dockerfile: Dockerfile
     volumes:
-    - ./:/app
-
-  pgadmin:
-    image: dpage/pgadmin4
+      - .:/usr/src/app            # Mapeia sua pasta local para a pasta dentro do container
+      - /usr/src/app/node_modules # Evita sobrepor os módulos node_modules do container
+    command: /bin/sh -c "npm install -g pnpm && pnpm install && pnpm run watch"
+                                  # Comando para instalar dependências e rodar build
     environment:
-      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-pgadmin4@pgadmin.org}
-      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin}
-      PGADMIN_CONFIG_SERVER_MODE: 'False'
-    volumes:
-      - pgadmin:/var/lib/pgadmin
-    ports:
-      - 80
+      - NODE_ENV=development      # Variável de ambiente para o Node.js
+
+  # tmui-postgres:
+  #   image: achristmascarl/rainfrog:latest
+ 
+  # pgadmin:
+  #   image: dpage/pgadmin4
+  #   environment:
+  #     PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-pgadmin4@pgadmin.org}
+  #     PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin}
+  #     PGADMIN_CONFIG_SERVER_MODE: 'False'
+  #   volumes:
+  #     - pgadmin:/var/lib/pgadmin
+  #   ports:
+  #     - 80
