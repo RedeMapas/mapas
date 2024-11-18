@@ -22,6 +22,10 @@ class Module extends \MapasCulturais\Module{
                 $this->part('registration-workplan');
             });
 
+            $app->hook("template(registration.view.single-registrationview):after", function(){
+                $this->part('registration-details-workplan');
+            });
+
             $app->hook("entity(Registration).sendValidationErrors", function (&$errorsResult) use($app) {
                 $registration = $this;
 
