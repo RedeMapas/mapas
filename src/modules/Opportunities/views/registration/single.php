@@ -273,12 +273,13 @@ $today = new DateTime();
                                 </div>
                             </div>
                         <?php else: ?>
+                            <?php $this->applyTemplateHook('single-registrationview', 'before') ?>
                             <v1-embed-tool route="registrationview" :id="<?=$phase->id?>"></v1-embed-tool>
+                            <?php $this->applyTemplateHook('single-registrationview', 'after') ?>
                         <?php endif ?>
                     <?php endif ?>
                     <?php $phase = $phase->nextPhase; ?>
                 <?php endwhile ?>
-
             </div>
         </mc-tab>
 
