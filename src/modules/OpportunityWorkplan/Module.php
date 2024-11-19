@@ -34,12 +34,20 @@ class Module extends \MapasCulturais\Module{
 
                     $errors = [];
                     if (!$workplan) {
-                        $errors['Workplan'] = ['Plano de trabalho obrigatório.'];
+                        $errors['workplan'] = [i::__('Plano de trabalho obrigatório.')];
                     }
                    
                     if ($workplan?->goals->isEmpty()) {
-                        $errors['WorkplanMeta'] = ['Meta do plano de trabalho obrigatório.'];
+                        $errors['goal'] = [i::__('Meta do plano de trabalho obrigatório.')];
                     }
+
+                    if ($registration->opportunity->workplan_deliveryReportTheDeliveriesLinkedToTheGoals) {
+                        foreach ($workplan?->goals as $goal) {
+                            if ($goal?->deliveries->isEmpty()) {
+                                $errors['delivery'] = [i::__('Entrega da meta do plano de trabalho obrigatório.')];
+                            }
+                        }
+                    }                   
 
                     $errorsResult = [...$errors];
                 }               
