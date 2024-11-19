@@ -44,9 +44,12 @@ $this->import('
         <!-- Metas -->
         <div v-for="(goal, index) in workplan.goals" :key="index" class="registration-workplan__goals">
             <div class="registration-workplan__header-goals">
-                <h4 class="registration-workplan__goals-title">{{ goal.title }}</h4>
-                <!-- <mc-icon v-if="goal.isCollapsed" name="arrowPoint-up"></mc-icon>
-                <mc-icon v-if="!goal.isCollapsed" name="arrowPoint-down"></mc-icon> -->
+                <h4 class="registration-workplan__goals-title" @click="toggle(index)">
+                    {{ goal.title }}
+                    <mc-icon v-if="isExpanded(index)" name="arrowPoint-up"></mc-icon>
+                    <mc-icon v-if="!isExpanded(index)" name="arrowPoint-down"></mc-icon>
+                </h4>
+
                 <div v-if="goal.id" class="registration-workplan__delete-goal">
                     <mc-confirm-button @confirm="deleteGoal(goal.id)">
                         <template #button="{open}">
@@ -62,8 +65,7 @@ $this->import('
                 </div>
             </div>
             <h6><?= i::esc_attr__('Meta') ?> {{ index + 1 }}</h6>
-            <div>
-                <!-- Duração da meta -->
+            <div v-if="isExpanded(index)" class="collapse-content">
                 <div class="registration-workplan__goals-period">
                     <p><?= i::esc_attr__('Duração da meta') ?></p>
                     <div class="registration-workplan__goals-months">

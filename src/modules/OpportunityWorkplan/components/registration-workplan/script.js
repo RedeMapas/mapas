@@ -23,7 +23,8 @@ app.component('registration-workplan', {
         return {
             opportunity: this.registration.opportunity,
             workplan: entityWorkplan,
-            workplanFields: $MAPAS.EntitiesDescription.workplan
+            workplanFields: $MAPAS.EntitiesDescription.workplan,
+            expandedGoals: [],
         };
     },
     methods: {
@@ -52,7 +53,9 @@ app.component('registration-workplan', {
             entityGoal.amount = null;
             entityGoal.deliveries = [];
 
+        
             this.workplan.goals.push(entityGoal);
+            this.expandedGoals.push(this.workplan.goals.length - 1);
         },
         async deleteGoal(goalId) {
             const api = new API('workplan');
@@ -223,6 +226,16 @@ app.component('registration-workplan', {
             } else {
                 return 60;
             }
+        },
+        toggle(index) {
+            if (this.expandedGoals.includes(index)) {
+              this.expandedGoals = this.expandedGoals.filter((i) => i !== index);
+            } else {
+              this.expandedGoals.push(index);
+            }
+        },
+        isExpanded(index) {
+            return this.expandedGoals.includes(index); 
         },
     },
 })
