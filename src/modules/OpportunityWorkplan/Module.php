@@ -341,12 +341,19 @@ class Module extends \MapasCulturais\Module{
         $description = new Metadata('description', ['label' => \MapasCulturais\i::__('Descrição')]);
         $app->registerMetadata($description, Goal::class);
 
+
         $culturalMakingStage = new Metadata('culturalMakingStage', [
             'label' => \MapasCulturais\i::__('Etapa do fazer cultural'),
             'type' => 'select',
             'options' => array(
-                \MapasCulturais\i::__('etapa 1'),
-                \MapasCulturais\i::__('etapa 12'),
+                \MapasCulturais\i::__('Criação, invenção e inovação'),
+                \MapasCulturais\i::__('Difusão, divulgação'),
+                \MapasCulturais\i::__('Formação e transmissão'),
+                \MapasCulturais\i::__('Intercâmbios, trocas e cooperação'),
+                \MapasCulturais\i::__('Análise, crítica, estudo, investigação, pesquisa e reflexão'),
+                \MapasCulturais\i::__('Fruição, consumo e circulação'),
+                \MapasCulturais\i::__('Conservação, memória e preservação'),
+                \MapasCulturais\i::__('Organização, legislação, gestão, produção da cultura'),
             ),
         ]);
         $app->registerMetadata($culturalMakingStage, Goal::class);
