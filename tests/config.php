@@ -86,6 +86,7 @@ return array(
 
     // Plugin configurations
     'plugins' => [
-        'ProjectName' => ['namespace' => 'PluginNamespace']
+        'ProjectName' => ['namespace' => 'PluginNamespace'],
+        'WorkplanSyncTransfereGov' => ['namespace' => 'WorkplanSyncTransfereGov'],
     ],
 );
