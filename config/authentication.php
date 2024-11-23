@@ -13,12 +13,40 @@ return [
         'wizard' => 'true',
         'timeout' => '24 hours',
         'strategies' => [
-           'Facebook' => [
+            'govbr' => [
+                  'client_id' => env('AUTH_GOV_BR_CLIENT_ID', null),
+                  'client_secret' => env('AUTH_GOV_BR_CLIENT_SECRET', null),
+                  'scope' => env('AUTH_GOV_BR_SCOPE', 'openid email profile phone govbr_confiabilidades'),
+                  'visible' => env('AUTH_GOV_BR_ID', true),
+                  'response_type' => 'code',
+                  'scope' => 'openid email profile phone govbr_confiabilidades',
+                  'redirect_uri' => 'https://experimente-minc.mapas.tec.br/autenticacao/autenticacao/govbr/oauth2callback', 
+                  'auth_endpoint' => 'https://sso.staging.acesso.gov.br/authorize',
+                  'token_endpoint' => 'https://sso.staging.acesso.gov.br/token',
+                  'nonce' => 'abc',
+                  /*'userinfo_endpoint' => 'https://sso.staging.acesso.gov.br/jwk',*/
+                  'state_salt' => "mapasminc",
+                  'code_challenge_method' => 'S256',
+                  'code_challenge' => env('AUTH_GOV_CODE_CHALLENGE', 'wwheOwufT6pFeAuIaHo8QmMT4k6r2gh0N1X_zHQK7LU'),
+                  'code_verifier' => env('AUTH_GOV_CODE_VERIFIER', 'vbQ71yzBAphMeargyG6EG_It9P6-kqSIrgRyT-hGwIQ'),
+                  'applySealId' => 1,
+                  'menssagem_authenticated' => "",
+                  'dic_agent_fields_update' => [
+                      'nomeCompleto' => 'full_name',
+                      'name' => 'name',
+                      'documento' => 'cpf',
+                      'cpf' => 'cpf',
+                      'emailPrivado' => 'email',
+                      'telefone1' => 'phone_number',
+                  ]
+            ],
+
+            'Facebook' => [
                'app_id' => env('AUTH_FACEBOOK_APP_ID', null),
                'app_secret' => env('AUTH_FACEBOOK_APP_SECRET', null),
                'scope' => env('AUTH_FACEBOOK_SCOPE', 'email'),
             ],
-            
+
             'Google' => [
                 'client_id' => env('AUTH_GOOGLE_CLIENT_ID', null),
                 'client_secret' => env('AUTH_GOOGLE_CLIENT_SECRET', null),
