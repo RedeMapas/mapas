@@ -104,6 +104,7 @@ $iconset = [
     'process' => 'fluent-mdl2:processing-pause',
     'question' => 'fe:question',
     'role'  => 'ri:profile-line',
+    'integration'  => 'mdi:database-cog-outline',
     'seal' => 'mdi:seal-variant',
     'search' => 'ant-design:search-outlined',
     'selected' => 'grommet-icons:radial-selected',
