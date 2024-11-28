@@ -15,10 +15,10 @@ $this->import('
     <div class="home-entities__content">
         <div class="home-entities__content--header">
             <label class="title">
-                <?= $this->text('title', i::__('Aqui você encontra informações de editais e oportunidades do Ministério da Cultura.')) ?>
+                <?= $this->text('title', i::__('O Balaio Cultural é o mapemento das expressões artísticas da UFPR produzidas por estudantes, professores, técnicos e terceirizados.')) ?>
             </label>
             <label class="description">
-                <?= $this->text('description', i::__('Você também pode cadastrar seus projetos, espaços e eventos, e contribuir para o mapeamento cultural brasileiro.')) ?>
+                <?= $this->text('description', i::__('O objetivo é compreender as demandas dos artistas e agentes culturais e a partir disso oferecer suporte, promover a difusão cultural interna e externa e fomentar a ocupação dos espaços da Universidade com arte e cultura.')) ?>
             </label>
         </div>
         
