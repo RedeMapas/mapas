@@ -16,7 +16,7 @@ $this->import('
 ?>
 <mc-card class="registration-details-workplan" v-if="registration.opportunity.enableWorkplan">
     <template #title>
-        <h3 class="card__title"><?= i::esc_attr__('Plano de trabalho') ?></h3>
+        <h3 class="card__title">{{ getWorkplanLabelDefault }}</h3>
         <p><?= i::esc_attr__('Dados da ação cultural.') ?></p>
     </template>
     <template #content>
@@ -36,7 +36,8 @@ $this->import('
 
         <div v-for="(goal, index) in workplan.goals" :key="index" class="registration-details-workplan__goals">
             <div class="registration-details-workplan__header-goals">
-                <h4 class="registration-details-workplan__goals-title"><?= i::esc_attr__('Meta: ') ?> #{{ goal.id }} - {{ goal.title }}</h4>
+                <h4 class="registration-details-workplan__goals-title">
+                    {{ getGoalLabelDefault }} #{{ goal.id }} - {{ goal.title }}</h4>
             </div>
 
             <div v-if="goal.monthInitial" class="field">
@@ -48,7 +49,7 @@ $this->import('
                 {{ goal.monthEnd }}
             </div>
             <div v-if="goal.title" class="field">
-                <label><?= i::esc_attr__('Título da meta') ?></label>
+                <label>{{ `Titulo da ${getGoalLabelDefault}` }}</label>
                 {{ goal.title }}
             </div>
 
@@ -65,7 +66,9 @@ $this->import('
 
             <!-- Valor da meta -->
             <div v-if="goal.amount" class="field">
-                <label><?= i::esc_attr__('Valor da meta (R$)') ?></label>
+                <label>
+                    {{ `Valor da ${getGoalLabelDefault} (R$)` }}
+                </label>
                 {{ convertToCurrency(goal.amount) }}
             </div>
 
@@ -73,10 +76,11 @@ $this->import('
             <div v-for="(delivery, index_) in goal.deliveries" :key="delivery.id" class="registration-details-workplan__goals__deliveries">
                 
                 <div class="registration-details-workplan__header-deliveries">
-                    <h4 class="registration-details-workplan__goals-title"><?= i::esc_attr__('entrega: ') ?> #{{ delivery.id }} - {{ delivery.name }}</h4>
+                    <h4 class="registration-details-workplan__goals-title">
+                        {{ getDeliveryLabelDefault }} #{{ delivery.id }} - {{ delivery.name }}</h4>
                 </div>
                 <div v-if="delivery.name" class="field">
-                    <label><?= i::esc_attr__('Nome da entrega') ?></label>
+                    <label><?= i::esc_attr__('Nome') ?></label>
                     {{ delivery.name }}
                 </div>
 
@@ -86,12 +90,12 @@ $this->import('
                 </div>
 
                 <div v-if="delivery.type" class="field">
-                    <label><?= i::esc_attr__('Tipo de entrega') ?></label>
+                    <label><?= i::esc_attr__('Tipo') ?></label>
                     {{ delivery.type }}
                 </div>
 
                 <div v-if="delivery.segmentDelivery" class="field">
-                    <label><?= i::esc_attr__('Segmento artístico cultural da entrega') ?></label>
+                    <label><?= i::esc_attr__('Segmento artístico cultural') ?></label>
                     {{ delivery.segmentDelivery }}
                 </div>
 
@@ -107,7 +111,7 @@ $this->import('
 
 
                 <div v-if="delivery.generaterRevenu" class="field">
-                    <label><?= i::esc_attr__('A entrega irá gerar receita?') ?></label>
+                    <label><?= i::esc_attr__('Irá gerar receita?') ?></label>
                     {{ delivery.generaterRevenue }}
                 </div>
 
