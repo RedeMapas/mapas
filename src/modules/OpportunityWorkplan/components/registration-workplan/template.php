@@ -17,14 +17,14 @@ $this->import('
 ?>
 <mc-card class="registration-workplan" v-if="registration.opportunity.enableWorkplan">
     <template #title>
-        <h3 class="card__title"><?= i::esc_attr__('Plano de trabalho') ?></h3>
-        <p><?= i::esc_attr__('Descrição do plano de trabalho.') ?></p>
+        <h3 class="card__title">
+            {{ getWorkplanLabelDefault }}
+        </h3>
+        <p>
+            {{ `Descrição do ${getWorkplanLabelDefault}` }}
+        </p>
     </template>
     <template #content>
-
-        <!-- <entity-field :entity="registration" prop="workplan_projectDuration" :autosave="30000"></entity-field> -->
-        <!-- <entity-field :entity="workplan" prop="culturalArtisticSegment" :autosave="30000"></entity-field> -->
-
         <div class="field">
             <label><?= i::esc_attr__('Duração do projeto (meses)') ?><span class="required">obrigatório*</span></label>
             <select v-model="workplan.projectDuration" @blur="save_(false)">
@@ -32,7 +32,7 @@ $this->import('
                 <option v-for="n in optionsProjectDurationData()" :key="n" :value="n">{{ n }}</option>
             </select>
         </div>
-        
+
         <div class="field">
             <label><?= i::esc_attr__('Segmento artistico cultural') ?><span class="required">obrigatório*</span></label>
             <select v-model="workplan.culturalArtisticSegment" @blur="save_(false)">
@@ -40,7 +40,7 @@ $this->import('
                 <option v-for="n in workplanFields.culturalArtisticSegment.options" :key="n" :value="n">{{ n }}</option>
             </select>
         </div>
-        
+
         <!-- Metas -->
         <div v-for="(goal, index) in workplan.goals" :key="index" class="registration-workplan__goals">
             <div class="registration-workplan__header-goals">
@@ -53,21 +53,26 @@ $this->import('
                 <div v-if="goal.id" class="registration-workplan__delete-goal">
                     <mc-confirm-button @confirm="deleteGoal(goal.id)">
                         <template #button="{open}">
-                            <button class="button button--delete button--icon button--sm" @click="open()" >
-                                <mc-icon name="trash"></mc-icon> <?= i::esc_attr__('Excluir meta') ?>
+                            <button class="button button--delete button--icon button--sm" @click="open()">
+                                <mc-icon name="trash"></mc-icon>
+                                {{ `Excluir ${getGoalLabelDefault}` }}
                             </button>
                         </template>
                         <template #message="message">
-                            <h3><?= i::__('Excluir meta'); ?></h3><br>
-                            <p><?= i::__('Deseja excluir a meta selecionada, todas as suas configurações e as respectivas entregas associadas a ela?') ?></p>
+                            <h3>{{ `Excluir ${getGoalLabelDefault}` }}</h3><br>
+                            <p>
+                                {{ `Deseja excluir a ${getGoalLabelDefault} selecionada, todas as suas configurações e as respectivas ${getDeliveryLabelDefault} associadas a ela?` }}
+                            </p>
                         </template>
                     </mc-confirm-button>
                 </div>
             </div>
-            <h6><?= i::esc_attr__('Meta') ?> {{ index + 1 }}</h6>
+            <h6> {{ getGoalLabelDefault }} {{ index + 1 }}</h6>
             <div v-if="isExpanded(index)" class="collapse-content">
                 <div class="registration-workplan__goals-period">
-                    <p><?= i::esc_attr__('Duração da meta') ?></p>
+                    <p>
+                        {{ `Duração da ${getGoalLabelDefault}` }}
+                    </p>
                     <div class="registration-workplan__goals-months">
                         <div class="field">
                             <label><?= i::esc_attr__('Mês inicial') ?><span class="required">obrigatório*</span></label>
@@ -78,7 +83,7 @@ $this->import('
                         </div>
                         <div class="field">
                             <label for="mes-final"><?= i::esc_attr__('Mês final') ?><span class="required">obrigatório*</span></label>
-                            <select v-model="goal.monthEnd" id="mes-final" >
+                            <select v-model="goal.monthEnd" id="mes-final">
                                 <option value=""><?= i::esc_attr__('Selecione') ?></option>
                                 <option v-for="n in range(parseInt(goal.monthInitial), parseInt(workplan.projectDuration)) " :key="n" :value="n">{{ n }}</option>
                             </select>
@@ -88,20 +93,21 @@ $this->import('
 
                 <!-- Título da meta -->
                 <div class="field">
-                    <label><?= i::esc_attr__('Título da meta') ?><span class="required">obrigatório*</span></label>
-                    <input v-model="goal.title" type="text" >
+                    <label>
+                        {{ `Título da ${getGoalLabelDefault}` }}<span class="required">obrigatório*</span></label>
+                    <input v-model="goal.title" type="text">
                 </div>
 
                 <!-- Descrição -->
                 <div class="field">
                     <label><?= i::esc_attr__('Descrição') ?><span class="required">obrigatório*</span></label>
-                    <textarea v-model="goal.description" ></textarea>
+                    <textarea v-model="goal.description"></textarea>
                 </div>
 
                 <!-- Etapa do fazer cultural -->
                 <div v-if="opportunity.workplan_metaInformTheStageOfCulturalMaking" class="field">
                     <label><?= i::esc_attr__('Etapa do fazer cultural') ?><span class="required">obrigatório*</span></label>
-                    <select v-model="goal.culturalMakingStage" >
+                    <select v-model="goal.culturalMakingStage">
                         <option value=""><?= i::esc_attr__('Selecione') ?></option>
                         <option v-for="n in workplanFields.goal.culturalMakingStage.options" :key="n" :value="n">{{ n }}</option>
                     </select>
@@ -109,8 +115,10 @@ $this->import('
 
                 <!-- Valor da meta -->
                 <div v-if="opportunity.workplan_metaInformTheValueGoals" class="field">
-                    <label><?= i::esc_attr__('Valor da meta (R$)') ?><span class="required">obrigatório*</span></label>
-                    <mc-currency-input v-model="goal.amount" ></mc-currency-input>
+                    <label>
+                        {{ `Valor da ${getGoalLabelDefault} (R$)` }}
+                        <span class="required">obrigatório*</span></label>
+                    <mc-currency-input v-model="goal.amount"></mc-currency-input>
                 </div>
 
                 <div v-for="(delivery, index_) in goal.deliveries" :key="delivery.id" class="registration-workplan__goals__deliveries">
@@ -119,39 +127,44 @@ $this->import('
                         <div v-if="delivery.id" class="registration-workplan__delete-delivery">
                             <mc-confirm-button @confirm="deleteDelivery(delivery.id)">
                                 <template #button="{open}">
-                                    <button class="button button--delete button--icon button--sm" @click="open()" >
-                                        <mc-icon name="trash"></mc-icon> <?= i::esc_attr__('Excluir entrega') ?>
+                                    <button class="button button--delete button--icon button--sm" @click="open()">
+                                        <mc-icon name="trash"></mc-icon> 
+                                        {{ `Excluir ${getDeliveryLabelDefault}` }}
                                     </button>
                                 </template>
                                 <template #message="message">
-                                    <h3><?= i::__('Excluir a entrega'); ?></h3><br>
-                                    <p><?= i::__('Deseja excluir a entrega selecionada e todas as suas respectivas configurações?') ?></p>
+                                    <h3>{{ `Excluir ${getDeliveryLabelDefault}` }}<br>
+                                    <p>
+                                        {{ `Deseja excluir a ${getDeliveryLabelDefault} selecionada e todas as suas respectivas configurações?` }}
                                 </template>
                             </mc-confirm-button>
                         </div>
                     </div>
-                    <h6><?= i::esc_attr__('Entrega') ?> {{ index_ + 1 }}</h6>
+                    <h6>{{ getDeliveryLabelDefault }} {{ index_ + 1 }}</h6>
                     <div class="field">
-                        <label><?= i::esc_attr__('Nome da entrega') ?><span class="required">obrigatório*</span></label>
-                        <input v-model="delivery.name" type="text" >
+                        <label>{{ `Nome da ${getDeliveryLabelDefault}` }}<span class="required">obrigatório*</span></label>
+                        <input v-model="delivery.name" type="text">
                     </div>
 
                     <div class="field">
                         <label><?= i::esc_attr__('Descrição') ?><span class="required">obrigatório*</span></label>
-                        <textarea v-model="delivery.description" ></textarea>
+                        <textarea v-model="delivery.description"></textarea>
                     </div>
 
                     <div class="field">
-                        <label><?= i::esc_attr__('Tipo de entrega') ?><span class="required">obrigatório*</span></label>
-                        <select v-model="delivery.type" >
+                        <label>
+                            {{ `Tipo ${getDeliveryLabelDefault}` }}<span class="required">obrigatório*</span></label>
+                        <select v-model="delivery.type">
                             <option value=""><?= i::esc_attr__('Selecione') ?></option>
                             <option v-for="type in opportunity.workplan_monitoringInformDeliveryType" :key="type" :value="type">{{ type }}</option>
                         </select>
                     </div>
 
                     <div v-if="opportunity.workplan_registrationInformCulturalArtisticSegment" class="field">
-                        <label><?= i::esc_attr__('Segmento artístico cultural da entrega') ?><span class="required">obrigatório*</span></label>
-                        <select v-model="delivery.segmentDelivery" >
+                        <label>
+                            {{ `Segmento artístico cultural da ${getDeliveryLabelDefault}` }}
+                            <span class="required">obrigatório*</span></label>
+                        <select v-model="delivery.segmentDelivery">
                             <option value=""><?= i::esc_attr__('Selecione') ?></option>
                             <option v-for="n in workplanFields.goal.delivery.segmentDelivery.options" :key="n" :value="n">{{ n }}</option>
                         </select>
@@ -159,7 +172,7 @@ $this->import('
 
                     <div v-if="opportunity.workplan_registrationInformActionPAAR" class="field">
                         <label><?= i::esc_attr__('Ação orçamentária') ?><span class="required">obrigatório*</span></label>
-                        <select v-model="delivery.budgetAction" >
+                        <select v-model="delivery.budgetAction">
                             <option value=""><?= i::esc_attr__('Selecione') ?></option>
                             <option v-for="n in workplanFields.goal.delivery.budgetAction.options" :key="n" :value="n">{{ n }}</option>
                         </select>
@@ -167,13 +180,15 @@ $this->import('
 
                     <div v-if="opportunity.workplan_registrationReportTheNumberOfParticipants" class="field">
                         <label><?= i::esc_attr__('Número previsto de pessoas') ?><span class="required">obrigatório*</span></label>
-                        <input v-model="delivery.expectedNumberPeople" type="number" >
+                        <input v-model="delivery.expectedNumberPeople" type="number">
                     </div>
 
                     <div v-if="opportunity.workplan_registrationReportExpectedRenevue">
                         <div class="field">
-                            <label><?= i::esc_attr__('A entrega irá gerar receita?') ?><span class="required">obrigatório*</span></label>
-                            <select v-model="delivery.generaterRevenue" >
+                            <label>
+                                {{ `A ${getDeliveryLabelDefault} irá gerar receita?` }}
+                                <span class="required">obrigatório*</span></label>
+                            <select v-model="delivery.generaterRevenue">
                                 <option value=""><?= i::esc_attr__('Selecione') ?></option>
                                 <option v-for="(n, i) in workplanFields.goal.delivery.generaterRevenue.options" :key="i" :value="i">{{ n }}</option>
                             </select>
@@ -182,12 +197,12 @@ $this->import('
                         <div v-if="delivery.generaterRevenue == 'true'" class="grid-12">
                             <div class="field col-4 sm:col-12">
                                 <label><?= i::esc_attr__('Quantidade') ?><span class="required">obrigatório*</span></label>
-                                <input v-model="delivery.renevueQtd" type="number" >
+                                <input v-model="delivery.renevueQtd" type="number">
                             </div>
 
                             <div class="field col-4 sm:col-12">
                                 <label><?= i::esc_attr__('Previsão de valor unitário') ?><span class="required">obrigatório*</span></label>
-                                <mc-currency-input v-model="delivery.unitValueForecast" ></mc-currency-input>
+                                <mc-currency-input v-model="delivery.unitValueForecast"></mc-currency-input>
                             </div>
 
                             <div class="field col-4 sm:col-12">
@@ -197,27 +212,27 @@ $this->import('
                         </div>
                     </div>
 
-                    
+
                 </div>
 
                 <div v-if="enableNewDelivery(goal)" class="registration-workplan__new-delivery">
                     <button class="button button--primary-outline" @click="newDelivery(goal)">
-                        + <?= i::esc_attr__('Entrega') ?>
+                        + {{ getDeliveryLabelDefault }}
                     </button>
                 </div>
 
                 <div class="registration-workplan__save-goal">
                     <button class="button button--primary" @click="save_">
-                        <?= i::esc_attr__('Salvar meta') ?>
+                        {{ `Salvar ${getGoalLabelDefault}` }}
                     </button>
                 </div>
-                
+
             </div>
         </div>
 
         <div v-if="enableNewGoal(workplan)" class="registration-workplan__new-goal">
             <button class="button button--primary-outline" @click="newGoal">
-                + <?= i::esc_attr__('meta') ?>
+                + {{ getGoalLabelDefault }}
             </button>
         </div>
     </template>

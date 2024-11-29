@@ -27,6 +27,17 @@ app.component('registration-workplan', {
             expandedGoals: [],
         };
     },
+    computed: {
+        getWorkplanLabelDefault() {
+            return this.opportunity.workplanLabelDefault ? this.opportunity.workplanLabelDefault : $MAPAS.EntitiesDescription.opportunity.workplanLabelDefault.default_value;
+        },
+        getGoalLabelDefault() {
+            return this.opportunity.goalLabelDefault ? this.opportunity.goalLabelDefault : $MAPAS.EntitiesDescription.opportunity.goalLabelDefault.default_value;
+        },
+        getDeliveryLabelDefault() {
+            return this.opportunity.deliveryLabelDefault ? this.opportunity.deliveryLabelDefault : $MAPAS.EntitiesDescription.opportunity.deliveryLabelDefault.default_value;
+        },
+    },
     methods: {
         getWorkplan() {
             const api = new API('workplan');
@@ -110,15 +121,15 @@ app.component('registration-workplan', {
                 // Verificar cada campo do objeto `goal`
                 if (!goal.monthInitial) emptyFields.push("Mês inicial");
                 if (!goal.monthEnd) emptyFields.push("Mês final");
-                if (!goal.title) emptyFields.push("Título da meta");
+                if (!goal.title) emptyFields.push(`Título da ${this.getGoalLabelDefault}`);
                 if (!goal.description) emptyFields.push("Descrição");
                 if (this.opportunity.workplan_metaInformTheStageOfCulturalMaking && !goal.culturalMakingStage) emptyFields.push("Etapa do fazer cultural");
-                if (this.opportunity.workplan_metaInformTheValueGoals && goal.amount == null || goal.amount === "") emptyFields.push("Valor da meta (R$)");
-                if (this.opportunity.workplan_deliveryReportTheDeliveriesLinkedToTheGoals && goal.deliveries.length === 0) emptyFields.push("Entrega");
+                if (this.opportunity.workplan_metaInformTheValueGoals && goal.amount == null || goal.amount === "") emptyFields.push(`Valor da ${this.getGoalLabelDefault} (R$)`);
+                if (this.opportunity.workplan_deliveryReportTheDeliveriesLinkedToTheGoals && goal.deliveries.length === 0) emptyFields.push(`${this.getDeliveryLabelDefault}`);
 
                 const validateDelivery = this.validateDelivery(goal);
                 if (validateDelivery.length > 0) {
-                    emptyFields.push("Entrega");
+                    emptyFields.push(`${this.getDeliveryLabelDefault}`);
                     emptyFields.push(validateDelivery);
                 }
         
@@ -128,7 +139,7 @@ app.component('registration-workplan', {
                     const emptyFieldsList = `<ul>${emptyFields.map(item => `<li>${item}</li>`).join('')}</ul>`;
 
                     validationMessages.push(
-                        `<br>A meta ${position} possui os seguintes campos vazios:<br> ${emptyFieldsList}`
+                        `<br>A ${this.getGoalLabelDefault} ${position} possui os seguintes campos vazios:<br> ${emptyFieldsList}`
                     );
                 }
             });
@@ -149,13 +160,13 @@ app.component('registration-workplan', {
                 let emptyFields = [];
                 let position = index+1;
         
-                if ('name' in delivery && !delivery.name) emptyFields.push("Nome da entrega");
+                if ('name' in delivery && !delivery.name) emptyFields.push(`Nome da ${this.getDeliveryLabelDefault}`);
                 if ('description' in delivery && !delivery.description) emptyFields.push("Descrição");
-                if ('type' in delivery && !delivery.type) emptyFields.push("Tipo de entrega");
-                if (this.opportunity.workplan_registrationInformCulturalArtisticSegment && 'segmentDelivery' in delivery && !delivery.segmentDelivery) emptyFields.push("Segmento artístico cultural da entrega");
+                if ('type' in delivery && !delivery.type) emptyFields.push(`Tipo de ${this.getDeliveryLabelDefault}`);
+                if (this.opportunity.workplan_registrationInformCulturalArtisticSegment && 'segmentDelivery' in delivery && !delivery.segmentDelivery) emptyFields.push(`Segmento artístico cultural da ${this.getDeliveryLabelDefault}`);
                 if (this.opportunity.workplan_registrationInformActionPAAR && 'budgetAction' in delivery && !delivery.budgetAction) emptyFields.push("Ação orçamentária");
                 if (this.opportunity.workplan_registrationReportTheNumberOfParticipants && 'expectedNumberPeople' in delivery && !delivery.expectedNumberPeople) emptyFields.push("Número previsto de pessoas");
-                if (this.opportunity.workplan_registrationReportExpectedRenevue && 'generaterRevenue' in delivery && !delivery.generaterRevenue) emptyFields.push("A entrega irá gerar receita?");
+                if (this.opportunity.workplan_registrationReportExpectedRenevue && 'generaterRevenue' in delivery && !delivery.generaterRevenue) emptyFields.push(`A ${this.getDeliveryLabelDefault} irá gerar receita?`);
                 if (delivery.generaterRevenue == 'true' && 'renevueQtd' in delivery && !delivery.renevueQtd) emptyFields.push("Quantidade");
                 if (delivery.generaterRevenue == 'true' && 'unitValueForecast' in delivery && !delivery.unitValueForecast) emptyFields.push("Previsão de valor unitário");
                 if (delivery.generaterRevenue == 'true' && 'totalValueForecast' in delivery && !delivery.totalValueForecast) emptyFields.push("Previsão de valor total");
@@ -164,7 +175,7 @@ app.component('registration-workplan', {
                     const emptyFieldsList = `<ul>${emptyFields.map(item => `<li>${item}</li>`).join('')}</ul>`;
 
                     validationMessages.push(
-                        `A entrega ${position} possui os seguintes campos vazios:<br> ${emptyFieldsList}<br>`
+                        `A ${this.getDeliveryLabelDefault} ${position} possui os seguintes campos vazios:<br> ${emptyFieldsList}<br>`
                     );
                 }
             });
