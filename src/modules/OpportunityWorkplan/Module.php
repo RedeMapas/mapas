@@ -61,6 +61,21 @@ class Module extends \MapasCulturais\Module{
 
         $app->registerController('workplan', ControllersWorkplan::class);
        
+        $this->registerOpportunityMetadata('workplanLabelDefault', [
+            'label' => i::__('Plano de trabalho label'),
+            'default_value' => 'Plano de trabalho'
+        ]);
+
+        $this->registerOpportunityMetadata('goalLabelDefault', [
+            'label' => i::__('Meta label'),
+            'default_value' => 'Metas'
+        ]);
+
+        $this->registerOpportunityMetadata('deliveryLabelDefault', [
+            'label' => i::__('Entrega label'),
+            'default_value' => 'Entregas '
+        ]);
+
         // metadados opportunity
         $this->registerOpportunityMetadata('enableWorkplan', [
             'label' => i::__('Habilitar plano de trabalho'),

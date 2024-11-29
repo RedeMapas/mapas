@@ -19,37 +19,52 @@ app.component('opportunity-enable-workplan', {
         }
     },
     watch: {
-        'entity.enableWorkplan'(_new){
+        'entity.enableWorkplan'(_new) {
             if (!_new) {
                 this.disabledWorkPlan();
             }
         },
-        'entity.workplan_dataProjectlimitMaximumDurationOfProjects'(_new){
+        'entity.workplan_dataProjectlimitMaximumDurationOfProjects'(_new) {
             if (!_new) {
                 this.entity.workplan_dataProjectmaximumDurationInMonths = 0;
             }
         },
-        'entity.workplan_metaLimitNumberOfGoals'(_new){
+        'entity.workplan_metaLimitNumberOfGoals'(_new) {
             if (!_new) {
                 this.entity.workplan_metaMaximumNumberOfGoals = 0;
             }
         },
-        'entity.workplan_deliveryLimitNumberOfDeliveries'(_new){
+        'entity.workplan_deliveryLimitNumberOfDeliveries'(_new) {
             if (!_new) {
                 this.entity.workplan_deliveryMaximumNumberOfDeliveries = 0;
             }
         },
-        'entity.workplan_deliveryReportTheDeliveriesLinkedToTheGoals'(_new){
+        'entity.workplan_deliveryReportTheDeliveriesLinkedToTheGoals'(_new) {
             if (!_new) {
                 this.disabledDeliveries();
             }
         },
     },
+    computed: {
+        getWorkplanLabelDefault() {
+            return this.entity.workplanLabelDefault ? this.entity.workplanLabelDefault : $MAPAS.EntitiesDescription.opportunity.workplanLabelDefault.default_value;
+        },
+        getGoalLabelDefault() {
+            return this.entity.goalLabelDefault ? this.entity.goalLabelDefault : $MAPAS.EntitiesDescription.opportunity.goalLabelDefault.default_value;
+        },
+        getDeliveryLabelDefault() {
+            return this.entity.deliveryLabelDefault ? this.entity.deliveryLabelDefault : $MAPAS.EntitiesDescription.opportunity.deliveryLabelDefault.default_value;
+        },
+    },
     methods: {
-        autoSave(){
+        changeLabels(modal) {
+            this.autoSave();
+            modal.close();            
+        },
+        autoSave() {
             this.entity.save(3000);
         },
-        disabledWorkPlan(){
+        disabledWorkPlan() {
             this.entity.workplan_dataProjectlimitMaximumDurationOfProjects = false;
             this.entity.workplan_dataProjectmaximumDurationInMonths = 0;
 
@@ -59,7 +74,7 @@ app.component('opportunity-enable-workplan', {
             this.entity.workplan_metaMaximumNumberOfGoals = 0;
 
             this.entity.workplan_deliveryReportTheDeliveriesLinkedToTheGoals = false;
-            
+
             this.disabledDeliveries();
         },
         disabledDeliveries() {
@@ -77,7 +92,7 @@ app.component('opportunity-enable-workplan', {
             this.entity.workplan_monitoringInformThePriorityTerritories = false;
             this.entity.workplan_monitoringProvideTheProfileOfParticipants = false;
             this.entity.workplan_monitoringInformThePriorityAudience = false;
-            this.entity.workplan_monitoringReportExecutedRevenue = false; 
+            this.entity.workplan_monitoringReportExecutedRevenue = false;
         },
     },
 })

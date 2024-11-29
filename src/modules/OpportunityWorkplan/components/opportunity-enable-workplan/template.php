@@ -9,16 +9,43 @@ use MapasCulturais\i;
 
 $this->import('
     mc-tag-list
+    mc-icon
+    mc-modal
 ');
 ?>
 <div class="opportunity-enable-workplan">
-    <h4 class="bold opportunity-enable-workplan__title"><?= i::__('Plano de trabalho') ?></h4>
-    <h6><?= $this->text('header-description', i::__('Configurar parâmetros do plano de trabalho')) ?></h6>
+    <h4 class="bold opportunity-enable-workplan__title">
+        {{ getWorkplanLabelDefault }}
+   
+        <mc-modal title="Editar rótulo">
+            <h4>Rótulo: plano de trabalho</h4>
+            <div class="field col-12">
+                <div class="field__group">
+                    <label class="field__group">
+                        {{ `Escreva um rótulo personalizado para "${getWorkplanLabelDefault}"` }}
+                    </label>
+                    <input type="text" v-model="entity.workplanLabelDefault">
+                </div>
+            </div>
+
+            <template #actions="modal">
+                <button class="button" @click="modal.close()">Cancelar</button>
+                <button class="button button--primary" @click="changeLabels(modal)">Alterar</button>
+            </template>
+
+            <template #button="modal">
+                <a href="#" @click="modal.open()"><mc-icon class="edit" name="edit"></mc-icon></a>
+            </template>
+        </mc-modal>
+        
+    </h4>
+    <h6>{{ `Configurar parâmetros do ${getWorkplanLabelDefault}` }}</h6>
     <div class="opportunity-enable-workplan__content">
         <div class="field col-12">
             <div class="field__group">
                 <label class="field__checkbox">
-                    <input type="checkbox" v-model="entity.enableWorkplan" @click="autoSave()" /><?= i::__("Habilitar plano de trabalho") ?>
+                    <input type="checkbox" v-model="entity.enableWorkplan" @click="autoSave()" />
+                    {{ `Habilitar ${getWorkplanLabelDefault}` }}
                 </label>
             </div>
         </div>
@@ -41,9 +68,33 @@ $this->import('
                     </div>
                 </div>
             </div>
-            <div id="data-metas" class="opportunity-enable-workplan__block  col-12">
-                <h4 class="bold opportunity-enable-workplan__title"><?= i::__('Metas') ?></h4>
-                <h6><?= $this->text('header-description', i::__('As metas são constituídas por uma ou mais entregas')) ?></h6>
+            <div id="data-metas" class="opportunity-enable-workplan__block col-12">
+                <h4 class="bold opportunity-enable-workplan__title">
+                    {{ getGoalLabelDefault }}  
+                    <mc-modal title="Editar rótulo">
+                        <h4>Rótulo: Meta</h4>
+                        <div class="field col-12">
+                            <div class="field__group">
+                                <label class="field__group">
+                                    {{ `Escreva um rótulo personalizado para "${getGoalLabelDefault}"` }}
+                                </label>
+                                <input type="text" v-model="entity.goalLabelDefault">
+                            </div>
+                        </div>
+
+                        <template #actions="modal">
+                            <button class="button" @click="modal.close()">Cancelar</button>
+                            <button class="button button--primary" @click="changeLabels(modal)">Alterar</button>
+                        </template>
+
+                        <template #button="modal">
+                            <a href="#" @click="modal.open()"><mc-icon class="edit" name="edit"></mc-icon></a>
+                        </template>
+                    </mc-modal>  
+                </h4>
+                <h6>
+                    {{ `As ${getGoalLabelDefault} são constituídas por uma ou mais ${getDeliveryLabelDefault}` }}
+                </h6>
                 <div class="field col-12">
                     <div class="field__group">
                         <label class="field__checkbox">
@@ -53,53 +104,83 @@ $this->import('
 
                     <div class="field__group">
                         <label class="field__checkbox">
-                            <input type="checkbox" v-model="entity.workplan_metaInformTheValueGoals" @click="autoSave()" /><?= i::__("Informar o valor da meta") ?>
+                            <input type="checkbox" v-model="entity.workplan_metaInformTheValueGoals" @click="autoSave()" />
+                            {{ `Informar o valor da ${getGoalLabelDefault}` }}
                         </label>
                     </div>
 
                     <div class="field__group">
                         <label class="field__checkbox">
-                            <input type="checkbox" v-model="entity.workplan_metaLimitNumberOfGoals" @click="autoSave()" /><?= i::__("Limitar número de metas") ?>
+                            <input type="checkbox" v-model="entity.workplan_metaLimitNumberOfGoals" @click="autoSave()" />
+                            {{ `Limitar número de ${getGoalLabelDefault}` }}
                         </label>
                     </div>
 
                     <div class="field__group">
                         <label>
-                            <?php i::_e('Limitar número de metas:') ?>
+                            {{ `Limitar número de ${getGoalLabelDefault}:` }}
                         </label>
                         <input type="number" :disabled="!entity.workplan_metaLimitNumberOfGoals" v-model="entity.workplan_metaMaximumNumberOfGoals" @change="autoSave()">
                     </div>
                 </div>
             </div>
             <div id="data-delivery" class="opportunity-enable-workplan__block  col-12">
-                <h4 class="bold opportunity-enable-workplan__title"><?= i::__('Entregas da meta') ?></h4>
-                <h6><?= $this->text('header-description', i::__('As entregas são evidências (arquivos ou links) que comprovam a conclusão da meta.')) ?></h6>
+                <h4 class="bold opportunity-enable-workplan__title">
+                    {{ `${getDeliveryLabelDefault}` }}
+                    <mc-modal title="Editar rótulo">
+                        <h4>Rótulo: Entrega</h4>
+                        <div class="field col-12">
+                            <div class="field__group">
+                                <label class="field__group">
+                                    {{ `Escreva um rótulo personalizado para "${getDeliveryLabelDefault}"` }}
+                                </label>
+                                <input type="text" v-model="entity.deliveryLabelDefault">
+                            </div>
+                        </div>
+
+                        <template #actions="modal">
+                            <button class="button" @click="modal.close()">Cancelar</button>
+                            <button class="button button--primary" @click="changeLabels(modal)">Alterar</button>
+                        </template>
+
+                        <template #button="modal">
+                            <a href="#" @click="modal.open()"><mc-icon class="edit" name="edit"></mc-icon></a>
+                        </template>
+                    </mc-modal>  
+                </h4>
+                <h6>
+                    {{ `As ${getDeliveryLabelDefault} são evidências (arquivos ou links) que comprovam a conclusão das ${getGoalLabelDefault}.` }}
+                </h6>
                 <div class="field col-12">
                     <div class="field__group">
                         <label class="field__checkbox">
-                            <input type="checkbox" v-model="entity.workplan_deliveryReportTheDeliveriesLinkedToTheGoals" @click="autoSave()" /><?= i::__("Informar as entregas vinculadas à meta") ?>
+                            <input type="checkbox" v-model="entity.workplan_deliveryReportTheDeliveriesLinkedToTheGoals" @click="autoSave()" />
+                            {{ `Informar as ${getDeliveryLabelDefault} vinculadas as ${getGoalLabelDefault}` }}
                         </label>
                     </div>
 
                     <div v-if="entity.workplan_deliveryReportTheDeliveriesLinkedToTheGoals">                    
                         <div class="field__group">
                             <label class="field__checkbox">
-                                <input type="checkbox" v-model="entity.workplan_deliveryLimitNumberOfDeliveries" @click="autoSave()" /><?= i::__("Limitar número de entregas") ?>
+                                <input type="checkbox" v-model="entity.workplan_deliveryLimitNumberOfDeliveries" @click="autoSave()" />
+                                {{ `Limitar número de ${getDeliveryLabelDefault}` }}
                             </label>
                         </div>
 
                         <div class="field__group">
                             <label>
-                                <?php i::_e('Número máximo de entregas:') ?>
+                                {{ `Número máximo de ${getDeliveryLabelDefault}` }}
                             </label>
                             <input type="number" :disabled="!entity.workplan_deliveryLimitNumberOfDeliveries" v-model="entity.workplan_deliveryMaximumNumberOfDeliveries" @change="autoSave()">
                         </div>
 
                         <div class="field">
-                            <label> <?php i::_e('Informar tipo de entrega') ?></label>
+                            <label> 
+                                {{ `Informar tipo de ${getDeliveryLabelDefault}` }}
+                            </label>
                             <mc-multiselect :model="entity.workplan_monitoringInformDeliveryType" title="<?php i::_e('Selecione as áreas de atuação') ?>" :items="workplan_monitoringInformDeliveryTypeList" hide-filter hide-button>
                                 <template #default="{setFilter, popover}">
-                                    <input class="mc-multiselect--input" @keyup="setFilter($event.target.value)" @focus="popover.open()" placeholder="<?= i::esc_attr__('Selecione as entregas aceitas no edital') ?>">
+                                    <input class="mc-multiselect--input" @keyup="setFilter($event.target.value)" @focus="popover.open()" placeholder="Selecione as opções">
                                 </template>
                             </mc-multiselect>
                             <mc-tag-list editable :tags="entity.workplan_monitoringInformDeliveryType" classes="opportunity__background opportunity__color"></mc-tag-list>
@@ -144,7 +225,8 @@ $this->import('
                         </div>
                         <div class="field__group">
                             <label class="field__checkbox">
-                                <input type="checkbox" v-model="entity.workplan_monitoringEnterDeliverySubtype" @click="autoSave()" /><?= i::__("Informar subtipo de entrega") ?>
+                                <input type="checkbox" v-model="entity.workplan_monitoringEnterDeliverySubtype" @click="autoSave()" />
+                                {{ `Informar subtipo de ${getDeliveryLabelDefault}` }}
                             </label>
                         </div>
                         <div class="field__group">
