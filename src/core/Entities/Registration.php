@@ -1216,6 +1216,7 @@ class Registration extends \MapasCulturais\Entity
         }
 
         $app->applyHookBoundTo($this, "{$this->hookPrefix}.sendValidationErrors", [&$errorsResult]);
+        $app->applyHookBoundTo($this, "entity({$this->getHookClassPath()}).sendValidationErrors", [&$errorsResult]);
 
         return $errorsResult;
     }
