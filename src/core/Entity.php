@@ -487,6 +487,10 @@ abstract class Entity implements \JsonSerializable{
     }
 
     public function isUserAdmin(UserInterface $user, $role = 'admin'){
+        if($user->is('guest')) {
+            return false;
+        }
+        
         $result = false;
         if($this->usesOriginSubsite()){
             if($user->is($role, $this->_subsiteId)){
@@ -809,6 +813,14 @@ abstract class Entity implements \JsonSerializable{
         $requests = [];
 
         $hook_prefix = $this->getHookPrefix();
+
+        if($this->usesLock() && $this->isLocked()) {
+            $lock_info = $this->isLocked();
+
+            if($lock_info['userId'] != $app->user->id) {
+                throw new Exceptions\PermissionDenied($app->user, message: i::__('A entidade está bloqueada por outro usuário.'), code: Exceptions\PermissionDenied::CODE_ENTITY_LOCKED);
+            }
+        }
 
         try {
             $app->applyHookBoundTo($this, "{$hook_prefix}.save:requests", [&$requests]);

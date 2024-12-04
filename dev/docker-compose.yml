@@ -35,6 +35,8 @@ services:
       - ./docker-data/public-files:/var/www/html/files
       - ./docker-data/private-files:/var/www/var/private-files
       
+      - ../docker/development/router.php:/var/www/dev/router.php
+
 
     links:
       - redis
@@ -43,6 +45,10 @@ services:
       
     environment:
       - BUILD_ASSETS=1
+      - REDIRECT_404_ASSETS_TO=
+      # - BUILD_ASSETS=0
+      - PENDING_PCACHE_RECREATION_INTERVAL=5
+      - JOBS_INTERVAL=5
       - REDIS_CACHE=redis
       
       - SESSIONS_SAVE_PATH=tcp://sessions:6379
