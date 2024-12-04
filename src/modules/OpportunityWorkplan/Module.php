@@ -52,6 +52,10 @@ class Module extends \MapasCulturais\Module{
                     $errorsResult = [...$errors];
                 }               
             });
+
+            $app->hook("template(registration.registrationPrint.section):end", function(){
+                $this->part('registration-details-workplan-print');
+            });
         });
     }
 
