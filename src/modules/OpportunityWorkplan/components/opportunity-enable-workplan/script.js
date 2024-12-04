@@ -12,6 +12,10 @@ app.component('opportunity-enable-workplan', {
         }
     },
     data() {
+        if (this.entity.workplan_monitoringInformDeliveryType == null) {
+            this.entity.workplan_monitoringInformDeliveryType = [];
+        }
+
         return {
             entity: this.entity,
             timeOut: null,
