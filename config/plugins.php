@@ -4,6 +4,8 @@ return [
     'plugins' => [
          'MultipleLocalAuth',
          'AdminLoginAsUser',
-         "Metabase"
+         "Metabase",
+         'RecreatePCacheOnLogin',
+         'SpamDetector'
     ]
 ];

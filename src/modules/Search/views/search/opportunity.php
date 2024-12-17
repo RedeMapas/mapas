@@ -9,6 +9,9 @@ $this->import('
     search-map
     mc-tab
     mc-tabs 
+    mc-tabs
+    mc-tab
+    opportunity-table
 ');
 
 $this->breadcrumb = [
@@ -25,6 +28,7 @@ $this->breadcrumb = [
             </button>
         </create-opportunity>
     </template>
+
     <template #default="{pseudoQuery, entity}">
         <mc-tabs class="search__tabs" sync-hash>
             <template #before-tablist>
@@ -43,6 +47,9 @@ $this->breadcrumb = [
                 </div>
             </mc-tab>
             <?php $this->applyTemplateHook('search-tabs', 'after'); ?>
+            <mc-tab v-if="global.auth.is('admin')" icon="table-view" label="<?php i::esc_attr_e('Tabela') ?>" slug="tables">
+                <opportunity-table></opportunity-table>
+            </mc-tab>
         </mc-tabs>
     </template>
 </search>
