@@ -30,7 +30,8 @@ $this->breadcrumb = [
             </button>
         </create-space>
     </template>
-    <template #default="{pseudoQuery, changeTab}">        
+    <template #default="{pseudoQuery, changeTab}"> 
+        <?php $this->applyTemplateHook('search-tabs', 'before'); ?>       
         <mc-tabs @changed="changeTab($event)" class="search__tabs" sync-hash>
             <template  #before-tablist>
                 <label class="search__tabs--before">
@@ -55,6 +56,7 @@ $this->breadcrumb = [
                     </search-map>
                 </div>
             </mc-tab>
+            <?php $this->applyTemplateHook('search-tabs', 'after'); ?>
         </mc-tabs>
     </template>
 </search>
