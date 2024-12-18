@@ -6,9 +6,10 @@ $this->import('
     search 
     search-filter-opportunity
     search-list
-    search-map
+    search-map 
+    mc-tabs
     mc-tab
-    mc-tabs 
+    opportunity-table
 ');
 
 $this->breadcrumb = [
@@ -16,7 +17,7 @@ $this->breadcrumb = [
     ['label'=> i::__('Oportunidades'), 'url' => $app->createUrl('opportunities')],
 ];
 ?>
-<search page-title="<?php i::esc_attr_e('Oportunidades') ?>" entity-type="opportunity" :initial-pseudo-query="{type:[],'term:area':[]}"> 
+<search page-title="<?= htmlspecialchars($this->text('title', i::__('Oportunidades'))) ?>" entity-type="opportunity" :initial-pseudo-query="{type:[],'term:area':[]}"> 
     <template v-if="global.auth.isLoggedIn" #create-button>
         <create-opportunity #default="{modal}">
             <button @click="modal.open()" class="button button--primary button--icon">
@@ -41,6 +42,9 @@ $this->breadcrumb = [
                         </template>
                     </search-list>
                 </div>
+            </mc-tab>
+            <mc-tab v-if="global.auth.is('admin')" icon="table-view" label="<?php i::esc_attr_e('Tabela') ?>" slug="tables">
+                <opportunity-table></opportunity-table>
             </mc-tab>
             <?php $this->applyTemplateHook('search-tabs', 'after'); ?>
         </mc-tabs>
