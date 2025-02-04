@@ -2,12 +2,15 @@
 
 // COLORS
 $black: #1E1E1E !default;
-$error: #FF2D2D !default;
-$gray-100: #F5F5F5 !default;
-$gray-300: #C4C4C4 !default;
-$gray-700: #4E4E4E !default;
-$warning: #F07B07 !default;
+$error: #D2381B !default;
+$gray-100: #BBBBBB !default;
+$gray-300: #767676!default;
+$gray-700: #666666 !default;
+$warning: #FFCA3A !default;
 $white: #FFFFFF !default;
+$banner:#181b4e !default;
+$button:#2b74d9 !default;
+
 
 $gray-500: color.mix($gray-300, $gray-700, 50%) !default;
 
@@ -29,40 +32,41 @@ $seals-500: #1E1E1E !default;
 $seals-300: lighten($seals-500, $lightness-300) !default;
 $seals-700: darken($seals-500, $lightness-700) !default;
 
-$agents-500: #9c4d16 !default;
+$agents-500: #E0720B!default;
 $agents-300: lighten($agents-500, $lightness-300) !default;
 $agents-700: darken($agents-500, $lightness-700) !default;
 
-$events-500: #e62f76 !default;
+$events-500: #008D38 !default;
 $events-300: lighten($events-500, $lightness-300) !default;
 $events-700: darken($events-500, $lightness-700) !default;
 
-$opportunities-500: #f08418 !default;
+$opportunities-500: #c40c0c !default;
 $opportunities-300: lighten($opportunities-500, $lightness-300) !default;
 $opportunities-700: darken($opportunities-500, $lightness-700) !default;
 
-$projects-500:  #3666ae!default;
+$projects-500:  #D47991 !default;
 $projects-300: lighten($projects-500, $lightness-300) !default;
 $projects-700: darken($projects-500, $lightness-700) !default;
 
-$spaces-500: #4cac33 !default;
+$spaces-500: #F0B500!default;
 $spaces-300: lighten($spaces-500, $lightness-300) !default;
 $spaces-700: darken($spaces-500, $lightness-700) !default;
+
 
 // Feedback colors
 $danger-500: #EF1010 !default;
 $danger-300: lighten($danger-500, $lightness-300) !default;
 $danger-700: darken($danger-500, $lightness-700) !default;
 
-$success-500: #498200 !default;
+$success-500: #559931 !default;
 $success-300: lighten($success-500, $lightness-300) !default;
 $success-700: darken($success-500, $lightness-700) !default;
 
-$warning-500: #FF9F1C !default;
+$warning-500: #FFCA3A !default;
 $warning-300: lighten($warning-500, $lightness-300) !default;
 $warning-700: darken($warning-500, $lightness-700) !default;
 
-$helper-500: #0074C1 !default;
+$helper-500: #1774AD !default;
 $helper-300: lighten($helper-500, $lightness-300) !default;
 $helper-700: darken($helper-500, $lightness-700) !default;
 
@@ -89,7 +93,7 @@ $font-body: 'Open Sans', sans-serif !default;
 $font-headings: 'Open Sans', sans-serif !default;
 $font-weight-bold: 700;
 $font-weight-regular: 400;
-$font-weight-semibold: 600;
+$font-weight-semibold: 500;
 $text-transform-lowercase: lowercase;
 $text-transform-none: none;
 $text-transform-uppercase: uppercase;
@@ -99,8 +103,8 @@ $font-size-lg: 2rem;
 $font-size-md: 1.5rem;
 $font-size-sm: 1.125rem;
 $font-size-xs: 1rem;
-$font-size-xxs: 0.875rem;
-$font-size-xxxs: 0.75rem;
+$font-size-xxs: 0.75rem;
+$font-size-xxxs: 0.625rem;
 
 // Borders radius
 $border-radius-xs: 4px !default;
@@ -162,7 +166,6 @@ $shadow-lv-1-up: 0px -4px 8px rgba(0, 0, 0, 0.16);
     --mc-low-300: #{$low-300};
     --mc-low-500: #{$low-500};
     --mc-low-700: #{$low-700};
-    --mc-opportunities-300: #{$opportunities-300};
     --mc-opportunities-500: #{$opportunities-500};
     --mc-opportunities-700: #{$opportunities-700};
     --mc-primary-300: #{$primary-300};
