@@ -29,7 +29,7 @@ app.component('search-filter', {
     },
 
     mounted() {
-        window.addEventListener('mc-click', this.closeFilter);
+        window.addEventListener('mc-pin-click', this.closeFilter);
 
         if(this.position === 'list' && window.matchMedia('(min-width: 56.25rem)').matches) {
             this.showMenu = true;
