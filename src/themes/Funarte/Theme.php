@@ -4,25 +4,20 @@ namespace MapasCulturais\Themes\Funarte;
 
 use MapasCulturais\App;
 
-define('SAAS_PATH', realpath(BASE_PATH . '../Funarte'));
-
 class Theme extends \MapasCulturais\Themes\BaseV2\Theme
 {
 
-    static function getThemeFolder()
-    {
+    static function getThemeFolder() {
+
         return __DIR__;
+
     }
 
-    function _init()
-    {
+    function _init() {
+
         parent::_init();
 
-        $app = App::i();
+        $this->enqueueStyle('app-v2', 'main', 'css/theme-Funarte.css');
 
     }
 }
-
-
-
-
