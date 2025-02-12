@@ -1,0 +1,54 @@
+@use 'sass:color';
+
+// COLORS
+$black: #1E1E1E !default;
+$error: #D2381B !default;
+$gray-100: #BBBBBB !default;
+$gray-300: #767676!default;
+$gray-700: #666666 !default;
+$warning: #FFCA3A !default;
+$white: #FFFFFF !default;
+$banner:#181b4e !default;
+$button:#2b74d9 !default;
+
+// Brand colors
+$primary-500: #117C83 !default;
+$secondary-500: #9eca80 !default;
+
+// Entities colors
+$seals-500: #1E1E1E !default;
+$agents-500: #E0720B!default;
+$events-500: #008D38 !default;
+$opportunities-500: #c40c0c !default;
+$projects-500:  #D47991 !default;
+$spaces-500: #F0B500!default;
+
+// Feedback colors
+$danger-500: #EF1010 !default;
+$success-500: #559931 !default;
+$warning-500: #FFCA3A !default;
+$helper-500: #1774AD !default;
+
+// Neutral colors
+$low-500: #1E1E1E !default;
+$high-500: #FFFFFF !default;
+
+// FONTS
+$font-body: 'Open Sans', sans-serif !default;
+$font-headings: 'Open Sans', sans-serif !default;
+$font-weight-bold: 700;
+$font-weight-regular: 400;
+$font-weight-semibold: 500;
+$text-transform-lowercase: lowercase;
+$text-transform-none: none;
+$text-transform-uppercase: uppercase;
+$font-size-xl: 3rem;
+$font-size-lg: 2rem;
+$font-size-md: 1.5rem;
+$font-size-sm: 1.125rem;
+$font-size-xs: 1rem;
+$font-size-xxs: 0.75rem;
+$font-size-xxxs: 0.625rem;
+
+@import "../../../BaseV2/assets-src/sass/theme-BaseV2";
+@import "../../../Funarte/assets-src/sass/layouts/main-header";
