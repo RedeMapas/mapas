@@ -1,0 +1,218 @@
+.home-feature{
+
+    background-color:var(--mc-gray-100);
+    padding: 3rem 1rem !important;
+    gap: size(20);
+
+
+    &__header {
+		&.title {
+			margin-bottom: size (16);
+
+			label {
+				font-size: size(34);
+				
+                
+			}
+		}
+
+		&.description {
+			font-size: size(14);
+		}
+	}
+
+    &__content{
+        &.cards{
+
+            .tabs-component{
+
+                &__panels{
+                    margin: 0;
+                }
+
+                position: relative;
+
+                &__header{
+                    position: absolute;
+                    z-index: 2;
+
+                }
+                &__button{
+                    &--active{
+                    
+                        &::after{
+                            
+                            background-color: $button;
+                        }
+                    }
+                }
+
+                .tab-underline{
+                    
+                    position: relative;
+                    top:37px;
+                    width: 100%;
+                    height: 1px;
+                    background-color:$gray-300; /* Ajuste para a cor desejada */
+                    z-index: 1;
+                    
+
+                }
+
+                &buttons{
+                    gap: size(16);
+                }
+
+                &--left{
+                    gap: size(16);
+                }
+        
+            }
+            .carousel{
+
+                &_viewport{
+                    ol{
+                        li{
+                            padding: 0;
+                        }
+                    }
+                }
+
+
+                
+
+            
+
+                &__slide{
+
+                    padding: size(40) size(24) size(40) size(4) !important;
+
+                    
+                    .entity-card{
+
+                        padding: 1rem 2rem;
+
+                    
+                        &.portrait{
+                            box-shadow: 0px size(4) size(8) rgba(0, 0, 0, 0.1);
+                            margin: size(32) 0 0 0;
+                        }
+
+                        &__header{
+
+                            position: relative;
+
+
+                            &.user-slot{
+
+                                position: absolute;
+                                top: size(10);
+                                right: size(-41); 
+                                
+
+
+                            }
+                            &.user-details{
+
+
+                                flex-direction: row;
+
+
+                                .mc-avatar{
+
+                    
+
+                                 &--small{
+                                    width: size(40);
+                                    height: size(40);
+                                    min-width: size(40);
+                                    min-height: size(40);
+                                    }
+                                }
+
+                                .user-info{
+                                    
+                                        a{
+                                            color: $button;
+
+                                            h2{
+                                                &.mc-title{
+                                                    &.mc-title--short{
+                                                        font-size: var(--mc-font-size-sm) !important;
+    
+                                                    }
+
+
+                                                }
+                                                
+                                                
+                                            }
+                                        }
+
+                                    
+                                }
+                                
+
+                            }
+
+                            &.user-slot{
+
+                                .entityType{
+                                    color: $white;
+
+                                    &.agent,&.oportunity,&.event,&.project,&.space{
+                                        &__background{
+                                            background-color:$button;
+                                        }
+                                    }
+                                }
+
+                            }
+                        }
+
+                        &__content{
+                            &-shortDescription{
+                                small{
+
+                                    font-size: size(14);
+                                }
+                                
+
+                            }
+
+                        }
+
+                        &__footer{
+                            
+                            &--action{
+
+                                a{
+                                    padding: size(16) size(8)!important;
+
+                                }
+                                .button{
+                                    background-color: $button;
+                                    border-radius: size(8);
+                                    border: none;
+                                    
+                                    
+
+                                }
+
+                                .button-primary{
+                                    border: none;
+                                    background-color: $button !important;
+                                    
+                                }
+                            }
+                        }
+                    }
+
+
+
+                    
+                }
+            }
+        }
+    }
+}
