@@ -1,0 +1,31 @@
+.main-footer {
+
+    &__content {
+
+        &--links {
+
+            &-group {
+
+                li:first-child {
+                    
+                    a {
+
+                        color: $button;
+
+                    }
+
+                }
+
+            }
+
+        }
+
+    }
+
+    &__reg {
+
+        background: $black;
+
+    }
+
+}
