@@ -55,7 +55,7 @@ $entities = [
                     </div>
                     <div class="right">
                         <div class="header">
-                            <h3><?= $entity['title'] ?></h3>
+                            <h3><?= i::__($entity['title']) ?></h3>
                             <mc-link route="<?= $entity['route'] ?>">
                                 <?= i::__('Ver todos') ?>
                                 <mc-icon name="access"></mc-icon>
