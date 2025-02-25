@@ -39,50 +39,53 @@ $config = $app->config['social-media'];
     
             <ul class="main-footer__content--links-group">
                 <li>
-                    <a><?php i::_e("Acesse"); ?></a>
+                    <a><?php i::_e("Descubra"); ?></a>
                 </li>
                 <li v-if="global.enabledEntities.opportunities">
                     <a href="<?= $app->createUrl('search', 'opportunities') ?>">
-                        <mc-icon name="opportunity"></mc-icon> <?php i::_e('editais e oportunidades'); ?>
+                        <mc-icon name="opportunity"></mc-icon> <?php i::_e('Editais e oportunidades'); ?>
                     </a>
                 </li>
                 <li v-if="global.enabledEntities.events">
                     <a href="<?= $app->createUrl('search', 'events') ?>">
-                        <mc-icon name="event"></mc-icon> <?php i::_e('eventos'); ?>
+                        <mc-icon name="event"></mc-icon> <?php i::_e('Eventos'); ?>
                     </a>
                 </li>
                 <li v-if="global.enabledEntities.agents">
                     <a href="<?= $app->createUrl('search', 'agents') ?>">
-                        <mc-icon name="agent"></mc-icon> <?php i::_e('agentes'); ?>
+                        <mc-icon name="agent"></mc-icon> <?php i::_e('Artistas'); ?>
                     </a>
                 </li>
                 <li v-if="global.enabledEntities.spaces">
                     <a href="<?= $app->createUrl('search', 'spaces') ?>">
-                        <mc-icon name="space"></mc-icon> <?php i::_e('espaços'); ?>
+                        <mc-icon name="space"></mc-icon> <?php i::_e('Espaços'); ?>
                     </a>
                 </li>
                 <li v-if="global.enabledEntities.projects">
                     <a href="<?= $app->createUrl('search', 'projects') ?>">
-                        <mc-icon name="project"></mc-icon> <?php i::_e('projetos'); ?>
+                        <mc-icon name="project"></mc-icon> <?php i::_e('Iniciativas'); ?>
                     </a>
                 </li>
             </ul>
     
             <ul class="main-footer__content--links-group">
                 <li>
-                    <a href="<?= $app->createUrl('panel', 'index') ?>"><?php i::_e('Painel'); ?></a>
+                    <a href="<?= $app->createUrl('panel', 'index') ?>"><?php i::_e('Painel de controle'); ?></a>
                 </li>
                 <li v-if="global.enabledEntities.opportunities">
-                    <a href="<?= $app->createUrl('panel', 'opportunities') ?>"><?php i::_e('Editais e oportunidades'); ?></a>
+                    <a href="<?= $app->createUrl('panel', 'opportunities') ?>"><?php i::_e('Minhas oportunidades'); ?></a>
                 </li>
                 <li v-if="global.enabledEntities.events">
                     <a href="<?= $app->createUrl('panel', 'events') ?>"><?php i::_e('Meus eventos'); ?></a>
                 </li>
                 <li v-if="global.enabledEntities.agents">
-                    <a href="<?= $app->createUrl('panel', 'agents') ?>"><?php i::_e('Meus agentes'); ?></a>
+                    <a href="<?= $app->createUrl('panel', 'agents') ?>"><?php i::_e('Meus artistas'); ?></a>
                 </li>
                 <li v-if="global.enabledEntities.spaces">
                     <a href="<?= $app->createUrl('panel', 'spaces') ?>"><?php i::_e('Meus espaços'); ?></a>
+                </li>
+                <li v-if="global.enabledEntities.projects">
+                    <a href="<?= $app->createUrl('panel', 'projects') ?>"><?php i::_e('Minhas iniciativas'); ?></a>
                 </li>
                 <?php if (!($app->user->is('guest'))) : ?>
                     <li>
@@ -91,26 +94,31 @@ $config = $app->config['social-media'];
                 <?php endif; ?>
             </ul>
     
-                <ul class="main-footer__content--links-group">
+            <ul class="main-footer__content--links-group">
+                <li>
+                    <a><?php i::_e('Ajuda e privacidade'); ?></a>
+                </li>
+                
+                <li>
+                    <a href="<?= $app->createUrl('faq') ?>"><?php i::_e('Ajuda e perguntas frequentes (FAQ)'); ?></a>
+                </li>
+
+                <li>
+                    <a href="<?= $app->createUrl('lgpd', 'view', ['termsOfUsage']) ?>"><?php i::_e('Termos de uso e Política de privacidade'); ?></a>
+                </li>
+
+                <li>
+                    <a href="<?= $app->createUrl('lgpd', 'view', ['termsUse']) ?>"><?php i::_e('Autorização de uso de imagem'); ?></a>
+                </li>
+                
+            <?php /* if (count($app->config['module.LGPD']) > 0): ?>
+                <?php foreach ($app->config['module.LGPD'] as $slug => $cfg) : ?>
                     <li>
-                        <a><?php i::_e('Ajuda e privacidade'); ?></a>
+                        <a href="<?= $app->createUrl('lgpd', 'view', [$slug]) ?>"><?= $cfg['title'] ?></a>
                     </li>
-                    
-                    <li>
-                        <a href="<?= $app->createUrl('faq') ?>"><?php i::_e('Dúvidas frequentes'); ?></a>
-                        <p style="margin-top: 15px !important;">
-                            <?= $this->text('description', i::__('Dúvidas ou problemas com o sistema entrar em <br> contato pelo e-mail <a href="mailto:suporte.mapa@cultura.gov.br" style="color: #00a2f0; display: inline; font-weight: bold;">suporte.mapa@cultura.gov.br</a>')) ?>
-                        </p>
-                    </li>
-                    
-                <?php if (count($app->config['module.LGPD']) > 0): ?>
-                    <?php foreach ($app->config['module.LGPD'] as $slug => $cfg) : ?>
-                        <li>
-                            <a href="<?= $app->createUrl('lgpd', 'view', [$slug]) ?>"><?= $cfg['title'] ?></a>
-                        </li>
-                    <?php endforeach ?>
-                <?php endif; ?>
-                </ul>
+                <?php endforeach ?>
+            <?php endif; */ ?>
+            </ul>
             <?php $this->applyTemplateHook("main-footer-links", "end")?>
         </div>
         <?php $this->applyTemplateHook("main-footer-links", "after")?>      
@@ -121,9 +129,8 @@ $config = $app->config['social-media'];
         <div class="main-footer__reg-content">
             <p>
                 <?php i::_e("plataforma criada pela comunidade") ?> 
-                <span class="mapas"><?php i::_e("mapas culturais,"); ?></span> 
-                <?php i::_e("desenvolvida por "); ?><strong>hacklab<span style="color: red">/</span></strong>
-                e adaptada pelo <strong>minc</strong>
+                <span class="mapas"><?php i::_e("mapas culturais"); ?></span> 
+                <?php i::_e("e desenvolvida por "); ?><strong>hacklab<span style="color: red">/</span></strong>
             </p>
 
             <a class="link" href="https://github.com/culturagovbr/mapadacultura">
