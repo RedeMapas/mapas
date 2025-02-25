@@ -3,7 +3,7 @@
 // COLORS
 $black: #1E1E1E !default;
 $error: #D2381B !default;
-$gray-100: #BBBBBB !default;
+$gray-100: #f5f5f5 !default;
 $gray-300: #767676!default;
 $gray-700: #666666 !default;
 $warning: #FFCA3A !default;
@@ -53,3 +53,6 @@ $font-size-xxxs: 0.625rem;
 @import "../../../BaseV2/assets-src/sass/theme-BaseV2";
 @import "../../../Funarte/assets-src/sass/layouts/main-header";
 @import "../../../Funarte/assets-src/sass/components/home-entities";
+@import "../../../Funarte/assets-src/sass/layouts/home-feature";
+@import "../../../Funarte/assets-src/sass/layouts/home-register";
+@import "../../../Funarte/assets-src/sass/layouts/main-footer";
