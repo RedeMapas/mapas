@@ -1,6 +1,7 @@
 @use '../0.settings/mixins' as *;
 
 .search {
+
     .mc-loading {
         color: var(--mc-low-500);
     }
