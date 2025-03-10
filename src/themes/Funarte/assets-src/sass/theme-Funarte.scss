@@ -11,6 +11,7 @@ $white: #FFFFFF !default;
 $banner:#181b4e !default;
 $button:#2b74d9 !default;
 
+
 // Brand colors
 $primary-500: #117C83 !default;
 $secondary-500: #9eca80 !default;
@@ -50,9 +51,16 @@ $font-size-xs: 1rem;
 $font-size-xxs: 0.75rem;
 $font-size-xxxs: 0.625rem;
 
+
+:root{
+    --mc-button-500: #{$button};
+}
+
 @import "../../../BaseV2/assets-src/sass/theme-BaseV2";
 @import "../../../Funarte/assets-src/sass/layouts/main-header";
 @import "../../../Funarte/assets-src/sass/components/home-entities";
 @import "../../../Funarte/assets-src/sass/layouts/home-feature";
 @import "../../../Funarte/assets-src/sass/layouts/home-register";
 @import "../../../Funarte/assets-src/sass/layouts/main-footer";
+@import "../../../Funarte/assets-src/sass/components/button";
+@import "../../../Funarte/assets-src/sass/components/c-login";

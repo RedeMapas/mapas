@@ -1,0 +1,15 @@
+.button{
+    &--bg{
+        line-height: size(24);
+        padding: size(12) size(32);
+        font-weight: 600;
+
+
+    }
+
+    &--primary {
+        background-color: var(--mc-button-500);
+        border: none;
+        color: var(--mc-white);
+    }
+}
