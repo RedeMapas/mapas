@@ -1,0 +1,22 @@
+.search{
+
+    &__tabs{
+        &--list{
+            .search-list{
+                &__cards{
+                    #my-datepicker-container {
+                        .dp__menu {
+                            position: static !important;
+                            transform: none !important;
+                            top: auto !important;
+                            left: auto !important;
+                            
+                        }
+
+                    }
+                }
+            }
+            
+        }
+    }
+}
