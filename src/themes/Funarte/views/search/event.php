@@ -59,22 +59,18 @@ $this->breadcrumb = [
     </template>
     <!-- </template> -->
     <template #default="{pseudoQuery, changeTab}">
-        <div class="card-section"
-            style="display:flex;  flex-direction:row; justify-content: center; align-items: center; gap:20px; padding:25px 1rem;">
+        <div class="card-section">
             <?php foreach ($entities as $key => $entity): ?>
-                <div class="card-container"
-                    style="background-color:white; width:280px; height:80px;border-radius:4px; box-shadow:2px 2px 2px 2px rgba(0,0,0,0.2); padding:7px 14px ">
-                    <div class="card-header"
-                        style="display:flex; flex-direction:row; justify-content:space-between; align-items:center;">
-                        <p class="event-quantity" style="font-size:32px; font-weight:bold">
+                <div class="card-container">
+                    <div class="card-header">
+                        <p class="event-quantity">
                             <?= i::__($entity['number']) ?>
                         </p>
                         <div class="event-icon">
-                            <mc-icon name=<?= i::__($entity['icon']) ?>
-                                style="width:24px; height:24px; color:#2B74D9"></mc-icon>
+                            <mc-icon name=<?= i::__($entity['icon']) ?>></mc-icon>
                         </div>
                     </div>
-                    <p class="event-description" style="margin-top: 5px;">
+                    <p class="event-description">
                         <?= i::__($entity['description']) ?>
                     </p>
                 </div>
@@ -97,7 +93,7 @@ $this->breadcrumb = [
                 </div>
             </mc-tab>
             <mc-tab icon="chart" label="<?php i::esc_attr_e('Indicadores') ?>" slug="chart">
-                <div class="search__tabs--map">
+                <div class="search__tabs--chart">
                     <search-map-event :pseudo-query="pseudoQuery" position="map"></search-map-event>
                 </div>
             </mc-tab>
