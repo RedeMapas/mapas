@@ -6,7 +6,9 @@
     justify-content: center;
     align-items: center;
     gap:20px;
-    padding:25px 1rem;
+    padding:25px 0;
+    margin:auto;
+    max-width: 1138px;
 }
 
 .card-container{
@@ -32,4 +34,10 @@
 .event-quantity{
     font-size:32px;
     font-weight:bold
+}
+
+.event-icon{
+    color:#2B74D9;
+    width:24px;
+    height:24px;
 }
