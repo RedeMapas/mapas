@@ -82,6 +82,25 @@ services:
     healthcheck:
       test: "PGPASSWORD=${POSTGRES_PASSWORD} pg_isready -h 127.0.0.1 -U ${POSTGRES_USER} -d ${POSTGRES_DB}"
 
+  migrate_database:
+    image: postgis/postgis:15-3.5
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
+      POSTGRES_DB: ${POSTGRES_DB:-app}
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - migrate_database_data:/var/lib/postgresql/data
+    ports:
+      - "5432"
+    healthcheck:
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+      test: "PGPASSWORD=${POSTGRES_PASSWORD} pg_isready -h 127.0.0.1 -U ${POSTGRES_USER} -d ${POSTGRES_DB}"
+
   # crontab:
   #   image: rancher/container-crontab:v0.5.0
   #   restart: '${DOCKER_RESTART_POLICY:-always}'
@@ -155,3 +174,4 @@ volumes:
   assets-files:
   sessions-files:
   doctrine-files:
+  migrate_database_data:
