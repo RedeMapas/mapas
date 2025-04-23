@@ -15,4 +15,5 @@
 	url = https://github.com/culturagovbr/theme-MapaMinC.git
 [submodule "src/themes/Funarte"]
 	path = src/themes/Funarte
-	url = https://github.com/culturagovbr/theme-Funarte.git
+	url = https://github.com/redemapas/theme-Funarte.git
+	branch = feature/login-botton
