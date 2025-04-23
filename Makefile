@@ -84,6 +84,12 @@ db-restore:
 	$(COMPOSE) exec database bash -c "PGPASSWORD=\$$POSTGRES_PASSWORD psql -h localhost -U mapas -d mapas < /data/dump.sql"
 	@echo "dump.sql default database dump was restored."
 
+# Run a query to insert a new row into the 'subsite' table
+.PHONY: insert-subsite
+insert-subsite:
+	$(COMPOSE) exec database psql -U mapas -d mapas -c "INSERT INTO subsite (id, name, url, alias_url, namespace, create_timestamp, status, agent_id) VALUES (1, 'funarte', 'localhost:4242', 'localhost', 'Funarte', now(), 0, 1);"
+	@echo "Inserted new row into 'subsite' table with id as 1, url and alias_url as 'localhost:4242', and namespace as 'Funarte'."
+
 # Build the backend service
 .PHONY: build-backend
 build-backend:
