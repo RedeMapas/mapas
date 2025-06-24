@@ -1,5 +1,9 @@
 {
-    "require": {
+  "require": {
+        "php": ">=8.4",
+        "ext-ctype": "*",
+        "ext-iconv": "*",
+        "ext-gd": "*",
         "acelaya/doctrine-enum-type": "^2.3",
         "akrabat/ip-address-middleware": "^2.1",
         "doctrine/annotations": "^2.0",

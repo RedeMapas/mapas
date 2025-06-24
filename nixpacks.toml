@@ -1,0 +1,7 @@
+[phases.setup]
+nixPkgs = [
+  "...",
+
+  # https://nixos.org/manual/nixpkgs/stable/#var-meta-priority
+  '(lib.recursiveUpdate php84Packages.composer { meta.priority = php84Packages.composer.meta.priority or 0 -1; })',
+]
