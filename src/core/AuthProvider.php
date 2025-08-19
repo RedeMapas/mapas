@@ -59,14 +59,14 @@ abstract class AuthProvider {
         $app->applyHookBoundTo($this, 'auth.createUser:after', [$user, $data]);
 
         $dataValue = ['name' => $user->profile->name];
-        $message = $app->renderMailerTemplate('welcome',$dataValue);
+        // $message = $app->renderMailerTemplate('welcome',$dataValue);
 
-        $app->createAndSendMailMessage([
-            'from' => $app->config['mailer.from'],
-            'to' => $user->email,
-            'subject' => $message['title'],
-            'body' => $message['body']
-        ]);
+        // $app->createAndSendMailMessage([
+        //     'from' => $app->config['mailer.from'],
+        //     'to' => $user->email,
+        //     'subject' => $message['title'],
+        //     'body' => $message['body']
+        // ]);
 
         return $user;
     }

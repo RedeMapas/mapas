@@ -150,7 +150,7 @@ class OpauthAuthentik extends \MapasCulturais\AuthProvider{
             * To validate that the auth response received is unaltered, especially auth response that
             * is sent through GET or POST.
             */
-            if (empty($response['auth']) || empty($response['timestamp']) || empty($response['signature']) || empty($response['auth']['provider']) || empty($response['auth']['uid'])) {
+            if (empty($response['auth']) || empty($response['timestamp']) || empty($response['signature']) || empty($response['auth']['raw']['auth_provider']) || empty($response['auth']['raw']['id'])) {
                 $this->halt(500, 'Invalid auth response: Missing key auth response components.');
             } elseif (!$this->opauth->validate(sha1(print_r($response['auth'], true)), $response['timestamp'], $response['signature'], $reason)) {
                 $this->halt(500, "Invalid auth response: {$reason}");
@@ -166,7 +166,7 @@ class OpauthAuthentik extends \MapasCulturais\AuthProvider{
             $app = App::i();
             $response = $this->_getResponse();
             
-            $auth_uid = $response['auth']['uid'];
+            $auth_uid = $response['auth']['raw']['id'];
             $auth_provider = $app->getRegisteredAuthProviderId('authentik');
 
             $user = $app->repo('User')->getByAuth($auth_provider, $auth_uid);
@@ -208,7 +208,7 @@ class OpauthAuthentik extends \MapasCulturais\AuthProvider{
         // cria o usuário
         $user = new Entities\User;
         $user->authProvider = $response['auth']['provider'];
-        $user->authUid = $response['auth']['uid'];
+        $user->authUid = $response['auth']['raw']['id'];
         $user->email = $response['auth']['raw']['email'];
         $app->em->persist($user);
 
@@ -217,8 +217,8 @@ class OpauthAuthentik extends \MapasCulturais\AuthProvider{
 
         $agent->status = 1;
         
-        if(isset($response['auth']['raw']['name'])){
-            $agent->name = $response['auth']['raw']['name'];
+        if(isset($response['auth']['raw']['nome_completo'])){
+            $agent->name = $response['auth']['raw']['nome_completo'];
         }else{
             $agent->name = '';
         }

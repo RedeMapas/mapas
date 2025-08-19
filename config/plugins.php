@@ -2,9 +2,15 @@
 
 return [
     'plugins' => [
-         'MultipleLocalAuth',
-         'AdminLoginAsUser',
-         'RecreatePCacheOnLogin',
-         'SpamDetector'
+        'AdminLoginAsUser',
+        'SpamDetector',
+        'RecreatePCacheOnLogin',
+        'Metabase',
+        'MapasBlame',
+        'ValuersManagement',
+        'MultipleLocalAuth',
+        'WhatsAppFloating',
+        'Accessibility',
+        'Analytics',
     ]
 ];

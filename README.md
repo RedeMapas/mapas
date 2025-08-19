@@ -1,3 +1,22 @@
+# Sobre
+Mapas Culturais é uma aplicação web server, utilizando no backend linguagem PHP com Slim Framework e banco de dados Postgres. No frontend, linguagem Javascript com VueJS para componentização, propiciando um ambiente virtual para mapeamento, divulgação e gestão de ativos culturais.
+
+## Para começar agora
+
+1. Baixe o código do projeto a partir do repositório no github
+2. Garanta que o seu ambiente de desenvolvimento possui as dependências do projeto( Docker, Docker Compose, Make)
+3. Execute o comando `make dev` para criar os containers e executar o comando `make init` e `make init_dev` para iniciar o ambiente de desenvolvimento
+4. Execute o comando `make db-restore`, informe a senha do banco de dados: mapas
+5. Execute o comando `make db-migrations` para atualizar o banco de dados com as últimas modificações
+6. Acesse o site em http://localhost:4242
+
+<details>
+<summary>
+
+## Histórico
+
+</summary>
+
 [![Join the chat at https://t.me/joinchat/WCYOkiRbAWmxQM2y](https://patrolavia.github.io/telegram-badge/chat.png)](https://t.me/joinchat/WCYOkiRbAWmxQM2y)
 
 # Mapas Culturais
@@ -66,26 +85,34 @@ A plataforma já está em uso em diversos municipios, estados, no governo federa
 - Balaio Cultural UFPR - https://mapadacultura.ufpr.br/
 - Periferia Viva - Ministério das Cidades - https://iniciativas-mapadasperiferias.cidades.gov.br/
 
-## Sobre a aplicação
-Mapas Culturais é uma aplicação web server-side baseada em linguagem PHP e banco de dados Postgres, entre outras tecnologias e componentes, que propicia um ambiente virtual para mapeamento, divulgação e gestão de ativos culturais. 
 
 ## Projetos correlatos
 * [Mapas Cuturais Base Project](https://github.com/hacklabr/mapasculturais-app) - Repositório de projeto base para novas instalações.
 * [Multiple Local Auth](https://github.com/mapasculturais/mapasculturais-MultipleLocalAuth) - Plugin de autenticação local + oauth.
 * [Mapas SDK](https://github.com/centroculturalsp/MapasSDK)
 
-## Instalação
-A maneira mais simples e segura para instalar o Mapas Culturais é utilizando o [Mapas Culturais Base Project](https://github.com/mapasculturais/mapasculturais-base-project) como base para a criação de um repositório próprio para o seu projeto, que reunirá o tema, os plugins e as configurações da aplicação. O Mapas Culturais Base Project utiliza o Docker e o Docker Composer para rodar a aplicação, facilitando os processos de deploy e de atualizaçao.
+</details>
 
-- [Instalação utilizando o Base Project ](https://github.com/mapasculturais/mapasculturais-base-project#readme) - **RECOMENDADO**
+<details>
+<summary>
+
 ## Documentação
+
+</summary>
 
 Uma [nova documentação](https://mapasculturais.gitbook.io/bem-vindo-a-a-documentacao-do-mapas/) está sendo escrita no gitbook, organizada em três seções:
 - [Documentação para usuários](https://mapasculturais.gitbook.io/documentacao-para-usuarios/)
 - [Documentação para desenvolvedores](https://mapasculturais.gitbook.io/documentacao-para-desenvolvedores/formacao-para-desenvolvedores/)
 - [Documentação para devops](https://mapasculturais.gitbook.io/documentacao-para-devops/instalacao/)
 
+</details>
+
+<details>
+<summary>
+
 ## Documentação Legada
+
+</summary>
 
 A documentação pode ser navegada no endereço (http://docs.mapasculturais.org)
 
@@ -96,7 +123,15 @@ Toda documentação da aplicação está na pasta [documentation](documentation)
 - [Importação de arquivos de dados geoespaciais (Shapefiles)](documentation/docs/mc_deploy_shapefiles.md)
 - [Deploy diretamente no sistema operacional](https://docs.mapasculturais.org/mc_deploy/) - **NÃO RECOMENDADO**
 
-### [Software] Requisitos para Instalação
+</details>
+
+<details>
+<summary>
+
+## [Software] Requisitos para Instalação
+
+</summary>
+
 Lista dos principais softwares que compõe e aplicação. Maiores detalhes, ver documentação de [instalação](documentation/docs/mc_deploy.md) ou [guia do desenvolvedor](documentation/docs/mc_developer_guide.md). 
 
 - [PHP = 8.3](http://php.net)
@@ -105,7 +140,14 @@ Lista dos principais softwares que compõe e aplicação. Maiores detalhes, ver 
 - [Postgis >= 2.2](http://postgis.net)
 - [Node.JS >= 20](https://nodejs.org/en/)
 
-## Hardware
+</details>
+
+<details>
+<summary>
+
+## [Hardware] Requisitos para instalação
+
+</summary>
 
 As estimativas abaixo podem variar de acordo com a velocidade dos cores, velocidade do disco, entre outros fatores, por isso recomenda-se que o sysadmin monitore o sistema para ajustar os recursos de acordo com a demanda.
 
@@ -124,6 +166,8 @@ Sobre o armazenamento deve-se considerar que a tendência é que o uso de espaç
 <table><thead><tr><th> </th><th width="150">CPUs</th><th width="150">RAM</th><th>Armazenamento</th></tr></thead><tbody><tr><td>mínimo</td><td>6</td><td>6GB</td><td>150GB SSD</td></tr><tr><td>recomendado</td><td>8</td><td>8GB</td><td>250GB SSD</td></tr><tr><td>durante grandes editais</td><td>16</td><td>16GB</td><td>250GB SSD</td></tr></tbody></table>
 
 Vale lembrar que os requisitos de hardware podem variar de acordo com a latência da rede, velocidade dos cores dos cpus, uso de proxies, entre outros fatores. Recomendamos aos sysadmin da rede em que a aplicação será instalada um monitoramento de tráfego e uso durante o período de 6 meses a 1 ano para avaliação de cenário de uso. 
+
+</details>
 
 ## Canais de comunicação
 

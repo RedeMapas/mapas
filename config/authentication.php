@@ -1,13 +1,10 @@
 <?php
 return [
-    /*
-    'auth.provider' => 'Fake',
-    'auth.config' => [],
-     */
-
+    // 'auth.provider' => 'Fake',
+    // 'auth.config' => [],
     // https://github.com/kterva/MultipleLocalAuth
     'auth.provider' => '\MultipleLocalAuth\Provider',
-
+    
     'auth.config' => [
         'salt' => env('AUTH_SALT', 'SECURITY_SALT'),
         'wizard' => 'true',
@@ -39,11 +36,15 @@ return [
             ]
         ]
     ]
-
     /*
-    //Example Authentik
-    auth.provider' => 'MapasCulturais\AuthProviders\OpauthAuthentik',
+    'auth.provider' => 'MapasCulturais\AuthProviders\OpauthAuthentik',
     'auth.config' => [
+        'login_url' => env('AUTH_AUTHENTIK_LOGIN_URL', 'https://dev-backend.100.28.135.68.sslip.io'),
+        'logout_url' => env('AUTH_AUTHENTIK_LOGOUT_URL', 'https://dev-backend.100.28.135.68.sslip.io/o/profile/'),
+        'redirect_uri' => env('AUTH_AUTHENTIK_REDIRECT_URL', 'https://ppv-25.mapadasperiferias.com/autenticacao/authentik/oauth2callback'),
+        'auth_endpoint' => 'o/authorize/',
+        'token_endpoint' => 'o/token/',
+        'user_info_endpoint' => 'o/userinfo/',
         'salt' => env('AUTH_SALT', 'SECURITY_SALT'),
         'timeout' => '24 hours',
         'client_id' => env('AUTH_AUTHENTIK_APP_ID', ''),
@@ -52,6 +53,21 @@ return [
         'login_url' => env('AUTH_AUTHENTIK_LOGIN_URL', ''),
         'login_url' => env('AUTH_AUTHENTIK_LOGOUT_URL', ''),
         'change_password_url' => env('AUTH_AUTHENTIK_CHANGE_PASSWORD_URL', null),
+        'scope' => env('AUTH_AUTHENTIK_SCOPE', 'read write profile'),
     ]
-     */
+    // 'auth.provider' => 'MapasCulturais\AuthProviders\OpauthAuthentik',
+    // 'auth.config' => [
+    //     'login_url' => env('AUTH_AUTHENTIK_LOGIN_URL', 'https://dev-backend.100.28.135.68.sslip.io'),
+    //     'logout_url' => env('AUTH_AUTHENTIK_LOGOUT_URL', 'https://dev-backend.100.28.135.68.sslip.io/o/profile/'),
+    //     'redirect_uri' => env('AUTH_AUTHENTIK_REDIRECT_URL', 'https://ppv-25.mapadasperiferias.com/autenticacao/authentik/oauth2callback'),
+    //     'auth_endpoint' => 'o/authorize/',
+    //     'token_endpoint' => 'o/token/',
+    //     'user_info_endpoint' => 'o/userinfo/',
+    //     'salt' => env('AUTH_SALT', 'SECURITY_SALT'),
+    //     'timeout' => '24 hours',
+    //     'client_id' => env('AUTH_AUTHENTIK_APP_ID', ''),
+    //     'client_secret' => env('AUTH_AUTHENTIK_APP_SECRET', ''),
+    //     'scope' => env('AUTH_AUTHENTIK_SCOPE', 'read write profile'),
+    // ]
+*/
 ];

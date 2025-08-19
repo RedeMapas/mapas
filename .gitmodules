@@ -1,0 +1,39 @@
+[submodule "src/plugins/AdminLoginAsUser"]
+	path = src/plugins/AdminLoginAsUser
+	url = https://github.com/mapasculturais/plugin-AdminLoginAsUser
+[submodule "src/plugins/SpamDetector"]
+	path = src/plugins/SpamDetector
+	url = https://github.com/culturagovbr/plugin-SpamDetector
+[submodule "src/plugins/RecreatePCacheOnLogin"]
+	path = src/plugins/RecreatePCacheOnLogin
+	url = https://github.com/culturagovbr/plugin-RecreatePCacheOnLogin
+[submodule "src/themes/MapaMinC"]
+	path = src/themes/MapaMinC
+	url = https://github.com/culturagovbr/theme-MapaMinC
+[submodule "src/themes/Funarte"]
+	path = src/themes/Funarte
+	url = https://github.com/culturagovbr/theme-Funarte
+[submodule "src/plugins/Metabase"]
+	path = src/plugins/Metabase
+	url = https://github.com/culturagovbr/plugin-Metabase
+[submodule "src/plugins/MapasBlame"]
+	path = src/plugins/MapasBlame
+	url = https://github.com/culturagovbr/plugin-MapasBlame
+[submodule "src/plugins/ValuersManagement"]
+	path = src/plugins/ValuersManagement
+	url = https://github.com/Periferias/plugin-ValuersManagement
+[submodule "src/themes/PeriferiaViva25"]
+	path = src/themes/PeriferiaViva25
+	url = https://github.com/Periferias/theme-ppv-25
+[submodule "src/plugins/MultipleLocalAuth"]
+	path = src/plugins/MultipleLocalAuth
+	url = https://github.com/mapasculturais/plugin-MultipleLocalAuth
+[submodule "src/plugins/WhatsAppFloating"]
+	path = src/plugins/WhatsAppFloating
+	url = https://github.com/RedeMapas/plugin-WhatsAppFloating
+[submodule "plugins/Accessibility"]
+	path = plugins/Accessibility
+	url = https://github.com/mapasculturais/plugin-Accessibility
+[submodule "plugins/Analytics"]
+	path = plugins/Analytics
+	url = https://github.com/mapasculturais/plugin-Analytics
