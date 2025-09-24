@@ -169,7 +169,18 @@ return array(
             'placeholder' => \MapasCulturais\i::__('nomedousuario'),
             'available_for_opportunities' => true
         ),
-
+        'fediverso' => array(
+            'type' => "socialMedia",
+            'label' => \MapasCulturais\i::__('Fediverso'),
+            'available_for_opportunities' => true,
+            'serialize' => function ($value) {
+                return $value;
+            },
+            'validations' => array(
+                "v::oneOf(v::regex('/@[\w.-]+@[\w.-]+\.[\w]+/i'))" => \MapasCulturais\i::__("O valor deve ser no padrão @nomedousuario:nomedoservidor.com.br")
+            ),
+            'placeholder' => \MapasCulturais\i::__('@nomedousuario:nomedoservidor.com.br'),
+        ),
         'emailPublico' => array(
             'label' => \MapasCulturais\i::__('Email Público'),
             'validations' => array(
@@ -223,7 +234,7 @@ return array(
 
     ),
     'items' => $items,
-    
+
     /* EXEMPLOS DE METADADOS:
 
     'cnpj' => array(
