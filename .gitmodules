@@ -40,3 +40,6 @@
 [submodule "src/plugins/CustomEntity"]
 	path = src/plugins/CustomEntity
 	url = https://github.com/mapasculturais/plugin-CustomEntity
+[submodule "src/themes/RedeMapas"]
+	path = src/themes/RedeMapas
+	url = https://github.com/redemapas/theme-redemapas
