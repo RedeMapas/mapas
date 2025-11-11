@@ -37,3 +37,6 @@
 [submodule "plugins/Analytics"]
 	path = plugins/Analytics
 	url = https://github.com/mapasculturais/plugin-Analytics
+[submodule "src/plugins/CustomEntity"]
+	path = src/plugins/CustomEntity
+	url = https://github.com/mapasculturais/plugin-CustomEntity

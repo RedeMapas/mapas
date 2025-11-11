@@ -10,6 +10,7 @@ return [
         'ValuersManagement',
         'MultipleLocalAuth',
         'WhatsAppFloating',
+        'CustomEntity',
         'Accessibility',
         'Analytics',
     ]
