@@ -1,0 +1,3 @@
+[submodule "src/plugins/MapasNetwork"]
+	path = src/plugins/MapasNetwork
+	url = git@github.com:RedeMapas/plugin-MapasNetwork.git
