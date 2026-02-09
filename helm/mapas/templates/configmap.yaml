@@ -1,0 +1,82 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "mapas.fullname" . }}-env
+  labels:
+    {{- include "mapas.labels" . | nindent 4 }}
+data:
+  DB_HOST: {{ include "mapas.postgresql.host" . | quote }}
+  DB_PORT: {{ include "mapas.postgresql.port" . | quote }}
+  DB_NAME: {{ include "mapas.postgresql.database" . | quote }}
+  DB_USER: "mapas"
+  REDIS_CACHE: {{ include "mapas.redis.cache.host" . | quote }}
+  SESSIONS_SAVE_PATH: {{ include "mapas.sessions.savePath" . | quote }}
+  MAILER_TRANSPORT: {{ .Values.mapas.mailer.transport | quote }}
+  MAILER_FROM: {{ .Values.mapas.mailer.from | quote }}
+  BUILD_ASSETS: {{ .Values.mapas.buildAssets | quote }}
+  PENDING_PCACHE_RECREATION_INTERVAL: {{ .Values.mapas.pendingPcacheRecreationInterval | quote }}
+  JOBS_INTERVAL: {{ .Values.mapas.jobsInterval | quote }}
+  NUM_PROCESSES: {{ .Values.mapas.numProcesses | quote }}
+  MC_UPDATES_PROCESSES: {{ .Values.mapas.mcUpdatesProcesses | quote }}
+  {{- if .Values.mapas.redirectNotFoundAssetsTo }}
+  REDIRECT_404_ASSETS_TO: {{ .Values.mapas.redirectNotFoundAssetsTo | quote }}
+  {{- end }}
+  {{- if and .Values.mapas.recaptcha.siteKey (not .Values.mapas.recaptcha.existingSecret) }}
+  GOOGLE_RECAPTCHA_SITEKEY: {{ .Values.mapas.recaptcha.siteKey | quote }}
+  {{- end }}
+  {{- if and .Values.mapas.recaptcha.secret (not .Values.mapas.recaptcha.existingSecret) }}
+  GOOGLE_RECAPTCHA_SECRET: {{ .Values.mapas.recaptcha.secret | quote }}
+  {{- end }}
+---
+{{- if .Values.nginx.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "mapas.fullname" . }}-nginx
+  labels:
+    {{- include "mapas.labels" . | nindent 4 }}
+data:
+  default.conf: |
+    upstream php-fpm {
+        server 127.0.0.1:9000;
+    }
+
+    server {
+        listen 80;
+        server_name _;
+        root /var/www/html;
+        index index.php;
+
+        client_max_body_size 100M;
+
+        location /healthz {
+            access_log off;
+            return 200 "OK\n";
+            add_header Content-Type text/plain;
+        }
+
+        location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ {
+            expires 1y;
+            add_header Cache-Control "public, immutable";
+            try_files $uri =404;
+        }
+
+        location / {
+            try_files $uri $uri/ /index.php?$query_string;
+        }
+
+        location ~ \.php$ {
+            fastcgi_pass php-fpm;
+            fastcgi_index index.php;
+            fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+            include fastcgi_params;
+            fastcgi_read_timeout 300;
+            fastcgi_buffers 16 16k;
+            fastcgi_buffer_size 32k;
+        }
+
+        location ~ /\. {
+            deny all;
+        }
+    }
+{{- end }}

@@ -1,0 +1,255 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "mapas.fullname" . }}
+  labels:
+    {{- include "mapas.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "mapas.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+        {{- with .Values.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      labels:
+        {{- include "mapas.labels" . | nindent 8 }}
+        {{- with .Values.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "mapas.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      initContainers:
+        - name: wait-for-db
+          image: busybox:1.36
+          command:
+            - sh
+            - -c
+            - |
+              until nc -z {{ include "mapas.postgresql.host" . }} {{ include "mapas.postgresql.port" . }}; do
+                echo "Waiting for PostgreSQL..."
+                sleep 2
+              done
+              echo "PostgreSQL is ready"
+        {{- if index .Values "redis-cache" "enabled" }}
+        - name: wait-for-redis-cache
+          image: busybox:1.36
+          command:
+            - sh
+            - -c
+            - |
+              until nc -z {{ include "mapas.fullname" . }}-redis-cache 6379; do
+                echo "Waiting for Redis Cache..."
+                sleep 2
+              done
+              echo "Redis Cache is ready"
+        {{- end }}
+        {{- if index .Values "redis-sessions" "enabled" }}
+        - name: wait-for-redis-sessions
+          image: busybox:1.36
+          command:
+            - sh
+            - -c
+            - |
+              until nc -z {{ include "mapas.fullname" . }}-redis-sessions 6379; do
+                echo "Waiting for Redis Sessions..."
+                sleep 2
+              done
+              echo "Redis Sessions is ready"
+        {{- end }}
+        {{- if .Values.postgresql.enabled }}
+        - name: wait-for-db-schema
+          image: postgres:14-alpine
+          command:
+            - /bin/bash
+            - -c
+            - |
+              set -e
+              DB_HOST="{{ include "mapas.postgresql.host" . }}"
+              DB_USER="{{ include "mapas.postgresql.username" . }}"
+              DB_NAME="{{ include "mapas.postgresql.database" . }}"
+              TIMEOUT=300
+              ELAPSED=0
+              CHECK_INTERVAL=5
+
+              echo "Checking if database schema is initialized..."
+
+              # Wait for database to accept queries AND have agent table (core table from dump)
+              until psql -h "$DB_HOST" -U "$DB_USER" -d "$DB_NAME" \
+                -c "SELECT 1 FROM information_schema.tables WHERE table_name='agent';" \
+                >/dev/null 2>&1; do
+                ELAPSED=$((ELAPSED + CHECK_INTERVAL))
+                if [ $ELAPSED -gt $TIMEOUT ]; then
+                  echo "ERROR: Database schema not initialized after ${TIMEOUT}s"
+                  exit 1
+                fi
+                echo "Waiting for database schema to be initialized... (${ELAPSED}s/${TIMEOUT}s)"
+                sleep $CHECK_INTERVAL
+              done
+
+              echo "Database schema is ready!"
+          env:
+          - name: PGPASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Release.Name }}-postgresql
+                key: POSTGRES_PASSWORD
+        {{- end }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: php-fpm
+              containerPort: 9000
+              protocol: TCP
+          envFrom:
+            - configMapRef:
+                name: {{ include "mapas.fullname" . }}-env
+          env:
+            - name: DB_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "mapas.postgresql.secretName" . }}
+                  key: {{ if .Values.postgresql.enabled }}POSTGRES_PASSWORD{{ else }}{{ .Values.mapas.database.existingSecretKey | default "password" }}{{ end }}
+            {{- if .Values.mapas.recaptcha.existingSecret }}
+            - name: GOOGLE_RECAPTCHA_SITEKEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.mapas.recaptcha.existingSecret }}
+                  key: siteKey
+            - name: GOOGLE_RECAPTCHA_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.mapas.recaptcha.existingSecret }}
+                  key: secret
+            {{- end }}
+            {{- with .Values.mapas.extraEnv }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+          livenessProbe:
+            exec:
+              command:
+                - test
+                - -f
+                - /mapas-ready
+            initialDelaySeconds: 60
+            periodSeconds: 30
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            exec:
+              command:
+                - test
+                - -f
+                - /mapas-ready
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+            - name: assets
+              mountPath: /var/www/html/assets
+            - name: public-files
+              mountPath: /var/www/html/files
+            - name: var-files
+              mountPath: /var/www/var
+            - name: private-files
+              mountPath: /var/www/var/private-files
+        {{- if .Values.nginx.enabled }}
+        - name: nginx
+          image: "{{ .Values.nginx.image.repository }}:{{ .Values.nginx.image.tag }}"
+          imagePullPolicy: {{ .Values.nginx.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          resources:
+            {{- toYaml .Values.nginx.resources | nindent 12 }}
+          volumeMounts:
+            - name: nginx-config
+              mountPath: /etc/nginx/conf.d/default.conf
+              subPath: default.conf
+            - name: assets
+              mountPath: /var/www/html/assets
+              readOnly: true
+            - name: public-files
+              mountPath: /var/www/html/files
+              readOnly: true
+        {{- end }}
+      volumes:
+        {{- if .Values.nginx.enabled }}
+        - name: nginx-config
+          configMap:
+            name: {{ include "mapas.fullname" . }}-nginx
+        {{- end }}
+        - name: var-cache
+          emptyDir: {}
+        - name: assets
+          {{- if .Values.persistence.assets.enabled }}
+          persistentVolumeClaim:
+            claimName: {{ .Values.persistence.assets.existingClaim | default (printf "%s-assets" (include "mapas.fullname" .)) }}
+          {{- else }}
+          emptyDir: {}
+          {{- end }}
+        - name: public-files
+          {{- if .Values.persistence.publicFiles.enabled }}
+          persistentVolumeClaim:
+            claimName: {{ .Values.persistence.publicFiles.existingClaim | default (printf "%s-public-files" (include "mapas.fullname" .)) }}
+          {{- else }}
+          emptyDir: {}
+          {{- end }}
+        - name: private-files
+          {{- if .Values.persistence.privateFiles.enabled }}
+          persistentVolumeClaim:
+            claimName: {{ .Values.persistence.privateFiles.existingClaim | default (printf "%s-private-files" (include "mapas.fullname" .)) }}
+          {{- else }}
+          emptyDir: {}
+          {{- end }}
+        - name: var-files
+          {{- if .Values.persistence.varFiles.enabled }}
+          persistentVolumeClaim:
+            claimName: {{ .Values.persistence.varFiles.existingClaim | default (printf "%s-private-files" (include "mapas.fullname" .)) }}
+          {{- else }}
+          emptyDir: {}
+          {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
