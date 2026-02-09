@@ -21,3 +21,4 @@ src/plugins/*
 public/assets
 public/evaluators-default-profiles
 public/files/distributionslog
+helm/mapas/charts
