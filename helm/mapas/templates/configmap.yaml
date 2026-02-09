@@ -10,6 +10,9 @@ data:
   DB_NAME: {{ include "mapas.postgresql.database" . | quote }}
   DB_USER: "mapas"
   REDIS_CACHE: {{ include "mapas.redis.cache.host" . | quote }}
+  {{- if and .Values.mapas.redisCache.password (not .Values.mapas.redisCache.existingSecret) }}
+  REDIS_CACHE_PASSWORD: {{ .Values.mapas.redisCache.password | quote }}
+  {{- end }}
   SESSIONS_SAVE_PATH: {{ include "mapas.sessions.savePath" . | quote }}
   MAILER_TRANSPORT: {{ .Values.mapas.mailer.transport | quote }}
   MAILER_FROM: {{ .Values.mapas.mailer.from | quote }}

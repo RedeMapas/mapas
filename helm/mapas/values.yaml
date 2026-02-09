@@ -82,6 +82,9 @@ mapas:
   redisCache:
     host: ""
     port: 6379
+    password: ""
+    existingSecret: ""
+    existingSecretKey: "password"
 
   # Session configuration (used when redis-sessions.enabled is false)
   sessions:

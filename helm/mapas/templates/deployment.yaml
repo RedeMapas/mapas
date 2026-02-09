@@ -138,6 +138,13 @@ spec:
                   name: {{ .Values.mapas.recaptcha.existingSecret }}
                   key: secret
             {{- end }}
+            {{- if .Values.mapas.redisCache.existingSecret }}
+            - name: REDIS_CACHE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.mapas.redisCache.existingSecret }}
+                  key: {{ .Values.mapas.redisCache.existingSecretKey | default "password" }}
+            {{- end }}
             {{- with .Values.mapas.extraEnv }}
             {{- toYaml . | nindent 12 }}
             {{- end }}
