@@ -104,7 +104,7 @@ spec:
           - name: PGPASSWORD
             valueFrom:
               secretKeyRef:
-                name: {{ .Release.Name }}-postgresql
+                name: {{ include "mapas.postgresql.secretName" . }}
                 key: POSTGRES_PASSWORD
         {{- end }}
       containers:
