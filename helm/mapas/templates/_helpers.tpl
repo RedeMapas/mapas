@@ -130,13 +130,66 @@ Return the Redis cache hostname (PHP Redis connect uses default port 6379)
 {{- end }}
 
 {{/*
-Return the Redis sessions hostname
+Return the Redis sessions hostname (without port)
 */}}
 {{- define "mapas.redis.sessions.host" -}}
 {{- if index .Values "redis-sessions" "enabled" }}
 {{- printf "%s-redis-sessions" (include "mapas.fullname" .) }}
+{{- else if .Values.mapas.useSameRedisForCacheAndSessions }}
+{{- include "mapas.redis.cache.host" . }}
+{{- else if .Values.mapas.redisSessions.host }}
+{{- .Values.mapas.redisSessions.host }}
 {{- else }}
-{{- .Values.mapas.sessions.savePath }}
+{{- "" }}
+{{- end }}
+{{- end }}
+
+{{/*
+Return the Redis sessions port
+*/}}
+{{- define "mapas.redis.sessions.port" -}}
+{{- if index .Values "redis-sessions" "enabled" }}
+{{- "6379" }}
+{{- else if .Values.mapas.useSameRedisForCacheAndSessions }}
+{{- .Values.mapas.redisCache.port | default "6379" }}
+{{- else if .Values.mapas.redisSessions.port }}
+{{- .Values.mapas.redisSessions.port }}
+{{- else }}
+{{- "6379" }}
+{{- end }}
+{{- end }}
+
+{{/*
+Return the Redis sessions password (empty if no password)
+*/}}
+{{- define "mapas.redis.sessions.password" -}}
+{{- if .Values.mapas.useSameRedisForCacheAndSessions }}
+{{- if .Values.mapas.redisCache.existingSecret }}
+{{- "" }} {{/* Password will come from secret in deployment */}}
+{{- else if .Values.mapas.redisCache.password }}
+{{- .Values.mapas.redisCache.password }}
+{{- else }}
+{{- "" }}
+{{- end }}
+{{- else if .Values.mapas.redisSessions.existingSecret }}
+{{- "" }} {{/* Password will come from secret in deployment */}}
+{{- else if .Values.mapas.redisSessions.password }}
+{{- .Values.mapas.redisSessions.password }}
+{{- else }}
+{{- "" }}
+{{- end }}
+{{- end }}
+
+{{/*
+Return the Redis sessions connection string (host:port)
+*/}}
+{{- define "mapas.redis.sessions.connection" -}}
+{{- $host := include "mapas.redis.sessions.host" . }}
+{{- $port := include "mapas.redis.sessions.port" . }}
+{{- if and $host $port }}
+{{- printf "%s:%s" $host $port }}
+{{- else }}
+{{- "" }}
 {{- end }}
 {{- end }}
 
@@ -144,9 +197,41 @@ Return the Redis sessions hostname
 Return the sessions save path
 */}}
 {{- define "mapas.sessions.savePath" -}}
+{{- $connection := "" }}
+{{- $password := "" }}
+{{- $queryParams := "" }}
+
+{{- /* Determine connection string */}}
 {{- if index .Values "redis-sessions" "enabled" }}
-{{- printf "tcp://%s-redis-sessions:6379" (include "mapas.fullname" .) }}
+  {{- $connection = printf "tcp://%s-redis-sessions:6379" (include "mapas.fullname" .) }}
+  {{- /* Check if subchart has auth enabled */}}
+  {{- if index .Values "redis-sessions" "auth" "enabled" }}
+    {{- if index .Values "redis-sessions" "auth" "password" }}
+      {{- $password = index .Values "redis-sessions" "auth" "password" }}
+    {{- end }}
+  {{- end }}
+{{- else if .Values.mapas.useSameRedisForCacheAndSessions }}
+  {{- $host := include "mapas.redis.cache.host" . }}
+  {{- $port := .Values.mapas.redisCache.port | default 6379 | int }}
+  {{- $connection = printf "tcp://%s:%d" $host $port }}
+  {{- if and (not .Values.mapas.redisCache.existingSecret) .Values.mapas.redisCache.password }}
+    {{- $password = .Values.mapas.redisCache.password }}
+  {{- end }}
+{{- else if .Values.mapas.redisSessions.host }}
+  {{- $host := .Values.mapas.redisSessions.host }}
+  {{- $port := .Values.mapas.redisSessions.port | default 6379 | int }}
+  {{- $connection = printf "tcp://%s:%d" $host $port }}
+  {{- if and (not .Values.mapas.redisSessions.existingSecret) .Values.mapas.redisSessions.password }}
+    {{- $password = .Values.mapas.redisSessions.password }}
+  {{- end }}
 {{- else }}
-{{- .Values.mapas.sessions.savePath }}
+  {{- $connection = .Values.mapas.sessions.savePath }}
 {{- end }}
+
+{{- /* Add auth parameter if password is available */}}
+{{- if $password }}
+  {{- $connection = printf "%s?auth=%s" $connection $password }}
+{{- end }}
+
+{{- $connection }}
 {{- end }}

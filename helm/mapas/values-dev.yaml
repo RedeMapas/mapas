@@ -42,6 +42,19 @@ mapas:
     transport: "smtp://mailpit:1025"
     from: "dev@mapas.local"
 
+  # Redis configuration (disabled in dev)
+  redisCache:
+    host: ""  # Empty = use APCu/filesystem fallback
+  
+  redisSessions:
+    host: ""  # Empty = use filesystem sessions
+  
+  useSameRedisForCacheAndSessions: false
+  
+  # Filesystem sessions path
+  sessions:
+    savePath: "/var/www/var/sessions"
+
   extraEnv:
     - name: APP_DEBUG
       value: "true"
@@ -77,7 +90,7 @@ postgresql:
       cpu: "500m"
 
 redis-cache:
-  enabled: true
+  enabled: false
   image:
     repository: redis
     tag: "7-alpine"
@@ -98,7 +111,7 @@ redis-cache:
     maxmemory-policy allkeys-lru
 
 redis-sessions:
-  enabled: true
+  enabled: false
   image:
     repository: redis
     tag: "7-alpine"

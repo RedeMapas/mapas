@@ -145,6 +145,23 @@ spec:
                   name: {{ .Values.mapas.redisCache.existingSecret }}
                   key: {{ .Values.mapas.redisCache.existingSecretKey | default "password" }}
             {{- end }}
+            {{- /* Determine which secret to use for Redis sessions */}}
+            {{- $sessionsSecret := "" }}
+            {{- $sessionsSecretKey := "" }}
+            {{- if .Values.mapas.redisSessions.existingSecret }}
+              {{- $sessionsSecret = .Values.mapas.redisSessions.existingSecret }}
+              {{- $sessionsSecretKey = .Values.mapas.redisSessions.existingSecretKey | default "password" }}
+            {{- else if and .Values.mapas.useSameRedisForCacheAndSessions .Values.mapas.redisCache.existingSecret }}
+              {{- $sessionsSecret = .Values.mapas.redisCache.existingSecret }}
+              {{- $sessionsSecretKey = .Values.mapas.redisCache.existingSecretKey | default "password" }}
+            {{- end }}
+            {{- if $sessionsSecret }}
+            - name: REDIS_SESSIONS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $sessionsSecret }}
+                  key: {{ $sessionsSecretKey }}
+            {{- end }}
             {{- with .Values.mapas.extraEnv }}
             {{- toYaml . | nindent 12 }}
             {{- end }}

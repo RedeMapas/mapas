@@ -86,7 +86,19 @@ mapas:
     existingSecret: ""
     existingSecretKey: "password"
 
-  # Session configuration (used when redis-sessions.enabled is false)
+  # Redis sessions configuration (used when redis-sessions.enabled is false)
+  # If empty and useSameRedisForCacheAndSessions is true, uses redisCache configuration
+  redisSessions:
+    host: ""
+    port: 6379
+    password: ""
+    existingSecret: ""
+    existingSecretKey: "password"
+
+  # Use same Redis instance for both cache and sessions
+  useSameRedisForCacheAndSessions: false
+
+  # Legacy session configuration (filesystem fallback)
   sessions:
     savePath: ""
 
@@ -203,14 +215,21 @@ postgresql:
       cpu: "1000m"
 
 # Redis cache subchart configuration (groundhog2k)
+# Set enabled: false to use external Redis/Valkey (configured in mapas.redisCache)
 redis-cache:
   enabled: true
   image:
     repository: redis
     tag: "7-alpine"
     pullPolicy: IfNotPresent
+  # Authentication configuration
+  # For production, set auth.enabled: true and provide password via:
+  # - auth.password: "secure-password" (not recommended for production)
+  # - auth.existingSecret: "redis-cache-auth-secret" (recommended)
   auth:
     enabled: false
+    # password: ""
+    # existingSecret: ""
   persistence:
     enabled: false
   resources:
@@ -225,14 +244,20 @@ redis-cache:
     maxmemory-policy allkeys-lru
 
 # Redis sessions subchart configuration (groundhog2k)
+# Set enabled: false to use external Redis/Valkey or same instance as cache
+# (configured in mapas.redisSessions or mapas.useSameRedisForCacheAndSessions: true)
 redis-sessions:
   enabled: true
   image:
     repository: redis
     tag: "7-alpine"
     pullPolicy: IfNotPresent
+  # Authentication configuration
+  # For production, set auth.enabled: true and provide password
   auth:
     enabled: false
+    # password: ""
+    # existingSecret: ""
   persistence:
     enabled: true
     size: 1Gi
