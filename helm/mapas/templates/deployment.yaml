@@ -237,7 +237,7 @@ spec:
         - name: var-files
           {{- if .Values.persistence.varFiles.enabled }}
           persistentVolumeClaim:
-            claimName: {{ .Values.persistence.varFiles.existingClaim | default (printf "%s-private-files" (include "mapas.fullname" .)) }}
+            claimName: {{ .Values.persistence.varFiles.existingClaim | default (printf "%s-var-files" (include "mapas.fullname" .)) }}
           {{- else }}
           emptyDir: {}
           {{- end }}
