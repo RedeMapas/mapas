@@ -11,11 +11,13 @@ jobs:
     permissions:
       contents: read
       packages: write
-
+ 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
+        with:
+          submodules: recursive
+ 
       - name: Extract branch tag
         id: tag
         run: |
@@ -91,7 +93,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
+        with:
+          submodules: recursive
+ 
       - name: Extract branch tag
         id: tag
         run: |
