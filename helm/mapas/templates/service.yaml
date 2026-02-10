@@ -8,7 +8,7 @@ spec:
   type: {{ .Values.service.type }}
   ports:
     - port: {{ .Values.service.port }}
-      targetPort: {{ if .Values.nginx.enabled }}http{{ else }}php-fpm{{ end }}
+      targetPort: http
       protocol: TCP
       name: http
   selector:

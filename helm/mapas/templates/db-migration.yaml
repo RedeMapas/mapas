@@ -58,7 +58,7 @@ spec:
           echo "Banco de dados está pronto!"
           
           # Executar migrações do MapaCultural usando apply-updates.php
-          cd /var/www/html
+          cd /var/www
           echo "Executando db-updates (sem plugins)..."
           DISABLE_PLUGINS=1 HTTP_HOST=localhost REQUEST_METHOD='CLI' REMOTE_ADDR='127.0.0.1' REQUEST_URI='/' SERVER_NAME=127.0.0.1 SERVER_PORT="80" php src/tools/apply-updates.php
           

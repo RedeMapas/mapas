@@ -1,136 +1,86 @@
-# Kubernetes Development Environment Values Override
-
 replicaCount: 1
 
-nginx:
-  enabled: false
-
-service:
-  port: 80
-  targetPort: 80
+image:
+  repository: mapas
+  tag: dev
+  pullPolicy: Always
 
 resources:
   requests:
-    memory: "512Mi"
-    cpu: "200m"
+    cpu: 100m
+    memory: 256Mi
   limits:
-    memory: "3Gi"
-    cpu: "2000m"
+    cpu: 500m
+    memory: 1Gi
 
-persistence:
-  assets:
-    enabled: false
-  publicFiles:
-    enabled: false
-  privateFiles:
-    enabled: false
-  varFiles:
-    enabled: false
+podAnnotations: {}
 
 mapas:
-  buildAssets: "1"
-  pendingPcacheRecreationInterval: "5"
-  jobsInterval: "5"
-  numProcesses: "1"
-  mcUpdatesProcesses: "2"
+  appEnv: development
+  appDebug: "true"
 
-  recaptcha:
-    siteKey: "6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI"
-    secret: "6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe"
+  database:
+    host: ""       # uses internal postgresql subchart
+    port: 5432
+    name: mapas
+    user: mapas
+    password: ""
 
   mailer:
-    transport: "smtp://mailpit:1025"
-    from: "dev@mapas.local"
+    transport: "smtp://mailhog:1025"
+    from: "noreply@mapas.local"
 
-  # Redis configuration (disabled in dev)
-  redisCache:
-    host: ""  # Empty = use APCu/filesystem fallback
-  
-  redisSessions:
-    host: ""  # Empty = use filesystem sessions
-  
-  useSameRedisForCacheAndSessions: false
-  
-  # Filesystem sessions path
-  sessions:
-    savePath: "/var/www/var/sessions"
-
-  extraEnv:
-    - name: APP_DEBUG
-      value: "true"
-    - name: LOG_LEVEL
-      value: "debug"
+  buildAssets: "0"
+  pendingPcacheRecreationInterval: "60"
+  jobsInterval: "60"
+  numProcesses: "2"
+  mcUpdatesProcesses: "4"
 
 postgresql:
   enabled: true
-  image:
-    registry: "docker.io"
-    repository: "postgis/postgis"
-    tag: "16-3.5"
-    pullPolicy: IfNotPresent
-
   settings:
-    # Using 'mapas' as superuser to match dump ownership in init.sql
     superuser: mapas
     superuserPassword: "mapas"
-
   userDatabase:
     name: mapas
-
   storage:
     requestedSize: 5Gi
-    className: ""
-
-  resources:
-    requests:
-      memory: "128Mi"
-      cpu: "100m"
-    limits:
-      memory: "512Mi"
-      cpu: "500m"
 
 redis-cache:
-  enabled: false
-  image:
-    repository: redis
-    tag: "7-alpine"
-    pullPolicy: IfNotPresent
+  enabled: true
   auth:
     enabled: false
   persistence:
     enabled: false
-  resources:
-    requests:
-      memory: "32Mi"
-      cpu: "25m"
-    limits:
-      memory: "128Mi"
-      cpu: "250m"
-  redisConfig: |
-    maxmemory 256mb
-    maxmemory-policy allkeys-lru
 
 redis-sessions:
-  enabled: false
-  image:
-    repository: redis
-    tag: "7-alpine"
-    pullPolicy: IfNotPresent
+  enabled: true
   auth:
     enabled: false
   persistence:
-    enabled: false
-  resources:
-    requests:
-      memory: "16Mi"
-      cpu: "10m"
-    limits:
-      memory: "64Mi"
-      cpu: "50m"
-  redisConfig: |
-    maxmemory 128mb
-    maxmemory-policy allkeys-lru
+    enabled: true
+    size: 1Gi
+
+persistence:
+  assets:
+    enabled: true
+    size: 5Gi
+  publicFiles:
+    enabled: true
+    size: 10Gi
+  privateFiles:
+    enabled: true
+    size: 5Gi
+  varFiles:
+    enabled: true
+    size: 2Gi
 
 ingress:
-  enabled: false
-
+  enabled: true
+  className: "nginx"
+  hosts:
+    - host: dev.mapas.local
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []

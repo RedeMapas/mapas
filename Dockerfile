@@ -22,6 +22,22 @@ RUN if [ -f themes/BaseV1/assets/css/sass/main.scss ]; then \
       sass themes/BaseV1/assets/css/sass/main.scss:themes/BaseV1/assets/css/main.css --quiet; \
     fi
 
+# Resolve pnpm symlinks for vendor CSS files needed by the PHP AssetManager at runtime.
+# These CSS files are served directly from node_modules (not bundled by webpack).
+# The packages are deps of modules/Components, so their node_modules live there.
+# -L dereferences symlinks so the real files are copied (pnpm uses symlinks to .pnpm store).
+RUN mkdir -p /vendor-css/@vuepic/vue-datepicker/dist \
+             /vendor-css/floating-vue/dist \
+             /vendor-css/leaflet/dist \
+             /vendor-css/@vueform/slider/themes \
+             /vendor-css/leaflet.markercluster/dist && \
+    cp -L modules/Components/node_modules/@vuepic/vue-datepicker/dist/main.css    /vendor-css/@vuepic/vue-datepicker/dist/main.css && \
+    cp -L modules/Components/node_modules/floating-vue/dist/style.css             /vendor-css/floating-vue/dist/style.css && \
+    cp -L modules/Components/node_modules/leaflet/dist/leaflet.css                /vendor-css/leaflet/dist/leaflet.css && \
+    cp -L modules/Components/node_modules/@vueform/slider/themes/default.css      /vendor-css/@vueform/slider/themes/default.css && \
+    cp -L modules/Components/node_modules/leaflet.markercluster/dist/MarkerCluster.css         /vendor-css/leaflet.markercluster/dist/MarkerCluster.css && \
+    cp -L modules/Components/node_modules/leaflet.markercluster/dist/MarkerCluster.Default.css /vendor-css/leaflet.markercluster/dist/MarkerCluster.Default.css
+
 # Cleanup development files from node_modules
 RUN find . -path '*/node_modules/*' -type f \( \
         -name '*.ts' -o -name '*.tsx' -o -name '*.map' -o \
@@ -153,6 +169,15 @@ COPY --chown=www-data:www-data src ./src/
 # Copy built frontend assets from Node.js stage
 COPY --from=builder-node --chown=www-data:www-data /build/modules/ ./src/modules/
 COPY --from=builder-node --chown=www-data:www-data /build/themes/ ./src/themes/
+
+# The builder-node COPY above brings node_modules symlinks from the pnpm store.
+# Docker cannot COPY real files over existing symlinks, so remove them first.
+RUN rm -rf ./src/modules/Components/node_modules
+
+# Copy vendor CSS files from node_modules that the PHP AssetManager serves at runtime.
+# These are referenced via '../node_modules/...' relative to the Components module assets dir.
+# /vendor-css was pre-populated in the builder stage with real files (pnpm symlinks resolved).
+COPY --from=builder-node --chown=www-data:www-data /vendor-css/ ./src/modules/Components/node_modules/
 
 # Copy version file
 COPY version.txt ./version.txt
