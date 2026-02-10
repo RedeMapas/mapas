@@ -169,6 +169,7 @@ COPY --chown=www-data:www-data src ./src/
 # Copy built frontend assets from Node.js stage
 COPY --from=builder-node --chown=www-data:www-data /build/modules/ ./src/modules/
 COPY --from=builder-node --chown=www-data:www-data /build/themes/ ./src/themes/
+COPY --from=builder-node --chown=www-data:www-data /build/plugins/ ./src/plugins/
 
 # The builder-node COPY above brings node_modules symlinks from the pnpm store.
 # Docker cannot COPY real files over existing symlinks, so remove them first.
