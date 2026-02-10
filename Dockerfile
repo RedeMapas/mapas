@@ -32,10 +32,17 @@ RUN if [ -f themes/BaseV1/assets/css/sass/main.scss ]; then \
       sass themes/BaseV1/assets/css/sass/main.scss:themes/BaseV1/assets/css/main.css --quiet; \
     fi
 
-# Keep node_modules in workspace packages - PHP references CSS files directly at runtime
-# (e.g., vue-datepicker, leaflet, floating-vue from modules/Components/node_modules)
-# Only remove root node_modules (pnpm workspace links)
-RUN rm -rf node_modules 2>/dev/null || true
+# Keep all node_modules - pnpm uses symlinks from workspace packages to root .pnpm store
+# PHP references CSS files directly at runtime (vue-datepicker, leaflet, floating-vue, etc.)
+# The workspace packages have symlinks like: node_modules/leaflet -> ../../../node_modules/.pnpm/leaflet@1.7.1/...
+# Cleanup: remove only development-only files to reduce image size
+RUN find . -path '*/node_modules/*' -type f \( \
+        -name '*.ts' -o -name '*.tsx' -o -name '*.map' -o \
+        -name '*.md' -o -name '*.markdown' -o \
+        -name 'LICENSE*' -o -name 'CHANGELOG*' -o -name 'README*' -o \
+        -name '*.d.ts' -o -name 'tsconfig*' \
+    \) -delete 2>/dev/null || true && \
+    find . -path '*/node_modules/*' -name '.git' -type d -exec rm -rf {} + 2>/dev/null || true
 
 # =============================================================================
 # Stage 2: Composer builder - Installs PHP dependencies
