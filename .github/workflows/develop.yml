@@ -8,13 +8,15 @@ on:
 jobs:
   docker:
     runs-on: ubuntu-latest
-    steps:
-      -
-        name: Checkout
-        uses: actions/checkout@v3
+    permissions:
+      contents: read
+      packages: write
 
-      - 
-        name: Extract branch tag
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Extract branch tag
         id: tag
         run: |
           BRANCH=${{ github.ref_name }}
@@ -25,58 +27,86 @@ jobs:
           TAG="${BRANCH/dev\//}"
           echo "tag=$TAG" >> $GITHUB_OUTPUT
           echo "BRANCH=$BRANCH" >> $GITHUB_OUTPUT
-      -
-        name: Docker meta
+
+      - name: Docker meta
         id: meta
-        uses: docker/metadata-action@v4
+        uses: docker/metadata-action@v5
         with:
           images: |
-            docker.io/${{ secrets.DOCKERHUB_ORGANIZATION }}/${{ secrets.DOCKERHUB_IMAGE }}
-          tags: ${{ steps.tag.outputs.tag }}
-      -
-        name: Set up QEMU
-        uses: docker/setup-qemu-action@v2
-      -
-        name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
-      -
-        name: Login to Docker Hub
-        if: github.event_name != 'pull_request'
-        uses: docker/login-action@v2
+            ghcr.io/${{ github.repository }}
+          tags: |
+            type=raw,value=${{ steps.tag.outputs.tag }}
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
         with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-      -
-        name: Build and push
-        uses: docker/build-push-action@v4
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
         with:
-          file: ./docker/Dockerfile
+          file: ./Dockerfile
+          target: production
           context: .
-          push: ${{ github.event_name != 'pull_request' }}
+          push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          platforms: linux/amd64
 
-      -
-        name: Configure kubectl
-        uses: azure/setup-kubectl@v3
+  helm-test:
+    runs-on: ubuntu-latest
+    needs: docker
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Checkout GitOps repo
+        uses: actions/checkout@v4
         with:
-          version: 'latest'  
+          repository: lpirola/gitops-caicara-dev
+          path: gitops
 
-      -
-        name: Configure Kubernetes credentials
-        uses: azure/k8s-set-context@v3
+      - name: Set up Helm
+        uses: azure/setup-helm@v4
         with:
-          kubeconfig: ${{ secrets.KUBE_CONFIG }}  
+          version: "v3.16.0"
 
-      -
-        name: Deploy to Kubernetes
+      - name: Create kind cluster
+        uses: helm/kind-action@v1.10.0
+        with:
+          cluster_name: mapas-test
+          config: .github/kind-config.yaml
+
+      - name: Load Docker image into kind
         run: |
-          IMAGE="docker.io/hacklab/mapasculturais:${{ steps.tag.outputs.tag }}"
-          echo "============================================"
-          echo "Iniciando o deploy no Kubernetes..."
-          echo "Aplicando a imagem: $IMAGE"
-          echo "============================================"
-          # Atualiza a imagem do deployment no Kubernetes
-          kubectl set image deployment/mapasculturais mapas=$IMAGE --namespace=mapas-homolog
-          kubectl rollout restart deployment 	redis  --namespace=mapas-homolog
-          kubectl rollout restart deployment mapasculturais --namespace=mapas-homolog          
+          TAG="${{ steps.tag.outputs.tag }}"
+          docker pull ghcr.io/${{ github.repository }}:${TAG}
+          kind load docker-image ghcr.io/${{ github.repository }}:${TAG} --name mapas-test
+
+      - name: Install helm chart
+        run: |
+          TAG="${{ steps.tag.outputs.tag }}"
+          helm install mapas gitops/charts/mapas \
+            --namespace mapas-test \
+            --create-namespace \
+            --set image.repository=ghcr.io/${{ github.repository }} \
+            --set image.tag=${TAG} \
+            --set postgresql.enabled=false \
+            --set redis.enabled=false \
+            --set redisSession.enabled=false \
+            --set env.SKIP_DB_INIT=true \
+            --wait \
+            --timeout 5m
+
+      - name: Verify deployment
+        run: |
+          kubectl get pods -n mapas-test
+          kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=mapas -n mapas-test --timeout=2m
