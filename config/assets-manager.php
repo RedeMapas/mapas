@@ -20,6 +20,6 @@ return [
 
         'process.css' => null,
 
-        'publishFolderCommand' => 'cp -R {IN} {PUBLISH_PATH}{FILENAME}'
+        'publishFolderCommand' => 'cp -Ru {IN} {PUBLISH_PATH}{FILENAME}'
     ],
 ];
