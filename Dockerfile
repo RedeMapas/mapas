@@ -32,19 +32,10 @@ RUN if [ -f themes/BaseV1/assets/css/sass/main.scss ]; then \
       sass themes/BaseV1/assets/css/sass/main.scss:themes/BaseV1/assets/css/main.css --quiet; \
     fi
 
-# Clean node_modules: keep only CSS/fonts needed at runtime, remove JS/TS source files
-# The PHP code references CSS files directly from node_modules (e.g., vue-datepicker, leaflet)
-RUN find . -path '*/node_modules/*' -type f \( \
-        -name '*.ts' -o -name '*.tsx' -o -name '*.js' -o -name '*.mjs' -o -name '*.cjs' -o \
-        -name '*.map' -o -name '*.md' -o -name '*.markdown' -o \
-        -name '*.json' -o -name '*.yaml' -o -name '*.yml' -o \
-        -name '*.lock' -o -name '*.log' -o \
-        -name 'LICENSE*' -o -name 'CHANGELOG*' -o -name 'README*' -o \
-        -name '*.d.ts' -o -name 'tsconfig*' -o -name '.eslint*' -o -name '.prettier*' \
-    \) -delete 2>/dev/null || true && \
-    find . -path '*/node_modules/*' -type d -empty -delete 2>/dev/null || true && \
-    # Remove root node_modules (only workspace packages need their node_modules)
-    rm -rf node_modules 2>/dev/null || true
+# Keep node_modules in workspace packages - PHP references CSS files directly at runtime
+# (e.g., vue-datepicker, leaflet, floating-vue from modules/Components/node_modules)
+# Only remove root node_modules (pnpm workspace links)
+RUN rm -rf node_modules 2>/dev/null || true
 
 # =============================================================================
 # Stage 2: Composer builder - Installs PHP dependencies
