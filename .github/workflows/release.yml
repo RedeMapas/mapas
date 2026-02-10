@@ -23,9 +23,7 @@ jobs:
           images: |
             ghcr.io/${{ github.repository }}
           tags: |
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-            type=semver,pattern={{major}}
+            type=ref,event=tag
             type=raw,value=latest,enable={{is_default_branch}}
 
       - name: Set up QEMU
@@ -90,12 +88,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Checkout GitOps repo
-        uses: actions/checkout@v4
-        with:
-          repository: lpirola/gitops-caicara-dev
-          path: gitops
-
       - name: Set up Helm
         uses: azure/setup-helm@v4
         with:
@@ -121,7 +113,7 @@ jobs:
             --create-namespace \
             --set image.repository=ghcr.io/${{ github.repository }} \
             --set image.tag=${IMAGE_TAG} \
-            --set postgresql.enabled=false \
+            --set postgresql.enabled=true \
             --set redis.enabled=false \
             --set redisSession.enabled=false \
             --set env.MAPASCULTURAIS_SKIP_DB_INIT=true \

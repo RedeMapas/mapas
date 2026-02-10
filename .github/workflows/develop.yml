@@ -25,7 +25,7 @@ jobs:
             exit 1
           fi
           TAG="${BRANCH/dev\//}"
-          echo "tag=$TAG" >> $GITHUB_OUTPUT
+          echo "tag=v${TAG}" >> $GITHUB_OUTPUT
           echo "BRANCH=$BRANCH" >> $GITHUB_OUTPUT
 
       - name: Docker meta
@@ -97,7 +97,7 @@ jobs:
         run: |
           BRANCH=${{ github.ref_name }}
           TAG="${BRANCH/dev\//}"
-          echo "tag=$TAG" >> $GITHUB_OUTPUT
+          echo "tag=v${TAG}" >> $GITHUB_OUTPUT
 
       - name: Checkout GitOps repo
         uses: actions/checkout@v4
