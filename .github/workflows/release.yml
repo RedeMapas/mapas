@@ -69,18 +69,66 @@ jobs:
       - name: Update GitOps values.yaml
         run: |
           IMAGE_TAG="${{ steps.version.outputs.tag }}"
-          VERSION="${{ steps.version.outputs.version }}"
-          VALUES_FILE="gitops/clusters/production/applications/mapas/values.yaml"
 
-          # Update the image tag in values.yaml
-          sed -i "s/tag: .*/tag: ${IMAGE_TAG}/" "$VALUES_FILE"
+          # Update image tag in values.yaml
+          sed -i "s/tag: .*/tag: ${IMAGE_TAG}/" gitops/clusters/production/applications/mapas/values.yaml
 
-          # Show the diff
-          git -C gitops diff "$VALUES_FILE"
+          # Show diff
+          git -C gitops diff clusters/production/applications/mapas/values.yaml
 
           # Commit and push
           git -C gitops config user.name "github-actions[bot]"
           git -C gitops config user.email "github-actions[bot]@users.noreply.github.com"
-          git -C gitops add "$VALUES_FILE"
+          git -C gitops add clusters/production/applications/mapas/values.yaml
           git -C gitops commit -m "chore: update mapas image to ${IMAGE_TAG}"
           git -C gitops push
+
+  helm-test:
+    runs-on: ubuntu-latest
+    needs: docker
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Checkout GitOps repo
+        uses: actions/checkout@v4
+        with:
+          repository: lpirola/gitops-caicara-dev
+          path: gitops
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: "v3.16.0"
+
+      - name: Create kind cluster
+        uses: helm/kind-action@v1.10.0
+        with:
+          cluster_name: mapas-test
+          config: .github/kind-config.yaml
+
+      - name: Load Docker image into kind
+        run: |
+          IMAGE_TAG="${{ github.ref_name }}"
+          docker pull ghcr.io/${{ github.repository }}:${IMAGE_TAG}
+          kind load docker-image ghcr.io/${{ github.repository }}:${IMAGE_TAG} --name mapas-test
+
+      - name: Install helm chart
+        run: |
+          IMAGE_TAG="${{ github.ref_name }}"
+          helm install mapas gitops/charts/mapas \
+            --namespace mapas-test \
+            --create-namespace \
+            --set image.repository=ghcr.io/${{ github.repository }} \
+            --set image.tag=${IMAGE_TAG} \
+            --set postgresql.enabled=false \
+            --set redis.enabled=false \
+            --set redisSession.enabled=false \
+            --set env.MAPASCULTURAIS_SKIP_DB_INIT=true \
+            --wait \
+            --timeout 5m
+
+      - name: Verify deployment
+        run: |
+          kubectl get pods -n mapas-test
+          kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=mapas -n mapas-test --timeout=2m
