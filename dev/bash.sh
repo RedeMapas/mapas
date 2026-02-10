@@ -2,8 +2,8 @@
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 CDIR=$( pwd )
-cd $DIR
+cd "$DIR/.."
 
-docker compose -f ../docker-compose-dev.yml exec mapas bash
+docker compose exec mapas bash
 
-cd $CDIR
+cd "$CDIR"
