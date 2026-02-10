@@ -58,28 +58,35 @@ data:
             add_header Content-Type text/plain;
         }
 
-        location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ {
+        # Serve static assets directly from nginx (shared volumes)
+        location /assets/ {
             expires 1y;
             add_header Cache-Control "public, immutable";
             try_files $uri =404;
         }
 
-        location / {
-            try_files $uri $uri/ /index.php?$query_string;
+        location /files/ {
+            expires 1y;
+            add_header Cache-Control "public, immutable";
+            try_files $uri =404;
         }
 
-        location ~ \.php$ {
+        # Deny access to hidden files
+        location ~ /\. {
+            deny all;
+        }
+
+        # All other requests go to PHP-FPM
+        # PHP-FPM has the index.php file, nginx just proxies
+        location / {
             fastcgi_pass php-fpm;
             fastcgi_index index.php;
-            fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+            fastcgi_param SCRIPT_FILENAME /var/www/html/index.php;
+            fastcgi_param SCRIPT_NAME /index.php;
             include fastcgi_params;
             fastcgi_read_timeout 300;
             fastcgi_buffers 16 16k;
             fastcgi_buffer_size 32k;
-        }
-
-        location ~ /\. {
-            deny all;
         }
     }
 {{- end }}
