@@ -23,7 +23,7 @@ case $i in
 	run-tests.sh [-b] [-u] [-d] [-s=25]
 
     -b=  | --build      builda a imagem Docker
-	-d=  | --down       executa o docker compose down antes do docker compose run
+	-d=  | --down       executa o docker compose -f ../docker-compose-dev.yml down antes do docker compose -f ../docker-compose-dev.yml run
     -h=  | --help       Imprime este texto de ajuda
 		    "
     	    exit
@@ -32,14 +32,14 @@ esac
 done
 
 if [ $BUILD = "1" ]; then
-   docker compose build
+   docker compose -f ../docker-compose-dev.yml build
 fi
 
 if [ $DOWN = "1" ]; then
-   docker compose down
+   docker compose -f ../docker-compose-dev.yml down
 fi
 
-docker compose run --service-ports mapas 
+docker compose -f ../docker-compose-dev.yml run --service-ports mapas 
 
-docker compose down --remove-orphans
+docker compose -f ../docker-compose-dev.yml down --remove-orphans
 cd $CDIR

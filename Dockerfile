@@ -1,7 +1,4 @@
 # syntax=docker/dockerfile:1
-# Official OCI-compatible Dockerfile for MapaCultural
-# Multi-stage build with separated Node.js and PHP builds
-
 ARG NODE_VERSION=20
 ARG PHP_VERSION=8.3
 
@@ -11,31 +8,21 @@ ARG PHP_VERSION=8.3
 FROM node:${NODE_VERSION}-alpine AS builder-node
 
 RUN corepack enable && corepack prepare pnpm@latest --activate
-
-# Install sass globally for BaseV1 compilation
 RUN npm install -g sass
 
 WORKDIR /build
 
-# Copy entire src directory for pnpm workspace
-# This ensures proper workspace resolution
 COPY src/ ./
 
-# Install dependencies
 RUN pnpm install --frozen-lockfile 2>/dev/null || pnpm install
-
-# Build all workspaces (modules, plugins, themes)
 RUN pnpm run build
 
-# Compile SASS for BaseV1 theme (legacy)
+# Compile SASS for BaseV1 theme
 RUN if [ -f themes/BaseV1/assets/css/sass/main.scss ]; then \
       sass themes/BaseV1/assets/css/sass/main.scss:themes/BaseV1/assets/css/main.css --quiet; \
     fi
 
-# Keep all node_modules - pnpm uses symlinks from workspace packages to root .pnpm store
-# PHP references CSS files directly at runtime (vue-datepicker, leaflet, floating-vue, etc.)
-# The workspace packages have symlinks like: node_modules/leaflet -> ../../../node_modules/.pnpm/leaflet@1.7.1/...
-# Cleanup: remove only development-only files to reduce image size
+# Cleanup development files from node_modules
 RUN find . -path '*/node_modules/*' -type f \( \
         -name '*.ts' -o -name '*.tsx' -o -name '*.map' -o \
         -name '*.md' -o -name '*.markdown' -o \
@@ -51,7 +38,6 @@ FROM php:${PHP_VERSION}-cli-alpine AS builder-composer
 
 RUN apk add --no-cache git unzip
 
-# Install PHP extensions needed for Composer dependencies
 RUN apk add --no-cache \
     libpng \
     libjpeg-turbo \
@@ -69,7 +55,6 @@ RUN apk add --no-cache \
     apk del .build-deps && \
     rm -rf /tmp/pear /var/cache/apk/*
 
-# Install composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 WORKDIR /build
@@ -82,7 +67,7 @@ ENV COMPOSER_ALLOW_SUPERUSER=1
 RUN composer install ${COMPOSER_ARGS} --no-scripts
 
 # =============================================================================
-# Stage 3: Production image - PHP-FPM runtime
+# Stage 3: Production image - PHP-FPM + Nginx
 # =============================================================================
 FROM php:${PHP_VERSION}-fpm-alpine AS production
 
@@ -92,7 +77,7 @@ LABEL org.opencontainers.image.vendor="RedeMapas"
 LABEL org.opencontainers.image.source="https://github.com/redemapas/mapas"
 LABEL org.opencontainers.image.licenses="AGPL-3.0"
 
-# Install runtime dependencies
+# Install runtime dependencies (including nginx)
 RUN apk add --no-cache \
     sudo \
     bash \
@@ -105,7 +90,8 @@ RUN apk add --no-cache \
     freetype \
     icu-libs \
     zstd-libs \
-    curl
+    curl \
+    nginx
 
 # Install build dependencies for PHP extensions
 RUN apk add --no-cache --virtual .build-deps \
@@ -160,6 +146,7 @@ COPY --from=builder-composer /build/vendor ./vendor/
 # Copy application source
 COPY --chown=www-data:www-data config ./config/
 COPY --chown=www-data:www-data public ./html/
+COPY --chown=www-data:www-data health.php /var/www/html/health.php
 COPY --chown=www-data:www-data scripts ./scripts/
 COPY --chown=www-data:www-data src ./src/
 
@@ -174,12 +161,45 @@ COPY version.txt ./version.txt
 COPY docker/production/php.ini /usr/local/etc/php/php.ini
 COPY docker/timezone.ini /usr/local/etc/php/conf.d/timezone.ini
 
-# Copy entrypoint and scripts
+# Copy PHP-FPM pool configuration and modify for Unix socket
+COPY docker/production/www.conf /usr/local/etc/php-fpm.d/www.conf
+RUN sed -i 's/^listen = 127.0.0.1:9000/listen = \/var\/run\/php-fpm\/php-fpm.sock/' /usr/local/etc/php-fpm.d/www.conf && \
+    sed -i 's/^;listen.owner = www-data/listen.owner = www-data/' /usr/local/etc/php-fpm.d/www.conf && \
+    sed -i 's/^;listen.group = www-data/listen.group = www-data/' /usr/local/etc/php-fpm.d/www.conf && \
+    sed -i 's/^;listen.mode = 0660/listen.mode = 0660/' /usr/local/etc/php-fpm.d/www.conf
+
+# Copy Nginx configuration for Unix socket
+COPY docker/production/nginx.conf /etc/nginx/nginx.conf
+
+# Create socket directory and set permissions
+RUN mkdir -p /var/run/php-fpm && \
+    chown -R www-data:www-data /var/run/php-fpm
+# Copy entrypoint and cron scripts
 COPY docker/entrypoint.sh /entrypoint.sh
 COPY docker/jobs-cron.sh /jobs-cron.sh
 COPY docker/recreate-pending-pcache-cron.sh /recreate-pending-pcache-cron.sh
-
 RUN chmod +x /entrypoint.sh /jobs-cron.sh /recreate-pending-pcache-cron.sh
+
+# Create start script that starts PHP-FPM and Nginx
+RUN cat > /start.sh << 'EOF'
+#!/bin/sh
+set -e
+
+# Start PHP-FPM in background
+php-fpm --daemonize
+
+# Wait for socket to be created
+max_wait=10
+count=0
+while [ ! -S /var/run/php-fpm/php-fpm.sock ] && [ $count -lt $max_wait ]; do
+    sleep 1
+    count=$((count+1))
+done
+
+# Start nginx in foreground
+exec nginx -g "daemon off;"
+EOF
+RUN chmod +x /start.sh
 
 # Create symlink for public
 RUN ln -sf /var/www/html /var/www/public
@@ -187,10 +207,13 @@ RUN ln -sf /var/www/html /var/www/public
 # Ensure proper permissions
 RUN chown -R www-data:www-data /var/www/html/ /var/www/var/
 
-EXPOSE 9000
-
+EXPOSE 80
 ENTRYPOINT ["/entrypoint.sh"]
-CMD ["php-fpm"]
+CMD ["/start.sh"]
+
+# Health check using the health.php endpoint
+HEALTHCHECK --interval=30s --timeout=3s --start-period=60s --retries=3 \
+  CMD curl -f http://localhost/health.php || exit 1
 
 # =============================================================================
 # Stage 4: Development image - Includes build tools

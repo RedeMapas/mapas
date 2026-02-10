@@ -6,60 +6,76 @@ version: "3.8"
 
 services:
   # MapaCultural application
-  # mapas:
-  #   build:
-  #     context: .
-  #     dockerfile: Dockerfile
-  #     target: development
-  #     args:
-  #       COMPOSER_ARGS: ""  # Include dev dependencies
-  #   container_name: mapas-dev-mapas
-  #   depends_on:
-  #     postgres:
-  #       condition: service_healthy
-  #     redis-cache:
-  #       condition: service_healthy
-  #     redis-sessions:
-  #       condition: service_healthy
-  #   ports:
-  #     - "80:80"
-  #   environment:
-  #     DB_HOST: postgres
-  #     DB_PORT: 5432
-  #     DB_NAME: mapas
-  #     DB_USER: mapas
-  #     DB_PASS: mapas-dev
-  #     REDIS_CACHE: tcp://redis-cache:6379
-  #     SESSIONS_SAVE_PATH: "tcp://redis-sessions:6379"
-  #     MAILER_TRANSPORT: "smtp://mailpit:1025"
-  #     MAILER_FROM: "dev@mapas.local"
-  #     BUILD_ASSETS: "1"
-  #     PENDING_PCACHE_RECREATION_INTERVAL: "5"
-  #     JOBS_INTERVAL: "5"
-  #     NUM_PROCESSES: "2"
-  #     MC_UPDATES_PROCESSES: "2"
-  #     # Test reCAPTCHA keys
-  #     GOOGLE_RECAPTCHA_SITEKEY: "6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI"
-  #     GOOGLE_RECAPTCHA_SECRET: "6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe"
-  #   volumes:
-  #     # Mount source code for live editing
-  #     - ./src:/var/www/src:cached
-  #     - ./config:/var/www/config:cached
-  #     - ./public:/var/www/html:cached
-  #     - ./scripts:/var/www/scripts:cached
-  #     # Mount var directory for runtime data
-  #     - mapas-var:/var/www/var
-  #     - mapas-assets:/var/www/html/assets
-  #     - mapas-files:/var/www/html/files
-  #     - mapas-private:/var/www/var/private-files
-  #   networks:
-  #     - mapas-dev
-  #   healthcheck:
-  #     test: ["CMD", "test", "-f", "/mapas-ready"]
-  #     interval: 10s
-  #     timeout: 5s
-  #     retries: 5
-  #     start_period: 30s
+  mapas:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+      args:
+        COMPOSER_ARGS: ""  # Include dev dependencies
+    container_name: mapas-dev-mapas
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis-cache:
+        condition: service_healthy
+      redis-sessions:
+        condition: service_healthy
+    ports:
+      - "80:80"
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: mapas
+      DB_USER: mapas
+      DB_PASS: mapas-dev
+      REDIS_CACHE: redis-cache
+      SESSIONS_SAVE_PATH: "tcp://redis-sessions:6379"
+      MAILER_TRANSPORT: "smtp://mailpit:1025"
+      MAILER_FROM: "dev@mapas.local"
+      BUILD_ASSETS: "0"
+      CI: "true"
+      BASE_URL: "http://localhost"
+      APP_DEBUG: "true"
+      DISABLE_SUBSITES: "true"
+      PENDING_PCACHE_RECREATION_INTERVAL: "5"
+      JOBS_INTERVAL: "5"
+      NUM_PROCESSES: "2"
+      MC_UPDATES_PROCESSES: "2"
+      # Test reCAPTCHA keys
+      GOOGLE_RECAPTCHA_SITEKEY: "6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI"
+      GOOGLE_RECAPTCHA_SECRET: "6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe"
+      REDIRECT_404_ASSETS_TO: ""
+    volumes:
+      # Development PHP configuration
+      - ./dev/docker/php.ini:/usr/local/etc/php/php.ini
+      - ./dev/docker/xdebug.ini:/usr/local/etc/php/conf.d/xdebug.ini
+      # Entrypoint and cron scripts
+      - ./docker/entrypoint.sh:/entrypoint.sh
+      - ./docker/jobs-cron.sh:/jobs-cron.sh
+      - ./docker/recreate-pending-pcache-cron.sh:/recreate-pending-pcache-cron.sh
+      # Mount source code for live editing
+      - ./src:/var/www/src:cached
+      - ./config:/var/www/config:cached
+      - ./public:/var/www/html:cached
+      - ./scripts:/var/www/scripts:cached
+      - ./composer.json:/var/www/composer.json:cached
+      - ./composer.lock:/var/www/composer.lock:cached
+      # Mount var directory for runtime data
+      - mapas-var:/var/www/var
+      - mapas-assets:/var/www/html/assets
+      - mapas-files:/var/www/html/files
+      - mapas-private:/var/www/var/private-files
+      # Development configuration overrides
+      - ./dev/config.d:/var/www/config/config.d
+    networks:
+      - mapas-dev
+    healthcheck:
+      test: ["CMD", "test", "-f", "/mapas-ready"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
   # PostgreSQL with PostGIS (same as Helm chart for parity)
   postgres:
     image: postgis/postgis:14-3.4
@@ -115,7 +131,7 @@ services:
 
   # Mailpit for testing email
   mailpit:
-    image: axllent/mailpit:v1.18-alpine
+    image: axllent/mailpit:v1.18
     container_name: mapas-dev-mailpit
     ports:
       - "1025:1025" # SMTP
