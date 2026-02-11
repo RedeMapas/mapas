@@ -107,6 +107,9 @@ jobs:
           docker pull ghcr.io/${REPO_LOWER}:${IMAGE_TAG}
           kind load docker-image ghcr.io/${REPO_LOWER}:${IMAGE_TAG} --name mapas-test
 
+      - name: Add helm repositories
+        run: helm repo add groundhog2k https://groundhog2k.github.io/helm-charts/
+
       - name: Build helm chart dependencies
         run: helm dependency build helm/mapas
 
