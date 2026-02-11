@@ -65,3 +65,4 @@
 [submodule "src/plugins/MapasBlame"]
 	path = src/plugins/MapasBlame
 	url = https://github.com/mapasculturais/plugin-MapasBlame.git
+
