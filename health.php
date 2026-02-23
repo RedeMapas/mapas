@@ -31,12 +31,13 @@ $checks['php']['duration'] = round(microtime(true) - $start_time, 4) . 's';
 $db_check_start = microtime(true);
 try {
     $dbhost = $_ENV['DB_HOST'] ?? 'db';
+    $dbport = $_ENV['DB_PORT'] ?? '5432';
     $dbname = $_ENV['DB_NAME'] ?? 'mapas';
     $dbuser = $_ENV['DB_USER'] ?? 'mapas';
     $dbpass = $_ENV['DB_PASS'] ?? 'mapas';
     
     $pdo = new PDO(
-        "pgsql:host={$dbhost};port=5432;dbname={$dbname}",
+        "pgsql:host={$dbhost};port={$dbport};dbname={$dbname}",
         $dbuser,
         $dbpass,
         [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]
@@ -46,6 +47,7 @@ try {
     $checks['database']['message'] = 'Database connection successful';
     $checks['database']['details'] = [
         'host' => $dbhost,
+        'port' => $dbport,
         'database' => $dbname,
         'user' => $dbuser
     ];
@@ -53,8 +55,7 @@ try {
     $checks['database']['status'] = 'fail';
     $checks['database']['message'] = 'Database connection failed: ' . $e->getMessage();
     $overall_status = 'fail';
-    // Don't return 503 for database failures - container services are still running
-    // $status_code = 503;
+    $status_code = 503;
 }
 $checks['database']['duration'] = round(microtime(true) - $db_check_start, 4) . 's';
 
