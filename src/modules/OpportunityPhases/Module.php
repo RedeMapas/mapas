@@ -20,7 +20,7 @@ class Module extends \MapasCulturais\Module{
      *
      * @return Opportunity
      */
-    static function getBaseOpportunity(Opportunity $opportunity = null){
+    static function getBaseOpportunity(?Opportunity $opportunity = null){
         if(is_null($opportunity)){
             $opportunity = self::getRequestedOpportunity();
         }
