@@ -2032,7 +2032,7 @@ class Registration extends \MapasCulturais\Entity
      * @param \MapasCulturais\Entities\User $user
      * @return \MapasCulturais\Entities\RegistrationEvaluation
      */
-    function getUserEvaluation(\MapasCulturais\UserInterface $user = null){
+    function getUserEvaluation(?\MapasCulturais\UserInterface $user = null){
         $app = App::i();
         if(is_null($user)){
             $user = $app->user;
@@ -2059,7 +2059,7 @@ class Registration extends \MapasCulturais\Entity
         $evaluation->save(true);
     }
 
-    function saveUserEvaluation(array $data, User $user = null, $evaluation_status = null){
+    function saveUserEvaluation(array $data, ?User $user = null, $evaluation_status = null){
         $app = App::i();
         if(is_null($user)){
             $user = $app->user;
