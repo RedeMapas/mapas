@@ -452,7 +452,7 @@ abstract class Controller{
      * 
      * @param string|null $redirect_url URL para redirecionar após o login (opcional)
      */
-    public function requireAuthentication(string $redirect_url = null){
+    public function requireAuthentication(?string $redirect_url = null){
         $app = App::i();
 
         if($app->user->is('guest')){
