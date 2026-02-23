@@ -128,7 +128,7 @@ class Role extends \MapasCulturais\Definition{
      * @param mixed $subsite_id ID do subsite
      * @return bool
      */
-    function canUserManageRole(UserInterface $logged_in_user = null, $subsite_id = false) {
+    function canUserManageRole(?UserInterface $logged_in_user = null, $subsite_id = false) {
         $app = App::i();
         if ($subsite_id === false) {
             $subsite_id = $app->getCurrentSubsiteId();
