@@ -34,6 +34,26 @@
     color: var(--checkbox-text);
 }
 
+.field__checkbox--sub:hover {
+    background: var(--checkbox-hover-bg);
+    border-left-color: #357ABD;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+    cursor: pointer;
+}
+
+/* Focus states for keyboard navigation */
+.field__checkbox input:focus,
+.field__checkbox--sub input:focus {
+    outline: 2px solid var(--checkbox-sub-border);
+    outline-offset: 2px;
+}
+
+.field__checkbox--sub:disabled,
+.field__checkbox--sub.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
 @keyframes fadeIn {
     from {
         opacity: 0;
