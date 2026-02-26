@@ -1,3 +1,12 @@
+/* CSS Variables for theme customization */
+:root {
+    --checkbox-sub-bg: #f8f9fa;
+    --checkbox-sub-border: #4a90e2;
+    --checkbox-hover-bg: #e9ecef;
+    --checkbox-separator: #e9ecef;
+    --checkbox-text: #495057;
+}
+
 /* Estilos para checkboxes de obrigatoriedade (sub-checkboxes) */
 .field__checkbox--sub {
     margin-left: 30px;
