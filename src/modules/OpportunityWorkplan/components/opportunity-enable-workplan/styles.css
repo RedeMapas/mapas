@@ -67,11 +67,28 @@
     }
 }
 
-/* Estilo para indicar agrupamento visual */
+/* Group spacing */
 .field__group {
-    margin-bottom: 12px;
+    margin-bottom: 16px;
 }
 
 .field__group .field__checkbox--sub:last-child {
     margin-bottom: 0;
+}
+
+/* Spacing between multiple sub-checkboxes */
+.field__checkbox--sub + .field__checkbox--sub {
+    margin-top: 6px;
+}
+
+/* Responsive design for mobile/tablet */
+@media (max-width: 768px) {
+    .field__checkbox--sub {
+        margin-left: 20px;
+        padding: 8px 10px 8px 12px;
+    }
+
+    .field__group {
+        margin-bottom: 12px;
+    }
 }
