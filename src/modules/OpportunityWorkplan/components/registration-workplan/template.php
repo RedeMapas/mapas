@@ -203,7 +203,69 @@ $this->import('
                                 <div v-else>
                                     <div v-for="(staff, index) in delivery.paidStaffByRole" :key="index" class="grid-12 field__group">
                                         <div class="col-6 sm:col-12">
-                                            <input v-model="staff.role" type="text" placeholder="<?= i::esc_attr__('Função (ex: Direção, Atores, Técnicos)') ?>">
+                                            <select v-model="staff.role">
+                                                <option value=""><?= i::esc_attr__('Selecione uma função') ?></option>
+                                                <optgroup label="<?= i::esc_attr__('Direção e Coordenação') ?>">
+                                                    <option value="Direção Artística"><?= i::esc_attr__('Direção Artística') ?></option>
+                                                    <option value="Direção Geral/Executiva"><?= i::esc_attr__('Direção Geral/Executiva') ?></option>
+                                                    <option value="Coordenação Geral"><?= i::esc_attr__('Coordenação Geral') ?></option>
+                                                    <option value="Curadoria"><?= i::esc_attr__('Curadoria') ?></option>
+                                                </optgroup>
+                                                <optgroup label="<?= i::esc_attr__('Criação Artística') ?>">
+                                                    <option value="Atuação/Performance"><?= i::esc_attr__('Atuação/Performance') ?></option>
+                                                    <option value="Coreografia"><?= i::esc_attr__('Coreografia') ?></option>
+                                                    <option value="Composição Musical"><?= i::esc_attr__('Composição Musical') ?></option>
+                                                    <option value="Dramaturgia/Roteiro"><?= i::esc_attr__('Dramaturgia/Roteiro') ?></option>
+                                                    <option value="Arranjo Musical"><?= i::esc_attr__('Arranjo Musical') ?></option>
+                                                </optgroup>
+                                                <optgroup label="<?= i::esc_attr__('Artes Visuais e Cenografia') ?>">
+                                                    <option value="Cenografia"><?= i::esc_attr__('Cenografia') ?></option>
+                                                    <option value="Figurino"><?= i::esc_attr__('Figurino') ?></option>
+                                                    <option value="Maquiagem e Caracterização"><?= i::esc_attr__('Maquiagem e Caracterização') ?></option>
+                                                    <option value="Iluminação"><?= i::esc_attr__('Iluminação') ?></option>
+                                                    <option value="Design Gráfico"><?= i::esc_attr__('Design Gráfico') ?></option>
+                                                    <option value="Fotografia"><?= i::esc_attr__('Fotografia') ?></option>
+                                                    <option value="Videomaker"><?= i::esc_attr__('Videomaker') ?></option>
+                                                </optgroup>
+                                                <optgroup label="<?= i::esc_attr__('Técnica') ?>">
+                                                    <option value="Direção Técnica"><?= i::esc_attr__('Direção Técnica') ?></option>
+                                                    <option value="Sonoplastia/Áudio"><?= i::esc_attr__('Sonoplastia/Áudio') ?></option>
+                                                    <option value="Operação de Equipamentos"><?= i::esc_attr__('Operação de Equipamentos') ?></option>
+                                                    <option value="Montagem e Desmontagem"><?= i::esc_attr__('Montagem e Desmontagem') ?></option>
+                                                    <option value="Cenotécnica"><?= i::esc_attr__('Cenotécnica') ?></option>
+                                                </optgroup>
+                                                <optgroup label="<?= i::esc_attr__('Música') ?>">
+                                                    <option value="Instrumentista"><?= i::esc_attr__('Instrumentista') ?></option>
+                                                    <option value="Vocal/Canto"><?= i::esc_attr__('Vocal/Canto') ?></option>
+                                                    <option value="Regência"><?= i::esc_attr__('Regência') ?></option>
+                                                    <option value="Preparação Musical"><?= i::esc_attr__('Preparação Musical') ?></option>
+                                                </optgroup>
+                                                <optgroup label="<?= i::esc_attr__('Produção') ?>">
+                                                    <option value="Produção Executiva"><?= i::esc_attr__('Produção Executiva') ?></option>
+                                                    <option value="Produção Cultural"><?= i::esc_attr__('Produção Cultural') ?></option>
+                                                    <option value="Assistência de Produção"><?= i::esc_attr__('Assistência de Produção') ?></option>
+                                                    <option value="Gestão Administrativa"><?= i::esc_attr__('Gestão Administrativa') ?></option>
+                                                    <option value="Gestão Financeira"><?= i::esc_attr__('Gestão Financeira') ?></option>
+                                                    <option value="Captação de Recursos"><?= i::esc_attr__('Captação de Recursos') ?></option>
+                                                </optgroup>
+                                                <optgroup label="<?= i::esc_attr__('Comunicação e Educação') ?>">
+                                                    <option value="Comunicação/Assessoria de Imprensa"><?= i::esc_attr__('Comunicação/Assessoria de Imprensa') ?></option>
+                                                    <option value="Marketing Cultural"><?= i::esc_attr__('Marketing Cultural') ?></option>
+                                                    <option value="Mídias Sociais"><?= i::esc_attr__('Mídias Sociais') ?></option>
+                                                    <option value="Mediação Cultural"><?= i::esc_attr__('Mediação Cultural') ?></option>
+                                                    <option value="Ação Educativa"><?= i::esc_attr__('Ação Educativa') ?></option>
+                                                </optgroup>
+                                                <optgroup label="<?= i::esc_attr__('Apoio Operacional') ?>">
+                                                    <option value="Logística"><?= i::esc_attr__('Logística') ?></option>
+                                                    <option value="Transporte"><?= i::esc_attr__('Transporte') ?></option>
+                                                    <option value="Catering/Alimentação"><?= i::esc_attr__('Catering/Alimentação') ?></option>
+                                                    <option value="Segurança"><?= i::esc_attr__('Segurança') ?></option>
+                                                    <option value="Limpeza e Conservação"><?= i::esc_attr__('Limpeza e Conservação') ?></option>
+                                                </optgroup>
+                                                <optgroup label="<?= i::esc_attr__('Outras') ?>">
+                                                    <option value="Outra função"><?= i::esc_attr__('Outra função') ?></option>
+                                                </optgroup>
+                                            </select>
                                         </div>
                                         <div class="col-4 sm:col-10">
                                             <input v-model.number="staff.count" type="number" min="0" placeholder="<?= i::esc_attr__('Quantidade') ?>">
