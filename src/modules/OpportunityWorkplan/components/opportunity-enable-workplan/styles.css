@@ -7,6 +7,19 @@
     --checkbox-text: #495057;
 }
 
+/* Main checkbox styling */
+.field__checkbox {
+    padding: 12px 8px;
+    border-bottom: 1px solid var(--checkbox-separator);
+    transition: all 0.2s ease;
+}
+
+.field__checkbox:hover {
+    background: #f8f9fa;
+    cursor: pointer;
+    transform: scale(1.005);
+}
+
 /* Estilos para checkboxes de obrigatoriedade (sub-checkboxes) */
 .field__checkbox--sub {
     margin-left: 30px;
