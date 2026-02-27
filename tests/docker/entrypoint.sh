@@ -3,6 +3,7 @@ set -e
 
 php -r '
 $dbhost = @$_ENV["DB_HOST"] ?: "db";
+$dbhost = @$_ENV["DB_PORT"] ?: "5432";
 $dbname = @$_ENV["DB_NAME"] ?: "mapas";
 $dbuser = @$_ENV["DB_USER"] ?: "mapas";
 $dbpass = @$_ENV["DB_PASS"] ?: "mapas";
@@ -30,18 +31,16 @@ chown -R www-data: /var/www/var/DoctrineProxies /var/www/var/logs
 /var/www/scripts/db-update.sh
 /var/www/scripts/mc-db-updates.sh
 
-if ! cmp /var/www/version.txt /var/www/var/private-files/deployment-version >/dev/null 2>&1
-then
-    /var/www/scripts/compile-sass.sh
-    /var/www/src/tools/doctrine orm:generate-proxies
-    cp /var/www/version.txt /var/www/var/private-files/deployment-version
+if ! cmp /var/www/version.txt /var/www/var/private-files/deployment-version >/dev/null 2>&1; then
+  /var/www/scripts/compile-sass.sh
+  /var/www/src/tools/doctrine orm:generate-proxies
+  cp /var/www/version.txt /var/www/var/private-files/deployment-version
 fi
 
-
 if [ $BUILD_ASSETS = "1" ]; then
-    cd /var/www/src
-    pnpm install --recursive 
-    pnpm run dev
+  cd /var/www/src
+  pnpm install --recursive
+  pnpm run dev
 fi
 
 cd /var/www/tests
