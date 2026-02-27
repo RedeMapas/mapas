@@ -14,10 +14,6 @@
 	path = src/themes/MapaMinC
 	url = https://github.com/culturagovbr/theme-MapaMinC.git
 
-[submodule "src/themes/Pnab"]
-	path = src/themes/Pnab
-	url = https://github.com/culturagovbr/theme-Pnab.git
-
 [submodule "src/themes/PeriferiaViva25"]
 	path = src/themes/PeriferiaViva25
 	url = https://github.com/Periferias/theme-ppv-25.git
