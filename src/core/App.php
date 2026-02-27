@@ -794,6 +794,7 @@ class App {
             'user' => $this->config['db.user'],
             'password' => $this->config['db.password'],
             'host' => $this->config['db.host'],
+            'port' => $this->config['db.port'],
             'wrapperClass' => Connection::class
         ], $this->doctrineConfiguration);
 
