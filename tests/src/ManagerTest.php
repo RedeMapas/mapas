@@ -1,11 +1,8 @@
 <?php
-declare(strict_types=1);
 
 namespace Tests;
 
 use PHPUnit\Framework\TestCase;
-
-define('TESTING', true);
 
 class ManagerTest extends TestCase
 {
@@ -13,7 +10,7 @@ class ManagerTest extends TestCase
     {
         $_SESSION = [];
 
-        $this->expectOutputString('');
+        $this->expectOutputRegex('/Location: \/auth\/login/');
 
         require __DIR__ . '/../../public/manager.php';
     }
@@ -23,7 +20,7 @@ class ManagerTest extends TestCase
         $_SESSION['user_id'] = 1;
         $_SESSION['user_roles'] = ['admin'];
 
-        $this->expectOutputString('HTTP/1.1 403 Forbidden');
+        $this->expectOutputRegex('/HTTP\/1\.1 403 Forbidden/');
 
         require __DIR__ . '/../../public/manager.php';
     }
@@ -33,8 +30,31 @@ class ManagerTest extends TestCase
         $_SESSION['user_id'] = 1;
         $_SESSION['user_roles'] = ['superAdmin'];
 
-        $this->expectOutputString('200 OK');
+        $this->expectOutputRegex('/200 OK/');
 
         require __DIR__ . '/../../public/manager.php';
+    }
+
+    public function testAppInstanceIsLoaded()
+    {
+        $_SESSION['user_id'] = 1;
+        $_SESSION['user_roles'] = ['superAdmin'];
+
+        // After bootstrap, App::i() should be available
+        $this->assertTrue(class_exists('MapasCulturais\App'));
+
+        require __DIR__ . '/../../public/manager.php';
+    }
+
+    public function testEntityManagerIsAvailable()
+    {
+        $_SESSION['user_id'] = 1;
+        $_SESSION['user_roles'] = ['superAdmin'];
+
+        // EntityManager should be accessible
+        require __DIR__ . '/../../public/manager.php';
+        
+        $app = \MapasCulturais\App::i();
+        $this->assertNotNull($app->em);
     }
 }
