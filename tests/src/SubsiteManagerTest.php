@@ -5,8 +5,6 @@ namespace Tests;
 use Tests\Abstract\TestCase;
 use MapasCulturais\Managers\SubsiteManager;
 
-require_once __DIR__ . '/bootstrap.php';
-
 class SubsiteManagerTest extends TestCase
 {
     use Traits\UserDirector;
