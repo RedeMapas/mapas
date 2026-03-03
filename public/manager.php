@@ -1,6 +1,9 @@
 <?php
 declare(strict_types=1);
 
+// Start output buffering to prevent headers already sent errors
+ob_start();
+
 /**
  * Mapas Culturais Manager - Admin Panel
  * 
@@ -23,9 +26,13 @@ if (!$app->user || !$app->user->id) {
 // Authorization check - require superAdmin role
 $user = $app->user;
 if (!$user->is('superAdmin')) {
+    ob_end_clean();
     http_response_code(403);
     throw new \Exception('Access denied: superAdmin role required');
 }
+
+// Flush buffer - auth passed
+ob_end_clean();
 
 // Initialize managers
 $subsiteManager = new \MapasCulturais\Managers\SubsiteManager($app);
@@ -571,14 +578,14 @@ function renderContent(string $entity, string $action, array $response, $app): s
     switch ($view) {
         case 'dashboard': return renderDashboard($data, $app);
         case 'subsite-list':
-        case 'subsite-search': return renderSubsiteList($data['subsites'] ?? [], $data['query'] ?? '', $app);
-        case 'subsite-create': return renderSubsiteCreateForm($data['input'] ?? [], $data['errors'] ?? [], $app);
-        case 'subsite-edit': return renderSubsiteEditForm($data['subsite'] ?? null, $data['errors'] ?? [], $app);
+        case 'subsite-search': return renderSubsiteList($data['subsites'] ?? [], $app, $data['query'] ?? '');
+        case 'subsite-create': return renderSubsiteCreateForm($app, $data['input'] ?? [], $data['errors'] ?? []);
+        case 'subsite-edit': return renderSubsiteEditForm($app, $data['subsite'] ?? null, $data['errors'] ?? []);
         case 'plugin-list': return renderPluginList($data['plugins'] ?? [], $app);
-        case 'plugin-clone': return renderPluginCloneForm($data['errors'] ?? [], $app);
+        case 'plugin-clone': return renderPluginCloneForm($app, $data['errors'] ?? []);
         case 'theme-list': return renderThemeList($data['themes'] ?? [], $app);
-        case 'theme-clone': return renderThemeCloneForm($data['errors'] ?? [], $app);
-        case 'config': return renderConfigForm($data['config'] ?? [], $data['errors'] ?? [], $app);
+        case 'theme-clone': return renderThemeCloneForm($app, $data['errors'] ?? []);
+        case 'config': return renderConfigForm($app, $data['config'] ?? [], $data['errors'] ?? []);
         default: return '<div class="text-gray-600">View not found: ' . htmlspecialchars($view) . '</div>';
     }
 }
@@ -652,7 +659,7 @@ function renderDashboard(array $data, $app): string
 /**
  * Render subsite list
  */
-function renderSubsiteList(array $subsites, string $query = '', $app): string
+function renderSubsiteList(array $subsites, $app, string $query = ''): string
 {
     ob_start();
     ?>
@@ -714,7 +721,7 @@ function renderSubsiteList(array $subsites, string $query = '', $app): string
 /**
  * Render subsite create form
  */
-function renderSubsiteCreateForm(array $input = [], array $errors = [], $app): string
+function renderSubsiteCreateForm($app, array $input = [], array $errors = []): string
 {
     ob_start();
     ?>
@@ -775,7 +782,7 @@ function renderSubsiteCreateForm(array $input = [], array $errors = [], $app): s
 /**
  * Render subsite edit form
  */
-function renderSubsiteEditForm(?\MapasCulturais\Entities\Subsite $subsite, array $errors = [], $app): string
+function renderSubsiteEditForm($app, ?\MapasCulturais\Entities\Subsite $subsite = null, array $errors = []): string
 {
     if (!$subsite) return '<div class="text-red-600 bg-red-50 px-4 py-3 rounded-md">Subsite not found</div>';
     
@@ -881,7 +888,7 @@ function renderPluginList(array $plugins, $app): string
 /**
  * Render plugin clone form
  */
-function renderPluginCloneForm(array $errors = [], $app): string
+function renderPluginCloneForm($app, array $errors = []): string
 {
     ob_start();
     ?>
@@ -997,7 +1004,7 @@ function renderThemeList(array $themes, $app): string
 /**
  * Render theme clone form
  */
-function renderThemeCloneForm(array $errors = [], $app): string
+function renderThemeCloneForm($app, array $errors = []): string
 {
     ob_start();
     ?>
@@ -1056,7 +1063,7 @@ function renderThemeCloneForm(array $errors = [], $app): string
 /**
  * Render config form
  */
-function renderConfigForm(array $config = [], array $errors = [], $app): string
+function renderConfigForm($app, array $config = [], array $errors = []): string
 {
     ob_start();
     
