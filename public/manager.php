@@ -42,7 +42,7 @@ $themeManager = new \MapasCulturais\Managers\ThemeManager($app);
 // Simple router
 $entity = $_GET['entity'] ?? 'dashboard';
 $action = $_GET['action'] ?? 'list';
-$id = $_GET['id'] ?? null;
+$id = isset($_GET['id']) ? (int)$_GET['id'] : null;
 
 // Handle JSON requests (HTMX)
 $isJsonRequest = isset($_GET['format']) && $_GET['format'] === 'json';
