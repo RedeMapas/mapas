@@ -8,25 +8,21 @@ declare(strict_types=1);
  * Requires superAdmin role for access.
  */
 
-// Start session if not already started
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
+// Load application bootstrap FIRST (this initializes session and auth)
+require __DIR__ . '/bootstrap.php';
 
-// Authentication check
-if (empty($_SESSION['user_id'])) {
-    header('Location: /auth/login');
+// Authentication check - use Mapas Culturais auth system
+if (!$app->user || !$app->user->id) {
+    // Not authenticated, redirect to login
+    $app->auth->requireAuthentication('/manager.php');
     exit;
 }
 
-// Load application bootstrap
-require __DIR__ . '/bootstrap.php';
-
 // Authorization check - require superAdmin role
 $user = $app->user;
-if (!$user || !$user->is('superAdmin')) {
+if (!$user->is('superAdmin')) {
     http_response_code(403);
-    throw new \Exception('Access denied');
+    throw new \Exception('Access denied: superAdmin role required');
 }
 
 // Initialize managers
