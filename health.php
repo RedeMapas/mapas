@@ -31,6 +31,7 @@ $checks['php']['duration'] = round(microtime(true) - $start_time, 4) . 's';
 $db_check_start = microtime(true);
 try {
     $dbhost = $_ENV['DB_HOST'] ?? 'db';
+    $dbhost = $_ENV['DB_PORT'] ?? '5432';
     $dbname = $_ENV['DB_NAME'] ?? 'mapas';
     $dbuser = $_ENV['DB_USER'] ?? 'mapas';
     $dbpass = $_ENV['DB_PASS'] ?? 'mapas';

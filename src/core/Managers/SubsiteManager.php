@@ -21,16 +21,11 @@ class SubsiteManager
 
         $subsite->name = $data['name'];
         $subsite->url = $data['url'];
-        $subsite->owner = $this->app->repo('Agent')->find($data['owner']);
+        $subsite->_ownerId = $data['owner'];
         $subsite->namespace = $data['namespace'] ?? 'Subsite';
 
         $this->app->em->persist($subsite);
-
-        try {
-            $this->app->em->flush();
-        } catch (\Doctrine\DBAL\Exception\UniqueConstraintViolationException $e) {
-            throw new \Exception("Duplicate URL: " . $data['url'], 0, $e);
-        }
+        $this->app->em->flush();
 
         return $subsite;
     }

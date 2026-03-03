@@ -39,7 +39,9 @@ class ThemeManager
 
         $output = [];
         $returnCode = 0;
-        exec("git clone {$repoUrl} {$targetPath} 2>&1", $output, $returnCode);
+        $safeUrl = escapeshellarg($repoUrl);
+        $safePath = escapeshellarg($targetPath);
+        exec("git clone {$safeUrl} {$safePath} 2>&1", $output, $returnCode);
 
         if ($returnCode !== 0) {
             throw new \Exception("Git clone failed: " . implode("\n", $output));

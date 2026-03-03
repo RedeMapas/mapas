@@ -29,13 +29,14 @@ class Module extends \MapasCulturais\Module
 
         $app->view->enqueueScript('app', 'rfc-form', 'js/rfc/form.js');
 
-        $app->view->enqueueScript('app', 'rfc-cep', 'js/rfc/location.js');
+        $app->view->enqueueScript('app', 'rfc-cep', 'js/rfc/location.js', ['mapasculturais-customizable']);
         $app->view->enqueueScript('app', 'rfc-datepicker', 'js/rfc/datepicker.js', ['flatpickr']);
         // @todo refatorar
         if($app->view->version < 2){
             $app->view->includeIbgeJS();
         }
-        $app->view->enqueueScript('app', 'customizable', 'js/customizable.js');
+        // Removido enqueue duplicado de customizable.js - já é carregado pelo BaseV1/Theme.php:1816
+        // Adicionada dependência 'mapasculturais-customizable' no rfc-cep para garantir ordem correta
         $app->view->enqueueScript('app', 'flatpickr', 'vendor/flatpickr.js');
         $app->view->enqueueScript('app', 'flatpickr-pt', 'vendor/flatpickr-pt.js', ['flatpickr']);
 

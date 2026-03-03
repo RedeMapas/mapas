@@ -2,24 +2,20 @@
 
 namespace Tests;
 
-use Tests\Abstract\TestCase;
+use PHPUnit\Framework\TestCase;
 use MapasCulturais\Managers\SubsiteManager;
 
 class SubsiteManagerTest extends TestCase
 {
-    use Traits\UserDirector;
-    use Traits\AgentDirector;
-
     public function testCanCreateSubsite()
     {
-        $user = $this->userDirector->createUser();
-        $agent = $this->agentDirector->createIndividual($user);
-        $manager = new SubsiteManager($this->app);
+        $app = \MapasCulturais\App::i();
+        $manager = new SubsiteManager($app);
 
         $data = [
             'name' => 'Test Subsite',
             'url' => 'test.local',
-            'owner' => $agent->id,
+            'owner' => 1, // agent_id
             'namespace' => 'Subsite',
         ];
 
@@ -33,15 +29,14 @@ class SubsiteManagerTest extends TestCase
 
     public function testCannotCreateSubsiteWithDuplicateUrl()
     {
-        $user = $this->userDirector->createUser();
-        $agent = $this->agentDirector->createIndividual($user);
-        $manager = new SubsiteManager($this->app);
+        $app = \MapasCulturais\App::i();
+        $manager = new SubsiteManager($app);
 
         // Create first subsite
         $manager->create([
             'name' => 'First',
             'url' => 'duplicate.local',
-            'owner' => $agent->id,
+            'owner' => 1,
             'namespace' => 'Subsite',
         ]);
 
@@ -50,7 +45,7 @@ class SubsiteManagerTest extends TestCase
         $manager->create([
             'name' => 'Second',
             'url' => 'duplicate.local',
-            'owner' => $agent->id,
+            'owner' => 1,
             'namespace' => 'Subsite',
         ]);
     }

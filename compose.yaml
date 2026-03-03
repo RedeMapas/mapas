@@ -31,6 +31,7 @@ services:
       CI: "true"
       BASE_URL: "http://localhost:8080/"
       APP_DEBUG: "true"
+      APP_ENV: development
       DISABLE_SUBSITES: "true"
       PENDING_PCACHE_RECREATION_INTERVAL: "5"
       JOBS_INTERVAL: "5"
