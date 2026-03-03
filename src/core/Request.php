@@ -105,9 +105,10 @@ class Request {
      * @param mixed $default Valor padrão se a chave não existir
      * @return mixed
      */
-    public function get(string $key = null, $default = null) {
+    public function get(?string $key = null, $default = null) 
+    {
         $params = $this->psr7request->getQueryParams();
-        
+
         if ($key) {
             return $params[$key] ?? $default;
         } else {

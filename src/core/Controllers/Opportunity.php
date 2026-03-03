@@ -1064,7 +1064,7 @@ class Opportunity extends EntityController {
     * @param array $query_data Dados da consulta
     * @return object Resultado da busca com contagem e avaliações
     */
-    function apiFindEvaluations(int $opportunity_id = null, array $query_data = []) {
+    function apiFindEvaluations(?int $opportunity_id = null, array $query_data = []) {
         $app = App::i();
         $conn = $app->em->getConnection();
 
