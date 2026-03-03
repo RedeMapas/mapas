@@ -1173,7 +1173,7 @@ function renderConfigForm(array $config = [], array $errors = [], $app): string
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Centro do Mapa (lat,lon)</label>
                         <input type="text" name="maps_center" 
-                               value="<?= htmlspecialchars(is_array($cfg['maps.center'] ?? []) ? implode(',', $cfg['maps.center']) : ($cfg['maps.center'] ?? '-14.2400732,-53.1805018')) ?>"
+                               value="<?= htmlspecialchars(is_array($cfg['maps.center'] ?? null) ? implode(',', $cfg['maps.center']) : ($cfg['maps.center'] ?? '-14.2400732,-53.1805018')) ?>"
                                placeholder="-14.2400732,-53.1805018"
                                class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
                         <p class="mt-1 text-xs text-gray-500">Coordenadas do centro do mapa</p>
