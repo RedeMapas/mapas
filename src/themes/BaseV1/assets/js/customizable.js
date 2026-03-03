@@ -95,4 +95,4 @@ MapasCulturais.geocoder = {
         });
         return;
     }
-}
+};

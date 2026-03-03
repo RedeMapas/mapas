@@ -72,6 +72,5 @@ MapasCulturais.geocoder = {
         });
         return;
     }
-}
-
+};
 
