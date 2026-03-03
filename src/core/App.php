@@ -1297,9 +1297,9 @@ class App
      * @throws NotSupported
      * @throws GlobalException
      */
-    public function setCurrentSubsiteId(int $subsite_id = null)
+    public function setCurrentSubsiteId(?int $subsite_id = null)
     {
-        if (is_null($subsite_id)) {
+        if(is_null($subsite_id)) {
             $this->subsite = null;
         } else {
             $subsite = $this->repo("Subsite")->find($subsite_id);
@@ -1568,8 +1568,7 @@ class App
      *
      * @return mixed
      */
-    public function getConfig(string $key = null)
-    {
+    public function getConfig(?string $key = null) {
         if (is_null($key)) {
             return $this->config;
         } else {
@@ -2174,7 +2173,7 @@ class App
      *
      * @param  string   $name   Um nome de hook (Opcional)
      */
-    public function clearHooks(string $name = null)
+    public function clearHooks(?string $name = null)
     {
         $this->hooks->clear($name);
     }
@@ -2190,7 +2189,7 @@ class App
      * @param  string     $name     Um nome de hook (Opcional)
      * @return array|null
      */
-    public function getHooks(string $name = null)
+    public function getHooks(?string $name = null)
     {
         return $this->hooks->get($name);
     }
