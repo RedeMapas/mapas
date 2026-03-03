@@ -1193,19 +1193,19 @@ function renderConfigForm(array $config = [], array $errors = [], $app): string
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Zoom Padrão</label>
                         <input type="number" name="maps_zoom_default" min="1" max="20"
-                               value="<?= htmlspecialchars($cfg['maps.zoom.default'] ?? 5) ?>"
+                               value="<?= htmlspecialchars((string)($cfg['maps.zoom.default'] ?? 5)) ?>"
                                class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Zoom Mínimo</label>
                         <input type="number" name="maps_zoom_min" min="1" max="20"
-                               value="<?= htmlspecialchars($cfg['maps.zoom.min'] ?? 5) ?>"
+                               value="<?= htmlspecialchars((string)($cfg['maps.zoom.min'] ?? 5)) ?>"
                                class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Zoom Máximo</label>
                         <input type="number" name="maps_zoom_max" min="1" max="20"
-                               value="<?= htmlspecialchars($cfg['maps.zoom.max'] ?? 18) ?>"
+                               value="<?= htmlspecialchars((string)($cfg['maps.zoom.max'] ?? 18)) ?>"
                                class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
                     </div>
                 </div>
