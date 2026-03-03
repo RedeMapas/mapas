@@ -46,6 +46,8 @@ spec:
           env:
             - name: APP_ENV
               value: {{ .Values.mapas.appEnv | default "production" | quote }}
+            - name: APP_MODE
+              value: {{ .Values.mapas.appEnv | default "production" | quote }}
             - name: APP_DEBUG
               value: {{ .Values.mapas.appDebug | default "false" | quote }}
             - name: DB_PASS

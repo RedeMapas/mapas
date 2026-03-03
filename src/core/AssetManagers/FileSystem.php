@@ -121,7 +121,13 @@ class FileSystem extends \MapasCulturais\AssetManager{
                     return ;
                 }
                 $filename = $theme->getAssetFilename($e);
-                $content .= file_get_contents($filename)."\n";
+                $file_content = file_get_contents($filename);
+                // Always delimit merged JS files to avoid ASI edge-cases between bundles.
+                if ($extension === 'js') {
+                    $content .= $file_content . ";\n";
+                } else {
+                    $content .= $file_content . "\n";
+                }
 
                 return $filename;
             }, $ordered);

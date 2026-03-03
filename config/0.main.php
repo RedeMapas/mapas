@@ -46,7 +46,7 @@ return [
     Define o modo em que a aplicação está rodando. 
     Os valores possíveis são as constantes `APPMODE_PRODUCTION`, `APPMODE_STAGING` e `APPMODE_DEVELOPMENT`.
     */
-    'app.mode' => env('APP_MODE', APPMODE_PRODUCTION),
+    'app.mode' => env('APP_MODE', env('APP_ENV', APPMODE_PRODUCTION)),
 
     'app.executeJobsImmediately' => env('APP_EXECUTE_JOBS_IMMEDIATELY', false),
     'app.recreateCacheImmediately' => env('APP_RECREATE_CACHE_IMMEDIATELY', false),
@@ -66,7 +66,7 @@ return [
 
     Por padrão o valor é verdadeiro quando o app.mode for `APPMODE_DEVELOPMENT`.
     */
-    'doctrine.isDev' => env('DOCTRINE_ISDEV', env('APP_MODE', APPMODE_PRODUCTION) == APPMODE_DEVELOPMENT),
+    'doctrine.isDev' => env('DOCTRINE_ISDEV', env('APP_MODE', env('APP_ENV', APPMODE_PRODUCTION)) == APPMODE_DEVELOPMENT),
     
     /* Valor do header Access-Control-Allow-Origin da api de leitura. */
     'api.accessControlAllowOrigin' => env('API_ACCESS_CONTROL_ALLOW_ORIGIN', '*'),

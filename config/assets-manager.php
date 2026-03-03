@@ -1,5 +1,5 @@
 <?php
-$app_mode = env('APP_MODE', 'production');
+$app_mode = env('APP_MODE', env('APP_ENV', 'production'));
 $is_production = $app_mode == 'production';
 
 return [
