@@ -60,6 +60,11 @@ try {
             $response = $result['response'];
             $toast = $result['toast'] ?? null;
             break;
+        case 'config':
+            $result = handleConfigAction($action, $app);
+            $response = $result['response'];
+            $toast = $result['toast'] ?? null;
+            break;
         case 'dashboard':
         default:
             $response = [
@@ -257,6 +262,76 @@ function handleThemeAction(string $action, \MapasCulturais\Managers\ThemeManager
 }
 
 /**
+ * Handle config actions
+ */
+function handleConfigAction(string $action, $app): array
+{
+    $configFile = APPLICATION_PATH . '../config/conf/config.php';
+    $configBackupFile = APPLICATION_PATH . '../config/conf/config.php.bak';
+    
+    switch ($action) {
+        case 'save':
+            if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+                try {
+                    // Read current config
+                    $currentConfig = [];
+                    if (file_exists($configFile)) {
+                        $currentConfig = include $configFile;
+                    }
+                    
+                    // Update config from POST
+                    $configUpdates = [
+                        'themes.active' => $_POST['themes_active'] ?? 'redemapas',
+                        'base.url' => $_POST['base_url'] ?? '',
+                        'app.siteName' => $_POST['app_siteName'] ?? 'Mapas Culturais',
+                        'app.siteDescription' => $_POST['app_siteDescription'] ?? 'O Mapas Culturais é uma plataforma livre para mapeamento cultural.',
+                        'app.verifiedSealsIds' => array_map('intval', explode(',', $_POST['app_verifiedSealsIds'] ?? '1')),
+                        'app.lcode' => $_POST['app_lcode'] ?? 'pt_BR',
+                        'app.defaultCountry' => $_POST['app_defaultCountry'] ?? 'BR',
+                        'app.mode' => $_POST['app_mode'] ?? APPMODE_PRODUCTION,
+                        'app.currency' => $_POST['app_currency'] ?? 'BRL',
+                        'app.enabledPlugins' => $_POST['app_enabledPlugins'] ?? [],
+                        'app.theme' => $_POST['app_theme'] ?? 'redemapas',
+                    ];
+                    
+                    // Merge with current config
+                    $newConfig = array_merge($currentConfig ?? [], $configUpdates);
+                    
+                    // Create backup
+                    if (file_exists($configFile)) {
+                        copy($configFile, $configBackupFile);
+                    }
+                    
+                    // Write new config
+                    $configContent = "<?php\nreturn " . var_export($newConfig, true) . ";\n";
+                    file_put_contents($configFile, $configContent);
+                    
+                    return [
+                        'response' => ['view' => 'config-saved', 'data' => ['config' => $newConfig]],
+                        'toast' => ['message' => 'Configurações salvas com sucesso! Reinicie a aplicação para aplicar as mudanças.', 'type' => 'success']
+                    ];
+                } catch (\Exception $e) {
+                    return [
+                        'response' => ['view' => 'config', 'data' => ['errors' => [$e->getMessage()]]],
+                        'toast' => ['message' => 'Erro ao salvar configurações: ' . $e->getMessage(), 'type' => 'error']
+                    ];
+                }
+            }
+            return ['response' => ['view' => 'config', 'data' => []], 'toast' => null];
+        
+        case 'list':
+        default:
+            // Load current config
+            $currentConfig = [];
+            if (file_exists($configFile)) {
+                $currentConfig = include $configFile;
+            }
+            
+            return ['response' => ['view' => 'config', 'data' => ['config' => $currentConfig]], 'toast' => null];
+    }
+}
+
+/**
  * Validation helpers
  */
 function validateSubsiteInput(string $name, string $url): array
@@ -355,6 +430,7 @@ function renderLayout(string $entity, string $action, array $response, $app, ?ar
                 <a href="/manager.php?entity=subsite" class="<?= $activeTab === 'subsite' ? 'border-blue-500 text-gray-900' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' ?> whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors">Subsites</a>
                 <a href="/manager.php?entity=plugin" class="<?= $activeTab === 'plugin' ? 'border-blue-500 text-gray-900' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' ?> whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors">Plugins</a>
                 <a href="/manager.php?entity=theme" class="<?= $activeTab === 'theme' ? 'border-blue-500 text-gray-900' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' ?> whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors">Themes</a>
+                <a href="/manager.php?entity=config" class="<?= $activeTab === 'config' ? 'border-blue-500 text-gray-900' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' ?> whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors">Configurações</a>
             </div>
         </div>
     </nav>
@@ -462,7 +538,7 @@ function renderContent(string $entity, string $action, array $response, $app): s
 {
     $view = $response['view'] ?? 'dashboard';
     $data = $response['data'] ?? [];
-    
+
     switch ($view) {
         case 'dashboard': return renderDashboard($data, $app);
         case 'subsite-list':
@@ -473,6 +549,7 @@ function renderContent(string $entity, string $action, array $response, $app): s
         case 'plugin-clone': return renderPluginCloneForm($data['errors'] ?? [], $app);
         case 'theme-list': return renderThemeList($data['themes'] ?? [], $app);
         case 'theme-clone': return renderThemeCloneForm($data['errors'] ?? [], $app);
+        case 'config': return renderConfigForm($data['config'] ?? [], $data['errors'] ?? [], $app);
         default: return '<div class="text-gray-600">View not found: ' . htmlspecialchars($view) . '</div>';
     }
 }
@@ -942,6 +1019,212 @@ function renderThemeCloneForm(array $errors = [], $app): string
                 <li>• Note: Activating a theme will change the application appearance</li>
             </ul>
         </div>
+    </div>
+    <?php
+    return ob_get_clean();
+}
+
+/**
+ * Render config form
+ */
+function renderConfigForm(array $config = [], array $errors = [], $app): string
+{
+    ob_start();
+    
+    $cfg = $config;
+    ?>
+    <div class="max-w-4xl">
+        <div class="mb-6">
+            <h2 class="text-2xl font-bold text-gray-900">Configurações Gerais</h2>
+            <p class="text-gray-600 mt-1">Configure as opções principais do Mapas Culturais</p>
+        </div>
+        
+        <?php if (!empty($errors)): ?>
+        <div class="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md">
+            <ul class="list-disc list-inside space-y-1">
+                <?php foreach ($errors as $error): ?>
+                    <li><?= htmlspecialchars($error) ?></li>
+                <?php endforeach; ?>
+            </ul>
+        </div>
+        <?php endif; ?>
+        
+        <div class="bg-yellow-50 border border-yellow-200 rounded-md p-4 mb-6">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <svg class="h-5 w-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                    </svg>
+                </div>
+                <div class="ml-3">
+                    <h3 class="text-sm font-medium text-yellow-800">Importante</h3>
+                    <div class="mt-2 text-sm text-yellow-700">
+                        <ul class="list-disc list-inside space-y-1">
+                            <li>Estas configurações são críticas para o funcionamento de plugins e temas</li>
+                            <li>Após salvar, <strong>reinicie a aplicação</strong> para aplicar as mudanças</li>
+                            <li>Um backup será criado automaticamente em <code class="bg-yellow-100 px-1 rounded">config.php.bak</code></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <form method="POST" action="/manager.php?entity=config&action=save" class="space-y-6" novalidate>
+            <!-- Seção: Aplicação -->
+            <div class="bg-white shadow rounded-lg p-6">
+                <h3 class="text-lg font-medium text-gray-900 mb-4 border-b pb-2">🚀 Aplicação</h3>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Base URL <span class="text-red-500">*</span></label>
+                        <input type="url" name="base_url" required 
+                               value="<?= htmlspecialchars($cfg['base.url'] ?? '') ?>" 
+                               placeholder="https://mapas.example.com"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                        <p class="mt-1 text-xs text-gray-500">URL completa do site (com protocolo)</p>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Modo da Aplicação</label>
+                        <select name="app_mode" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                            <option value="production" <?= ($cfg['app.mode'] ?? '') === APPMODE_PRODUCTION ? 'selected' : '' ?>>Production</option>
+                            <option value="development" <?= ($cfg['app.mode'] ?? '') === APPMODE_DEVELOPMENT ? 'selected' : '' ?>>Development</option>
+                            <option value="staging" <?= ($cfg['app.mode'] ?? '') === APPMODE_STAGING ? 'selected' : '' ?>>Staging</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Nome do Site</label>
+                        <input type="text" name="app_siteName" 
+                               value="<?= htmlspecialchars($cfg['app.siteName'] ?? 'Mapas Culturais') ?>"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Idioma</label>
+                        <select name="app_lcode" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                            <option value="pt_BR" <?= ($cfg['app.lcode'] ?? '') === 'pt_BR' ? 'selected' : '' ?>>Português (BR)</option>
+                            <option value="es_ES" <?= ($cfg['app.lcode'] ?? '') === 'es_ES' ? 'selected' : '' ?>>Español (ES)</option>
+                            <option value="en_US" <?= ($cfg['app.lcode'] ?? '') === 'en_US' ? 'selected' : '' ?>>English (US)</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="mt-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Descrição do Site</label>
+                    <textarea name="app_siteDescription" rows="2" 
+                              class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"><?= htmlspecialchars($cfg['app.siteDescription'] ?? 'O Mapas Culturais é uma plataforma livre para mapeamento cultural.') ?></textarea>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">País Padrão</label>
+                        <input type="text" name="app_defaultCountry" maxlength="2"
+                               value="<?= htmlspecialchars($cfg['app.defaultCountry'] ?? 'BR') ?>"
+                               placeholder="BR"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                        <p class="mt-1 text-xs text-gray-500">Código ISO de 2 letras</p>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Moeda</label>
+                        <input type="text" name="app_currency" 
+                               value="<?= htmlspecialchars($cfg['app.currency'] ?? 'BRL') ?>"
+                               placeholder="BRL"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Seção: Tema e Plugins -->
+            <div class="bg-white shadow rounded-lg p-6">
+                <h3 class="text-lg font-medium text-gray-900 mb-4 border-b pb-2">🎨 Tema e Plugins</h3>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Tema Ativo <span class="text-red-500">*</span></label>
+                        <select name="themes_active" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                            <?php
+                            $themeManager = new \MapasCulturais\Managers\ThemeManager($app);
+                            $themes = $themeManager->list();
+                            foreach ($themes as $theme): ?>
+                                <option value="<?= htmlspecialchars($theme['name']) ?>" 
+                                        <?= ($cfg['themes.active'] ?? '') === $theme['name'] || ($cfg['app.theme'] ?? '') === $theme['name'] ? 'selected' : '' ?>>
+                                    <?= htmlspecialchars($theme['name']) ?><?= $theme['active'] ? ' (Ativo)' : '' ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                        <p class="mt-1 text-xs text-gray-500">Tema que será utilizado no site</p>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">IDs dos Selos Verificadores</label>
+                        <input type="text" name="app_verifiedSealsIds" 
+                               value="<?= htmlspecialchars(is_array($cfg['app.verifiedSealsIds'] ?? []) ? implode(',', $cfg['app.verifiedSealsIds']) : ($cfg['app.verifiedSealsIds'] ?? '1')) ?>"
+                               placeholder="1,2,3"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                        <p class="mt-1 text-xs text-gray-500">IDs separados por vírgula</p>
+                    </div>
+                </div>
+                
+                <div class="mt-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Plugins Habilitados</label>
+                    <div class="border border-gray-300 rounded-md p-4 max-h-64 overflow-y-auto">
+                        <?php
+                        $pluginManager = new \MapasCulturais\Managers\PluginManager($app);
+                        $plugins = $pluginManager->list();
+                        $enabledPlugins = $cfg['app.enabledPlugins'] ?? [];
+                        if (!is_array($enabledPlugins)) {
+                            $enabledPlugins = [];
+                        }
+                        ?>
+                        <?php if (empty($plugins)): ?>
+                            <p class="text-gray-500 text-sm">Nenhum plugin instalado</p>
+                        <?php else: ?>
+                            <div class="space-y-2">
+                                <?php foreach ($plugins as $plugin): ?>
+                                    <label class="flex items-center space-x-2">
+                                        <input type="checkbox" name="app_enabledPlugins[]" value="<?= htmlspecialchars($plugin['name']) ?>"
+                                               <?= in_array($plugin['name'], $enabledPlugins) ? 'checked' : '' ?>
+                                               class="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                                        <span class="text-sm text-gray-700"><?= htmlspecialchars($plugin['name']) ?></span>
+                                        <?= $plugin['enabled'] ? '<span class="text-xs bg-green-100 text-green-800 px-2 py-0.5 rounded">Ativo</span>' : '' ?>
+                                    </label>
+                                <?php endforeach; ?>
+                            </div>
+                        <?php endif; ?>
+                    </div>
+                    <p class="mt-1 text-xs text-gray-500">Selecione os plugins que deseja habilitar</p>
+                </div>
+            </div>
+            
+            <!-- Info adicional -->
+            <div class="bg-blue-50 border border-blue-200 rounded-md p-4">
+                <h4 class="text-sm font-medium text-blue-800 mb-2">📋 Informações Adicionais</h4>
+                <ul class="text-sm text-blue-700 space-y-1">
+                    <li>• O arquivo de configuração é salvo em <code class="bg-blue-100 px-1 rounded">config/conf/config.php</code></li>
+                    <li>• Plugins e temas só funcionarão após reiniciar a aplicação</li>
+                    <li>• Para mudanças avançadas, edite diretamente os arquivos de configuração</li>
+                    <li>• Em produção, use o modo <code class="bg-blue-100 px-1 rounded">production</code> para melhor performance</li>
+                </ul>
+            </div>
+            
+            <!-- Botões -->
+            <div class="flex space-x-3">
+                <button type="submit" class="flex-1 bg-blue-600 text-white px-6 py-3 rounded-md hover:bg-blue-700 font-medium transition-colors flex items-center justify-center shadow-lg">
+                    <span class="htmx-indicator mr-2">
+                        <svg class="loading-spinner h-5 w-5" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                    </span>
+                    💾 Salvar Configurações
+                </button>
+                <a href="/manager.php" class="px-6 py-3 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors font-medium">Cancelar</a>
+            </div>
+        </form>
     </div>
     <?php
     return ob_get_clean();
