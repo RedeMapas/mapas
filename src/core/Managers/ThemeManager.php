@@ -111,7 +111,7 @@ class ThemeManager
 
     protected function isActive(string $themeName): bool
     {
-        return $this->app->config['app.theme'] === $themeName;
+        return ($this->app->config['app.theme'] ?? '') === $themeName;
     }
 
     protected function removeDirectory(string $dir): void
