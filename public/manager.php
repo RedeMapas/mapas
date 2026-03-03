@@ -13,8 +13,10 @@ require __DIR__ . '/bootstrap.php';
 
 // Authentication check - use Mapas Culturais auth system
 if (!$app->user || !$app->user->id) {
-    // Not authenticated, redirect to login
-    $app->auth->requireAuthentication('/manager.php');
+    // Not authenticated - redirect to login manually
+    // Store current URL to redirect back after login
+    $_SESSION['auth_redirect'] = '/manager.php';
+    header('Location: /autenticacao/');
     exit;
 }
 
