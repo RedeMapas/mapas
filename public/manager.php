@@ -279,8 +279,9 @@ function handleConfigAction(string $action, $app): array
                         $currentConfig = include $configFile;
                     }
                     
-                    // Update config from POST
+                    // Update config from POST - Main Settings
                     $configUpdates = [
+                        // Main
                         'themes.active' => $_POST['themes_active'] ?? 'redemapas',
                         'base.url' => $_POST['base_url'] ?? '',
                         'app.siteName' => $_POST['app_siteName'] ?? 'Mapas Culturais',
@@ -292,6 +293,32 @@ function handleConfigAction(string $action, $app): array
                         'app.currency' => $_POST['app_currency'] ?? 'BRL',
                         'app.enabledPlugins' => $_POST['app_enabledPlugins'] ?? [],
                         'app.theme' => $_POST['app_theme'] ?? 'redemapas',
+                        
+                        // Maps
+                        'maps.center' => array_map('floatval', explode(',', $_POST['maps_center'] ?? '-14.2400732,-53.1805018')),
+                        'maps.zoom.default' => (int)($_POST['maps_zoom_default'] ?? 5),
+                        'maps.zoom.max' => (int)($_POST['maps_zoom_max'] ?? 18),
+                        'maps.zoom.min' => (int)($_POST['maps_zoom_min'] ?? 5),
+                        'maps.tileServer' => $_POST['maps_tileServer'] ?? '//{s}.tile.osm.org/{z}/{x}/{y}.png',
+                        'maps.includeGoogleLayers' => isset($_POST['maps_includeGoogleLayers']),
+                        'app.googleApiKey' => $_POST['app_googleApiKey'] ?? '',
+                        
+                        // Mailer
+                        'mailer.transport' => $_POST['mailer_transport'] ?? '',
+                        'mailer.from' => $_POST['mailer_from'] ?? 'noreply@mapas.example.com',
+                        'mailer.replyTo' => $_POST['mailer_replyTo'] ?? '',
+                        'mailer.bcc' => $_POST['mailer_bcc'] ?? '',
+                        
+                        // Cache
+                        'cache.type' => $_POST['cache_type'] ?? 'file',
+                        
+                        // LGPD
+                        'lgpd.enabled' => isset($_POST['lgpd_enabled']),
+                        
+                        // Advanced
+                        'app.executeJobsImmediately' => isset($_POST['app_executeJobsImmediately']),
+                        'app.redirect_profile_validate' => isset($_POST['app_redirect_profile_validate']),
+                        'app.not_allowed_mime_types' => $_POST['app_not_allowed_mime_types'] ?? 'html|php|javascript|css|executable|msdownload|bat|cmd|installer|bash|diskimage|android|java|octet-stream',
                     ];
                     
                     // Merge with current config
@@ -1138,10 +1165,158 @@ function renderConfigForm(array $config = [], array $errors = [], $app): string
                 </div>
             </div>
             
+            <!-- Seção: Mapa -->
+            <div class="bg-white shadow rounded-lg p-6">
+                <h3 class="text-lg font-medium text-gray-900 mb-4 border-b pb-2">🗺️ Mapa</h3>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Centro do Mapa (lat,lon)</label>
+                        <input type="text" name="maps_center" 
+                               value="<?= htmlspecialchars(is_array($cfg['maps.center'] ?? []) ? implode(',', $cfg['maps.center']) : ($cfg['maps.center'] ?? '-14.2400732,-53.1805018')) ?>"
+                               placeholder="-14.2400732,-53.1805018"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                        <p class="mt-1 text-xs text-gray-500">Coordenadas do centro do mapa</p>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Servidor de Tiles</label>
+                        <input type="text" name="maps_tileServer" 
+                               value="<?= htmlspecialchars($cfg['maps.tileServer'] ?? '//{s}.tile.osm.org/{z}/{x}/{y}.png') ?>"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 font-mono text-xs">
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Zoom Padrão</label>
+                        <input type="number" name="maps_zoom_default" min="1" max="20"
+                               value="<?= htmlspecialchars($cfg['maps.zoom.default'] ?? 5) ?>"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Zoom Mínimo</label>
+                        <input type="number" name="maps_zoom_min" min="1" max="20"
+                               value="<?= htmlspecialchars($cfg['maps.zoom.min'] ?? 5) ?>"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Zoom Máximo</label>
+                        <input type="number" name="maps_zoom_max" min="1" max="20"
+                               value="<?= htmlspecialchars($cfg['maps.zoom.max'] ?? 18) ?>"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                </div>
+                
+                <div class="mt-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Google API Key</label>
+                    <input type="text" name="app_googleApiKey" 
+                           value="<?= htmlspecialchars($cfg['app.googleApiKey'] ?? '') ?>"
+                           placeholder="AIzaSy..."
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 font-mono text-xs">
+                    <p class="mt-1 text-xs text-gray-500">Necessária para usar camadas Google e geocoding</p>
+                </div>
+                
+                <div class="mt-4 flex items-center">
+                    <input type="checkbox" name="maps_includeGoogleLayers" id="maps_includeGoogleLayers" value="1"
+                           <?= !empty($cfg['maps.includeGoogleLayers']) ? 'checked' : '' ?>
+                           class="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                    <label for="maps_includeGoogleLayers" class="ml-2 text-sm text-gray-700">Incluir Camadas Google</label>
+                </div>
+            </div>
+            
+            <!-- Seção: E-mail -->
+            <div class="bg-white shadow rounded-lg p-6">
+                <h3 class="text-lg font-medium text-gray-900 mb-4 border-b pb-2">📧 E-mail (Mailer)</h3>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Transporte SMTP</label>
+                        <input type="text" name="mailer_transport" 
+                               value="<?= htmlspecialchars($cfg['mailer.transport'] ?? '') ?>"
+                               placeholder="smtp://user:pass@smtp.example.com:587"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 font-mono text-xs">
+                        <p class="mt-1 text-xs text-gray-500">Ex: smtp://localhost:25 ou sendgrid+smtp://KEY@default</p>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">E-mail From</label>
+                        <input type="email" name="mailer_from" 
+                               value="<?= htmlspecialchars($cfg['mailer.from'] ?? '') ?>"
+                               placeholder="noreply@example.com"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Reply-To</label>
+                        <input type="email" name="mailer_replyTo" 
+                               value="<?= htmlspecialchars($cfg['mailer.replyTo'] ?? '') ?>"
+                               placeholder="suporte@example.com"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">BCC (cópia oculta)</label>
+                        <input type="email" name="mailer_bcc" 
+                               value="<?= htmlspecialchars($cfg['mailer.bcc'] ?? '') ?>"
+                               placeholder="backup@example.com"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Seção: Avançado -->
+            <div class="bg-white shadow rounded-lg p-6">
+                <h3 class="text-lg font-medium text-gray-900 mb-4 border-b pb-2">⚙️ Avançado</h3>
+                
+                <div class="space-y-3">
+                    <div class="flex items-center">
+                        <input type="checkbox" name="lgpd_enabled" id="lgpd_enabled" value="1"
+                               <?= !empty($cfg['lgpd.enabled']) ? 'checked' : '' ?>
+                               class="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                        <label for="lgpd_enabled" class="ml-2 text-sm text-gray-700">Habilitar LGPD</label>
+                    </div>
+                    
+                    <div class="flex items-center">
+                        <input type="checkbox" name="app_executeJobsImmediately" id="app_executeJobsImmediately" value="1"
+                               <?= !empty($cfg['app.executeJobsImmediately']) ? 'checked' : '' ?>
+                               class="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                        <label for="app_executeJobsImmediately" class="ml-2 text-sm text-gray-700">Executar Jobs Imediatamente</label>
+                        <p class="ml-auto text-xs text-gray-500">Útil para desenvolvimento</p>
+                    </div>
+                    
+                    <div class="flex items-center">
+                        <input type="checkbox" name="app_redirect_profile_validate" id="app_redirect_profile_validate" value="1"
+                               <?= !empty($cfg['app.redirect_profile_validate']) ? 'checked' : '' ?>
+                               class="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                        <label for="app_redirect_profile_validate" class="ml-2 text-sm text-gray-700">Redirecionar para Validar Perfil</label>
+                    </div>
+                </div>
+                
+                <div class="mt-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">MIME Types Bloqueados</label>
+                    <input type="text" name="app_not_allowed_mime_types" 
+                           value="<?= htmlspecialchars($cfg['app.not_allowed_mime_types'] ?? 'html|php|javascript|css|executable|msdownload|bat|cmd|installer|bash|diskimage|android|java|octet-stream') ?>"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 font-mono text-xs">
+                    <p class="mt-1 text-xs text-gray-500">Separados por | (pipe)</p>
+                </div>
+                
+                <div class="mt-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Tipo de Cache</label>
+                    <select name="cache_type" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                        <option value="file" <?= ($cfg['cache.type'] ?? '') === 'file' ? 'selected' : '' ?>>Arquivo</option>
+                        <option value="redis" <?= ($cfg['cache.type'] ?? '') === 'redis' ? 'selected' : '' ?>>Redis</option>
+                        <option value="apc" <?= ($cfg['cache.type'] ?? '') === 'apc' ? 'selected' : '' ?>>APC</option>
+                    </select>
+                </div>
+            </div>
+            
             <!-- Seção: Tema e Plugins -->
             <div class="bg-white shadow rounded-lg p-6">
                 <h3 class="text-lg font-medium text-gray-900 mb-4 border-b pb-2">🎨 Tema e Plugins</h3>
-                
+
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Tema Ativo <span class="text-red-500">*</span></label>
