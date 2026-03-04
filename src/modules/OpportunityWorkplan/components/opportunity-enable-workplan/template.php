@@ -241,7 +241,6 @@ $this->import('
                                 <input type="checkbox" v-model="entity.workplan_deliveryRequireSegment" @click="autoSave()" /><?= i::__("Obrigatório") ?>
                             </label>
                         </div>
-
                         <div class="field__group">
                             <label class="field__checkbox">
                                 <input type="checkbox" v-model="entity.workplan_deliveryInformArtChainLink" @click="autoSave()" /><?= i::__("Informar principal elo das artes acionado") ?> {{ `no ${getWorkplanLabelDefault}` }}
@@ -253,7 +252,7 @@ $this->import('
 
                         <div class="field__group">
                             <label class="field__checkbox">
-                                <input type="checkbox" v-model="entity.workplan_deliveryInformTotalBudget" @click="autoSave()" /><?= i::__("Informar orçamento total da atividade") ?> {{ `no ${getWorkplanLabelDefault}` }}
+                                <input type="checkbox" v-model="entity.workplan_deliveryInformTotalBudget" @click="autoSave()" /><?= i::__("Informar orçamento total") ?> {{ `na ${getWorkplanLabelDefault}` }}
                             </label>
                             <label v-if="entity.workplan_deliveryInformTotalBudget" class="field__checkbox field__checkbox--sub">
                                 <input type="checkbox" v-model="entity.workplan_deliveryRequireTotalBudget" @click="autoSave()" /><?= i::__("Obrigatório") ?>

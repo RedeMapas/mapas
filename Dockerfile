@@ -185,6 +185,7 @@ COPY version.txt ./version.txt
 # Copy PHP configuration
 COPY docker/production/php.ini /usr/local/etc/php/php.ini
 COPY docker/timezone.ini /usr/local/etc/php/conf.d/timezone.ini
+COPY docker/opcache-disable.ini /usr/local/etc/php/conf.d/zzz-opcache-disable.ini
 
 # Copy PHP-FPM pool configuration and modify for Unix socket
 COPY docker/production/www.conf /usr/local/etc/php-fpm.d/www.conf

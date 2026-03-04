@@ -115,16 +115,17 @@ class FileSystem extends \MapasCulturais\AssetManager{
             $theme = $app->view;
             $content = "";
 
-            $assets = array_map(function($e) use($theme, &$content, &$result){
+            $assets = array_map(function($e) use($theme, $extension, &$content, &$result){
                 if(preg_match('#^(\/\/|https?)#', $e)){
                     $result[] = $e;
-                    return ;
+                    return null;
                 }
                 $filename = $theme->getAssetFilename($e);
                 $content .= file_get_contents($filename)."\n";
 
                 return $filename;
             }, $ordered);
+            $assets = array_values(array_filter($assets));
 
             if($extension === 'js'){
                 $output_file = $this->_getPublishedScriptsGroupFilename($group, $content);
@@ -133,8 +134,13 @@ class FileSystem extends \MapasCulturais\AssetManager{
             }
             $output_file = "$extension/$output_file";
             if($process_pattern){
-                $input_files = implode(' ', $assets);
-                $this->_exec($process_pattern, $input_files, $output_file);
+                if($assets){
+                    $input_files = implode(' ', $assets);
+                    $this->_exec($process_pattern, $input_files, $output_file);
+                }else{
+                    $this->_mkAssetDir($output_file);
+                    file_put_contents($this->config['publishPath'] . $output_file, $content);
+                }
 
             }else{
                 $this->_mkAssetDir($output_file);
