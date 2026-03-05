@@ -30,13 +30,15 @@ RUN mkdir -p /vendor-css/@vuepic/vue-datepicker/dist \
   /vendor-css/floating-vue/dist \
   /vendor-css/leaflet/dist \
   /vendor-css/@vueform/slider/themes \
-  /vendor-css/leaflet.markercluster/dist && \
+  /vendor-css/leaflet.markercluster/dist \
+  /vendor-css/shepherd.js/dist/css && \
   cp -L modules/Components/node_modules/@vuepic/vue-datepicker/dist/main.css    /vendor-css/@vuepic/vue-datepicker/dist/main.css && \
   cp -L modules/Components/node_modules/floating-vue/dist/style.css             /vendor-css/floating-vue/dist/style.css && \
   cp -L modules/Components/node_modules/leaflet/dist/leaflet.css                /vendor-css/leaflet/dist/leaflet.css && \
   cp -L modules/Components/node_modules/@vueform/slider/themes/default.css      /vendor-css/@vueform/slider/themes/default.css && \
   cp -L modules/Components/node_modules/leaflet.markercluster/dist/MarkerCluster.css         /vendor-css/leaflet.markercluster/dist/MarkerCluster.css && \
-  cp -L modules/Components/node_modules/leaflet.markercluster/dist/MarkerCluster.Default.css /vendor-css/leaflet.markercluster/dist/MarkerCluster.Default.css
+  cp -L modules/Components/node_modules/leaflet.markercluster/dist/MarkerCluster.Default.css /vendor-css/leaflet.markercluster/dist/MarkerCluster.Default.css && \
+  cp -L modules/Components/node_modules/shepherd.js/dist/css/shepherd.css /vendor-css/shepherd.js/dist/css/shepherd.css
 
 # Cleanup development files from node_modules
 RUN find . -path '*/node_modules/*' -type f \( \
