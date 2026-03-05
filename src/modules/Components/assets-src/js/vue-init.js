@@ -1,6 +1,6 @@
 import { Icon } from '@iconify/vue'
 import * as Pinia from 'pinia'
-import * as Vue from 'vue'
+import * as Vue from 'vue/dist/vue.esm-bundler.js'
 import VueFinalModal from 'vue-final-modal'
 import * as VueAdvancedCropper from "vue-advanced-cropper";
 import * as Vue3Carousel from "vue3-carousel";
@@ -62,5 +62,23 @@ globalThis.$DESCRIPTIONS = $MAPAS.EntitiesDescription ?? []
 globalThis.$TAXONOMIES = $MAPAS.Taxonomies ?? {}
 
 document.addEventListener('DOMContentLoaded', () => {
-    app.mount('#main-app');
+    const root = document.querySelector('#main-app')
+    if (!root) {
+        return
+    }
+
+    // This project uses string templates from $TEMPLATES.
+    // If the runtime compiler is unavailable, mounting would clear #main-app.
+    if (typeof Vue.compile !== 'function') {
+        console.error('[vue-init] Vue runtime compiler not available. Skipping mount to avoid empty body.')
+        document.body.style.opacity = 1
+        return
+    }
+
+    try {
+        app.mount(root)
+    } catch (error) {
+        console.error('[vue-init] Failed to mount app:', error)
+        document.body.style.opacity = 1
+    }
 })

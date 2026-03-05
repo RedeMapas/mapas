@@ -1,4 +1,13 @@
 {
     "name": "@mapas/scripts",
-    "version": "0.0.0"
+    "version": "0.0.0",
+    "type": "module",
+    "bin": {
+        "mapas-build": "./esbuild-build.mjs"
+    },
+    "dependencies": {
+        "esbuild": "^0.25.1",
+        "fast-glob": "^3.3.3",
+        "sass": "^1.92.1"
+    }
 }
