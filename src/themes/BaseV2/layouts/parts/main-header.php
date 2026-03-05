@@ -59,7 +59,7 @@ $redirect_to = $_SERVER['REQUEST_URI'] ?? '/';
                 <li v-if="global.enabledEntities.agents">
                     <?php $this->applyTemplateHook('mc-header-menu-agent', 'begin') ?>
                     <a href="<?= $app->createUrl('search', 'agents') ?>" class="mc-header-menu--item agent">
-                        <span class="icon"> <mc-icon name="agent-2"> </span>
+                        <span class="icon"> <mc-icon name="agent-2"></mc-icon> </span>
                         <p class="label"> <?php i::_e('Agentes') ?> </p>
                     </a>
                     <?php $this->applyTemplateHook('mc-header-menu-agent', 'end') ?>
@@ -70,7 +70,7 @@ $redirect_to = $_SERVER['REQUEST_URI'] ?? '/';
                 <li v-if="global.enabledEntities.events">
                     <?php $this->applyTemplateHook('mc-header-menu-events', 'begin') ?>
                     <a href="<?= $app->createUrl('search', 'events') ?>" class="mc-header-menu--item event">
-                        <span class="icon"> <mc-icon name="event"> </span>
+                        <span class="icon"> <mc-icon name="event"></mc-icon> </span>
                         <p class="label"> <?php i::_e('Eventos') ?> </p>
                     </a>
                     <?php $this->applyTemplateHook('mc-header-menu-events', 'end') ?>
@@ -81,7 +81,7 @@ $redirect_to = $_SERVER['REQUEST_URI'] ?? '/';
                 <li v-if="global.enabledEntities.spaces">
                     <?php $this->applyTemplateHook('mc-header-menu-spaces', 'begin') ?>
                     <a href="<?= $app->createUrl('search', 'spaces') ?>" class="mc-header-menu--item space">
-                        <span class="icon"> <mc-icon name="space"> </span>
+                        <span class="icon"> <mc-icon name="space"></mc-icon> </span>
                         <p class="label"> <?php i::_e('Espaços') ?> </p>
                     </a>
                     <?php $this->applyTemplateHook('mc-header-menu-spaces', 'end') ?>
@@ -92,7 +92,7 @@ $redirect_to = $_SERVER['REQUEST_URI'] ?? '/';
                 <li v-if="global.enabledEntities.projects">
                     <?php $this->applyTemplateHook('mc-header-menu-projects', 'begin') ?>
                     <a href="<?= $app->createUrl('search', 'projects') ?>" class="mc-header-menu--item project">
-                        <span class="icon"> <mc-icon name="project"> </span>
+                        <span class="icon"> <mc-icon name="project"></mc-icon> </span>
                         <p class="label"> <?php i::_e('Projetos') ?> </p>
                     </a>
                     <?php $this->applyTemplateHook('mc-header-menu-projects', 'end') ?>
