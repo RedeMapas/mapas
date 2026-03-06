@@ -43,7 +43,7 @@ services:
     volumes:
       # Development PHP configuration
       - ./dev/docker/php.ini:/usr/local/etc/php/php.ini:ro
-      - ./dev/docker/xdebug.ini:/usr/local/etc/php/conf.d/xdebug.ini:ro
+      # - ./dev/docker/xdebug.ini:/usr/local/etc/php/conf.d/xdebug.ini:ro
       # Entrypoint and cron scripts
       - ./docker/entrypoint.sh:/entrypoint.sh:ro
       - ./docker/jobs-cron.sh:/jobs-cron.sh:ro
