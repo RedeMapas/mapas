@@ -8,7 +8,6 @@ ARG PHP_VERSION=8.4
 FROM node:${NODE_VERSION}-alpine AS builder-node
 
 RUN corepack enable && corepack prepare pnpm@latest --activate
-RUN npm install -g sass
 
 WORKDIR /build
 
@@ -19,7 +18,7 @@ RUN pnpm run build
 
 # Compile SASS for BaseV1 theme
 RUN if [ -f themes/BaseV1/assets/css/sass/main.scss ]; then \
-  sass themes/BaseV1/assets/css/sass/main.scss:themes/BaseV1/assets/css/main.css --quiet; \
+  ./node_scripts/node_modules/.bin/sass themes/BaseV1/assets/css/sass/main.scss:themes/BaseV1/assets/css/main.css --quiet; \
   fi
 
 # Resolve pnpm symlinks for vendor CSS files needed by the PHP AssetManager at runtime.
@@ -249,13 +248,14 @@ FROM production AS development
 
 # Install Node.js and pnpm for hot-reload development
 RUN apk add --no-cache nodejs npm && \
-  npm install -g pnpm sass terser uglifycss autoprefixer postcss
-
+  npm install -g pnpm
+# sass terser uglifycss autoprefixer postcss
+#
 # Install xdebug (but don't enable by default)
-RUN apk add --no-cache --virtual .xdebug-deps $PHPIZE_DEPS linux-headers && \
-  pecl install xdebug && \
-  apk del .xdebug-deps && \
-  ln -s $(find /usr/local/lib/php/extensions/ -name xdebug.so) /usr/local/lib/php/extensions/xdebug.so
+# RUN apk add --no-cache --virtual .xdebug-deps $PHPIZE_DEPS linux-headers && \
+#   pecl install xdebug && \
+#   apk del .xdebug-deps && \
+#   ln -s $(find /usr/local/lib/php/extensions/ -name xdebug.so) /usr/local/lib/php/extensions/xdebug.so
 
 # Copy development files
 COPY docker/development/router.php /var/www/dev/router.php
