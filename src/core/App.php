@@ -794,6 +794,7 @@ class App {
             'user' => $this->config['db.user'],
             'password' => $this->config['db.password'],
             'host' => $this->config['db.host'],
+            'port' => $this->config['db.port'],
             'wrapperClass' => Connection::class
         ], $this->doctrineConfiguration);
 
@@ -1032,11 +1033,11 @@ class App {
      * Define o subsite pelo id
      * 
      * @param int|null $subsite_id 
-     * @return void 
-     * @throws NotSupported 
-     * @throws GlobalException 
+     * @return void
+     * @throws NotSupported
+     * @throws GlobalException
      */
-    public function setCurrentSubsiteId(int $subsite_id = null) {
+    public function setCurrentSubsiteId(?int $subsite_id = null) {
         if(is_null($subsite_id)) {
             $this->subsite = null;
         } else {
@@ -1283,7 +1284,7 @@ class App {
      *
      * @return mixed
      */
-    public function getConfig(string $key = null) {
+    public function getConfig(?string $key = null) {
         if (is_null($key)) {
             return $this->config;
         } else {
@@ -1768,7 +1769,7 @@ class App {
      *
      * @param  string   $name   A hook name (Optional)
      */
-    public function clearHooks(string $name = null) {
+    public function clearHooks(?string $name = null) {
         $this->hooks->clear($name);
     }
 
@@ -1783,7 +1784,7 @@ class App {
      * @param  string     $name     A hook name (Optional)
      * @return array|null
      */
-    public function getHooks(string $name = null) {
+    public function getHooks(?string $name = null) {
         return $this->hooks->get($name);
     }
 
@@ -1839,7 +1840,7 @@ class App {
      * @param Subsite|int $subsite Subsite responsável pelo job, pode ser um objeto Subsite ou um ID de subsite
      * @return Job Retorna o objeto Job criado
      */
-    public function enqueueOrReplaceJob(string $type_slug, array $data, string $start_string = 'now', string $interval_string = '', int $iterations = 1, User|int $user = null, Subsite|int $subsite = null) {
+    public function enqueueOrReplaceJob(string $type_slug, array $data, string $start_string = 'now', string $interval_string = '', int $iterations = 1, User|int|null $user = null, Subsite|int|null $subsite = null) {
         return $this->enqueueJob($type_slug, $data, $start_string, $interval_string, $iterations, true, $user, $subsite);
     }
     
@@ -2063,10 +2064,10 @@ class App {
      * 
      * @param Entity $entity 
      * @param User $user = null
-     * 
-     * @return void 
+     *
+     * @return void
      */
-    public function enqueueEntityToPCacheRecreation(Entity $entity, User $user = null) {
+    public function enqueueEntityToPCacheRecreation(Entity $entity, ?User $user = null) {
         if($this->config['app.recreateCacheImmediately']) {
             $entity->recreatePermissionCache($user ? [$user] : null);
             return;
@@ -2085,10 +2086,10 @@ class App {
      * 
      * @param Entity $entity 
      * @param User $user = null
-     * 
-     * @return bool 
+     *
+     * @return bool
      */
-    public function isEntityEnqueuedToPCacheRecreation(Entity $entity, User $user = null) {
+    public function isEntityEnqueuedToPCacheRecreation(Entity $entity, ?User $user = null) {
         $entity_key = $entity->id ? "{$entity}" : "{$entity}:".spl_object_id($entity);
         if($user) {
             $entity_key = "{$entity_key}:{$user->id}";
@@ -3764,10 +3765,10 @@ class App {
      * Registra um metadado para a entidade especificada
      *
      * @param Definitions\Metadata $metadata
-     * @param string $entity_class 
+     * @param string $entity_class
      * @param int|string|null $entity_type_id
      */
-    function registerMetadata(Definitions\Metadata $metadata, string $entity_class, int|string $entity_type_id = null) {
+    function registerMetadata(Definitions\Metadata $metadata, string $entity_class, int|string|null $entity_type_id = null) {
         if($entity_class::usesTypes() && is_null($entity_type_id)){
             foreach($this->getRegisteredEntityTypes($entity_class) as $type){
                 if($type){
@@ -3797,11 +3798,11 @@ class App {
      * Se a chave do metadado não for informada, desregistra todos os metadados
      * 
      * @param string $entity_class 
-     * @param string $key 
-     * 
-     * @return void 
+     * @param string $key
+     *
+     * @return void
      */
-    function unregisterEntityMetadata(string $entity_class, string $key = null) {
+    function unregisterEntityMetadata(string $entity_class, ?string $key = null) {
         foreach($this->_register['entity_metadata_definitions'] as $class => $metadata){
             if($class === $entity_class || strpos($class . ':', $entity_class) === 0){
                 if($key){
@@ -3823,7 +3824,7 @@ class App {
      *
      * @return Definitions\Metadata[]
      */
-    function getRegisteredMetadata(Entity|string $entity, int|Definitions\EntityType $type = null){
+    function getRegisteredMetadata(Entity|string $entity, int|Definitions\EntityType|null $type = null){
         if (is_object($entity)) {
             $entity = $entity->getClassName();
         }
@@ -3842,7 +3843,7 @@ class App {
      * @param int $type
      * @return Definitions\Metadata|null
      */
-    function getRegisteredMetadataByMetakey(string $metakey, Entity|string $entity, int $type = null): Definitions\Metadata|null {
+    function getRegisteredMetadataByMetakey(string $metakey, Entity|string $entity, ?int $type = null): Definitions\Metadata|null {
         if (is_object($entity)) {
             $entity = $entity->getClassName();
         }
@@ -4036,7 +4037,7 @@ class App {
      *
      * @return Definitions\Taxonomy[] The Taxonomy Definitions objects or an empty array
      */
-    function getRegisteredTaxonomies(Entity|string $entity = null): array {
+    function getRegisteredTaxonomies(Entity|string|null $entity = null): array {
         if (is_object($entity)) {
             $entity = $entity->getClassName();
         }

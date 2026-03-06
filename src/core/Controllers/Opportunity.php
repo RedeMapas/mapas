@@ -870,7 +870,7 @@ class Opportunity extends EntityController {
         }
     }
 
-    function apiFindEvaluations(int $opportunity_id = null, array $query_data = []) {
+    function apiFindEvaluations(?int $opportunity_id = null, array $query_data = []) {
         $app = App::i();
         $conn = $app->em->getConnection();
 
