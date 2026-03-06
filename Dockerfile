@@ -8,7 +8,6 @@ ARG PHP_VERSION=8.4
 FROM node:${NODE_VERSION}-alpine AS builder-node
 
 RUN corepack enable && corepack prepare pnpm@latest --activate
-RUN npm install -g sass
 
 WORKDIR /build
 
@@ -19,7 +18,7 @@ RUN pnpm run build
 
 # Compile SASS for BaseV1 theme
 RUN if [ -f themes/BaseV1/assets/css/sass/main.scss ]; then \
-  sass themes/BaseV1/assets/css/sass/main.scss:themes/BaseV1/assets/css/main.css --quiet; \
+  ./node_scripts/node_modules/.bin/sass themes/BaseV1/assets/css/sass/main.scss:themes/BaseV1/assets/css/main.css --quiet; \
   fi
 
 # Resolve pnpm symlinks for vendor CSS files needed by the PHP AssetManager at runtime.
@@ -30,13 +29,15 @@ RUN mkdir -p /vendor-css/@vuepic/vue-datepicker/dist \
   /vendor-css/floating-vue/dist \
   /vendor-css/leaflet/dist \
   /vendor-css/@vueform/slider/themes \
-  /vendor-css/leaflet.markercluster/dist && \
+  /vendor-css/leaflet.markercluster/dist \
+  /vendor-css/shepherd.js/dist/css && \
   cp -L modules/Components/node_modules/@vuepic/vue-datepicker/dist/main.css    /vendor-css/@vuepic/vue-datepicker/dist/main.css && \
   cp -L modules/Components/node_modules/floating-vue/dist/style.css             /vendor-css/floating-vue/dist/style.css && \
   cp -L modules/Components/node_modules/leaflet/dist/leaflet.css                /vendor-css/leaflet/dist/leaflet.css && \
   cp -L modules/Components/node_modules/@vueform/slider/themes/default.css      /vendor-css/@vueform/slider/themes/default.css && \
   cp -L modules/Components/node_modules/leaflet.markercluster/dist/MarkerCluster.css         /vendor-css/leaflet.markercluster/dist/MarkerCluster.css && \
-  cp -L modules/Components/node_modules/leaflet.markercluster/dist/MarkerCluster.Default.css /vendor-css/leaflet.markercluster/dist/MarkerCluster.Default.css
+  cp -L modules/Components/node_modules/leaflet.markercluster/dist/MarkerCluster.Default.css /vendor-css/leaflet.markercluster/dist/MarkerCluster.Default.css && \
+  cp -L modules/Components/node_modules/shepherd.js/dist/css/shepherd.css /vendor-css/shepherd.js/dist/css/shepherd.css
 
 # Cleanup development files from node_modules
 RUN find . -path '*/node_modules/*' -type f \( \
@@ -247,13 +248,14 @@ FROM production AS development
 
 # Install Node.js and pnpm for hot-reload development
 RUN apk add --no-cache nodejs npm && \
-  npm install -g pnpm sass terser uglifycss autoprefixer postcss
-
+  npm install -g pnpm
+# sass terser uglifycss autoprefixer postcss
+#
 # Install xdebug (but don't enable by default)
-RUN apk add --no-cache --virtual .xdebug-deps $PHPIZE_DEPS linux-headers && \
-  pecl install xdebug && \
-  apk del .xdebug-deps && \
-  ln -s $(find /usr/local/lib/php/extensions/ -name xdebug.so) /usr/local/lib/php/extensions/xdebug.so
+# RUN apk add --no-cache --virtual .xdebug-deps $PHPIZE_DEPS linux-headers && \
+#   pecl install xdebug && \
+#   apk del .xdebug-deps && \
+#   ln -s $(find /usr/local/lib/php/extensions/ -name xdebug.so) /usr/local/lib/php/extensions/xdebug.so
 
 # Copy development files
 COPY docker/development/router.php /var/www/dev/router.php
