@@ -22,6 +22,12 @@ data:
   JOBS_INTERVAL: {{ .Values.mapas.jobsInterval | quote }}
   NUM_PROCESSES: {{ .Values.mapas.numProcesses | quote }}
   MC_UPDATES_PROCESSES: {{ .Values.mapas.mcUpdatesProcesses | quote }}
+  REDEMAPAS_PUSH_ENABLED: {{ .Values.mapas.webPush.enabled | quote }}
+  REDEMAPAS_VAPID_SUBJECT: {{ .Values.mapas.webPush.vapidSubject | quote }}
+  REDEMAPAS_VAPID_PUBLIC_KEY: {{ .Values.mapas.webPush.vapidPublicKey | quote }}
+  {{- if and .Values.mapas.webPush.vapidPrivateKey (not .Values.mapas.webPush.existingSecret) }}
+  REDEMAPAS_VAPID_PRIVATE_KEY: {{ .Values.mapas.webPush.vapidPrivateKey | quote }}
+  {{- end }}
   {{- if .Values.mapas.redirectNotFoundAssetsTo }}
   REDIRECT_404_ASSETS_TO: {{ .Values.mapas.redirectNotFoundAssetsTo | quote }}
   {{- end }}
@@ -31,4 +37,3 @@ data:
   {{- if and .Values.mapas.recaptcha.secret (not .Values.mapas.recaptcha.existingSecret) }}
   GOOGLE_RECAPTCHA_SECRET: {{ .Values.mapas.recaptcha.secret | quote }}
   {{- end }}
-
