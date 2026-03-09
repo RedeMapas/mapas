@@ -16,17 +16,22 @@ chown -R www-data:www-data /var/www/html/assets /var/www/html/files
 # The application will handle database connectivity with retry logic
 echo "Skipping database-dependent initialization (database connectivity handled by application)"
 
+SASS_BIN="/var/www/src/node_scripts/node_modules/.bin/sass"
+if [ ! -x "$SASS_BIN" ]; then
+    SASS_BIN="$(command -v sass || true)"
+fi
+
 # Check if we need to compile SASS (skip if sass command not available or database not ready)
 if ! cmp /var/www/version.txt /var/www/var/private-files/deployment-version >/dev/null 2>&1
 then
     echo "New deployment detected"
     
     # Only compile SASS if sass command is available
-    if command -v sass >/dev/null 2>&1; then
+    if [ -n "$SASS_BIN" ]; then
         echo "Compiling SASS files..."
         # Try to compile BaseV1 SASS directly without database dependency
         if [ -f /var/www/src/themes/BaseV1/assets/css/sass/main.scss ]; then
-            sass /var/www/src/themes/BaseV1/assets/css/sass/main.scss:/var/www/src/themes/BaseV1/assets/css/main.css --quiet || echo "Warning: SASS compilation failed"
+            "$SASS_BIN" /var/www/src/themes/BaseV1/assets/css/sass/main.scss:/var/www/src/themes/BaseV1/assets/css/main.css --quiet || echo "Warning: SASS compilation failed"
         fi
     else
         echo "Skipping SASS compilation (sass command not available)"

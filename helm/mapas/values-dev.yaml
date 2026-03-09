@@ -43,6 +43,13 @@ mapas:
   numProcesses: "2"
   mcUpdatesProcesses: "4"
   redirectNotFoundAssetsTo: ""
+  webPush:
+    enabled: "false"
+    vapidSubject: ""
+    vapidPublicKey: ""
+    vapidPrivateKey: ""
+    existingSecret: ""
+    existingSecretKey: "vapidPrivateKey"
 
   extraEnv:
     - name: MAPAS_HTTPS

@@ -72,6 +72,13 @@ spec:
                   name: {{ .Values.mapas.recaptcha.existingSecret }}
                   key: secret
             {{- end }}
+            {{- if .Values.mapas.webPush.existingSecret }}
+            - name: REDEMAPAS_VAPID_PRIVATE_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.mapas.webPush.existingSecret }}
+                  key: {{ .Values.mapas.webPush.existingSecretKey | default "vapidPrivateKey" }}
+            {{- end }}
             {{- with .Values.mapas.extraEnv }}
             {{- toYaml . | nindent 12 }}
             {{- end }}
