@@ -125,6 +125,15 @@ mapas:
   mcUpdatesProcesses: "4"
   redirectNotFoundAssetsTo: ""
 
+  # Web Push (RedeMapas)
+  webPush:
+    enabled: "false"
+    vapidSubject: ""
+    vapidPublicKey: ""
+    vapidPrivateKey: ""
+    existingSecret: ""
+    existingSecretKey: "vapidPrivateKey"
+
   # Additional environment variables
   extraEnv: []
 
