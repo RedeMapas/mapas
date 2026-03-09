@@ -1817,11 +1817,11 @@ class ApiQuery {
                     if ($skip) {
                         continue;
                     } elseif ($selected) {
-                        $val = $entity[$prop];
+                        $val = $entity[$prop] ?? '';
                         $entity[$prop] = isset($subquery_result_index[$val]) ? $subquery_result_index[$val] : null;
                     } else {
                         $prop = $prop[0] == '_' ? substr($prop,1) : $prop;
-                        
+
                         $entity[$prop] = [];
                         foreach ($subquery_result_index as $k => $relation){
                             if($k == $entity[$this->pk] || $k == $entity){
