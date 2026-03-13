@@ -22,3 +22,7 @@ public/assets
 public/evaluators-default-profiles
 public/files/distributionslog
 helm/mapas/charts
+
+# Test coverage reports
+tests/coverage/
+.phpunit*
