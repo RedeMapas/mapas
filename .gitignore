@@ -26,3 +26,5 @@ helm/mapas/charts
 # Test coverage reports
 tests/coverage/
 .phpunit*
+*.phar
+docs/
