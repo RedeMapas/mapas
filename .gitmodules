@@ -2,10 +2,6 @@
 	path = src/themes/Funarte
 	url = https://github.com/RedeMapas/theme-Funarte.git
 
-[submodule "src/themes/RCV"]
-	path = src/themes/RCV
-	url = https://gitlab.hacklab.com.br/mapas/theme-rcv.git
-
 [submodule "src/themes/RedeMapas"]
 	path = src/themes/RedeMapas
 	url = https://github.com/RedeMapas/theme-RedeMapas.git
