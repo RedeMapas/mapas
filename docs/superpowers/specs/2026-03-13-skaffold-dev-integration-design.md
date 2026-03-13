@@ -30,48 +30,95 @@ O projeto já possui:
 ### Componentes alterados/criados
 
 ```
-skaffold.yaml          — atualizado (sync, portForward, verify)
-k8s/jobs/phpunit.yaml  — novo (Job manifest de referência; usado pelo verify)
+skaffold.yaml    — atualizado (sync, portForward, verify)
 ```
 
-Nenhum arquivo do docker-compose ou Helm chart é alterado.
+Nenhum arquivo do docker-compose, Helm chart ou CI é alterado.
 
 ---
 
 ## File Sync
 
-Durante `skaffold dev`, mudanças nos arquivos abaixo são sincronizadas diretamente no pod via rsync, sem rebuild da imagem:
+Durante `skaffold dev`, mudanças nos arquivos abaixo são sincronizadas diretamente no pod via rsync, sem rebuild da imagem.
 
-| Local | Container |
-|---|---|
-| `src/**` | `/var/www/src` |
-| `config/**` | `/var/www/config` |
-| `dev/config.d/**` | `/var/www/config/config.d` |
-| `public/**` | `/var/www/html` |
-| `scripts/**` | `/var/www/scripts` |
-| `tests/**` | `/var/www/tests` |
-| `phpunit.xml` | `/var/www/` |
+O campo `strip` remove o prefixo local antes de aplicar o `dest`, garantindo que os caminhos no container sejam corretos.
+
+| Local | strip | dest (container) |
+|---|---|---|
+| `src/**` | `src/` | `/var/www/src` |
+| `config/**` | `config/` | `/var/www/config` |
+| `dev/config.d/**` | `dev/config.d/` | `/var/www/config/config.d` |
+| `public/**` | `public/` | `/var/www/html` |
+| `scripts/**` | `scripts/` | `/var/www/scripts` |
+| `tests/**` | `tests/` | `/var/www/tests` |
+| `phpunit.xml` | `""` | `/var/www` |
 
 **Rebuild** (imagem completa) ocorre apenas quando mudam: `composer.json`, `composer.lock`, `Dockerfile`, `docker/*.sh`, `dev/docker/php.ini`.
+
+### Configuração YAML
+
+```yaml
+sync:
+  manual:
+    - src: "src/**"
+      dest: /var/www/src
+      strip: "src/"
+    - src: "config/**"
+      dest: /var/www/config
+      strip: "config/"
+    - src: "dev/config.d/**"
+      dest: /var/www/config/config.d
+      strip: "dev/config.d/"
+    - src: "public/**"
+      dest: /var/www/html
+      strip: "public/"
+    - src: "scripts/**"
+      dest: /var/www/scripts
+      strip: "scripts/"
+    - src: "tests/**"
+      dest: /var/www/tests
+      strip: "tests/"
+    - src: "phpunit.xml"
+      dest: /var/www
+```
 
 ---
 
 ## Port Forwarding
 
-| Serviço | Porta cluster | Porta local |
+| Serviço K8s | Porta cluster | Porta local |
 |---|---|---|
-| App (nginx/php-fpm) | 80 | 8080 |
-| PostgreSQL | 5432 | 5432 |
+| `mapas-dev` (app) | 80 | 8080 |
+| `mapas-dev-postgresql` | 5432 | 5432 |
 
-Mesmo mapeamento do docker-compose — sem necessidade de mudar strings de conexão.
+O nome `mapas-dev` é resultado do helper `mapas.fullname` com release name `mapas-dev` e chart name `mapas` (o helper retorna o release name quando já contém o chart name). Mesmo mapeamento do docker-compose.
 
 ---
 
 ## Testes via `skaffold verify`
 
-O `verify` usa a seção nativa do Skaffold v4 com `kubernetesCluster` execution mode. Após o deploy estabilizar, o Skaffold cria um pod efêmero com a mesma image buildada, roda PHPUnit e exibe o output no terminal.
+O `verify` usa a seção nativa do Skaffold v4 com `kubernetesCluster` execution mode. Após o deploy estabilizar, o Skaffold cria um pod efêmero com a mesma image buildada, roda PHPUnit e exibe o output.
 
-### Configuração
+### Limitações do `verify`
+
+O schema de container do `verify` em Skaffold v4beta11 **não suporta `envFrom`** — apenas `env`, `command`, `args`, `image` e `name`. Por isso, as variáveis de ambiente necessárias são passadas explicitamente via `env`.
+
+### Variáveis necessárias
+
+As variáveis mínimas para o PHPUnit conectar ao postgres do cluster:
+
+| Variável | Fonte |
+|---|---|
+| `DB_HOST` | fixo: `mapas-dev-postgresql` (nome do serviço K8s) |
+| `DB_PORT` | fixo: `5432` |
+| `DB_NAME` | fixo: `mapas` |
+| `DB_USER` | fixo: `mapas` |
+| `DB_PASS` | Secret `mapas-dev-postgresql`, chave `superuserPassword` (gerada pelo subchart groundhog2k/postgres) |
+| `APP_ENV` | fixo: `development` |
+
+> **Nota:** confirmar a chave exata do Secret após o primeiro `helm install`. O subchart groundhog2k/postgres 0.2.28 gera o Secret com a chave `superuserPassword` conforme `values-dev.yaml: superuserPassword: "mapas"`.
+
+### Configuração YAML
 
 ```yaml
 verify:
@@ -83,22 +130,27 @@ verify:
       image: ghcr.io/redemapas/mapas
       command: ["vendor/bin/phpunit"]
       args: ["--configuration", "/var/www/phpunit.xml", "--no-coverage"]
-      envFrom:
-        - configMapRef:
-            name: mapas-dev-env
       env:
+        - name: DB_HOST
+          value: "mapas-dev-postgresql"
+        - name: DB_PORT
+          value: "5432"
+        - name: DB_NAME
+          value: "mapas"
+        - name: DB_USER
+          value: "mapas"
         - name: DB_PASS
           valueFrom:
             secretKeyRef:
               name: mapas-dev-postgresql
-              key: POSTGRES_PASSWORD
+              key: superuserPassword
+        - name: APP_ENV
+          value: "development"
 ```
-
-O pod usa as mesmas credenciais do app (ConfigMap `mapas-dev-env` + Secret do postgres gerado pelo Helm).
 
 ---
 
-## `skaffold.yaml` final
+## `skaffold.yaml` completo
 
 ```yaml
 apiVersion: skaffold/v4beta11
@@ -116,16 +168,22 @@ build:
         manual:
           - src: "src/**"
             dest: /var/www/src
+            strip: "src/"
           - src: "config/**"
             dest: /var/www/config
+            strip: "config/"
           - src: "dev/config.d/**"
             dest: /var/www/config/config.d
+            strip: "dev/config.d/"
           - src: "public/**"
             dest: /var/www/html
+            strip: "public/"
           - src: "scripts/**"
             dest: /var/www/scripts
+            strip: "scripts/"
           - src: "tests/**"
             dest: /var/www/tests
+            strip: "tests/"
           - src: "phpunit.xml"
             dest: /var/www
   local:
@@ -165,15 +223,22 @@ verify:
       image: ghcr.io/redemapas/mapas
       command: ["vendor/bin/phpunit"]
       args: ["--configuration", "/var/www/phpunit.xml", "--no-coverage"]
-      envFrom:
-        - configMapRef:
-            name: mapas-dev-env
       env:
+        - name: DB_HOST
+          value: "mapas-dev-postgresql"
+        - name: DB_PORT
+          value: "5432"
+        - name: DB_NAME
+          value: "mapas"
+        - name: DB_USER
+          value: "mapas"
         - name: DB_PASS
           valueFrom:
             secretKeyRef:
               name: mapas-dev-postgresql
-              key: POSTGRES_PASSWORD
+              key: superuserPassword
+        - name: APP_ENV
+          value: "development"
 
 profiles:
   - name: prod
@@ -207,8 +272,10 @@ profiles:
 # Pré-requisito: cluster kind (uma vez por máquina)
 kind create cluster --config .github/kind-config.yaml
 
-# Instala dependências Helm (uma vez)
+# Pré-requisito: dependências Helm (uma vez, ou após mudar Chart.yaml)
 helm dependency update helm/mapas
+# O diretório helm/mapas/charts/ deve existir antes do skaffold dev.
+# Se estiver no .gitignore, rodar este passo manualmente antes do primeiro skaffold dev.
 
 # Dev loop: build → deploy → portForward → watch sync
 skaffold dev
