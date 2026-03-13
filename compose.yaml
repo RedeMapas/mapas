@@ -63,6 +63,7 @@ services:
       # Development configuration overrides
       - ./dev/config.d:/var/www/config/config.d:ro
       - ./tests/:/var/www/tests
+      - ./phpunit.xml:/var/www/phpunit.xml:ro
     networks:
       - mapas-dev
     healthcheck:

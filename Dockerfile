@@ -249,8 +249,14 @@ FROM production AS development
 # Install Node.js and pnpm for hot-reload development
 RUN apk add --no-cache nodejs npm && \
   npm install -g pnpm
-# sass terser uglifycss autoprefixer postcss
-#
+
+# Install pcov for code coverage (lightweight, production-safe to disable)
+RUN apk add --no-cache --virtual .pcov-deps $PHPIZE_DEPS linux-headers && \
+  pecl install pcov && \
+  docker-php-ext-enable pcov && \
+  apk del .pcov-deps && \
+  rm -rf /tmp/pear /var/cache/apk/*
+
 # Install xdebug (but don't enable by default)
 # RUN apk add --no-cache --virtual .xdebug-deps $PHPIZE_DEPS linux-headers && \
 #   pecl install xdebug && \

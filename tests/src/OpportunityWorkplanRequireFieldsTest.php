@@ -45,7 +45,10 @@ class OpportunityWorkplanRequireFieldsTest extends TestCase
         ]);
 
         $workplan = $app->repo(Workplan::class)->findOneBy(['registration' => $registration->id]);
-        $delivery = $workplan->goals[0]->deliveries[0];
+        $app->em->refresh($workplan);
+        $goal = $workplan->goals->first();
+        $app->em->refresh($goal);
+        $delivery = $goal->deliveries->first();
 
         // Verificar que campo NÃO é obrigatório
         $isRequired = $delivery->isMetadataRequired('numberOfCities');
@@ -73,7 +76,10 @@ class OpportunityWorkplanRequireFieldsTest extends TestCase
         ]);
 
         $workplan = $app->repo(Workplan::class)->findOneBy(['registration' => $registration->id]);
-        $delivery = $workplan->goals[0]->deliveries[0];
+        $app->em->refresh($workplan);
+        $goal = $workplan->goals->first();
+        $app->em->refresh($goal);
+        $delivery = $goal->deliveries->first();
 
         // Verificar que campo É obrigatório
         $isRequired = $delivery->isMetadataRequired('numberOfCities');
@@ -101,7 +107,10 @@ class OpportunityWorkplanRequireFieldsTest extends TestCase
         ]);
 
         $workplan = $app->repo(Workplan::class)->findOneBy(['registration' => $registration->id]);
-        $delivery = $workplan->goals[0]->deliveries[0];
+        $app->em->refresh($workplan);
+        $goal = $workplan->goals->first();
+        $app->em->refresh($goal);
+        $delivery = $goal->deliveries->first();
 
         // Validar que array vazio não passa
         $value = $delivery->paidStaffByRole;
@@ -134,7 +143,10 @@ class OpportunityWorkplanRequireFieldsTest extends TestCase
         ]);
 
         $workplan1 = $app->repo(Workplan::class)->findOneBy(['registration' => $registration1->id]);
-        $delivery1 = $workplan1->goals[0]->deliveries[0];
+        $app->em->refresh($workplan1);
+        $goal1 = $workplan1->goals->first();
+        $app->em->refresh($goal1);
+        $delivery1 = $goal1->deliveries->first();
 
         $isRequired1 = $delivery1->isMetadataRequired('transInclusionActions');
         $this->assertFalse($isRequired1, 'Detail NÃO deveria ser obrigatório quando gate=false');
@@ -148,7 +160,10 @@ class OpportunityWorkplanRequireFieldsTest extends TestCase
         ]);
 
         $workplan2 = $app->repo(Workplan::class)->findOneBy(['registration' => $registration2->id]);
-        $delivery2 = $workplan2->goals[0]->deliveries[0];
+        $app->em->refresh($workplan2);
+        $goal2 = $workplan2->goals->first();
+        $app->em->refresh($goal2);
+        $delivery2 = $goal2->deliveries->first();
 
         $isRequired2 = $delivery2->isMetadataRequired('transInclusionActions');
         $this->assertTrue($isRequired2, 'Detail deveria ser obrigatório quando gate=true');
@@ -224,18 +239,19 @@ class OpportunityWorkplanRequireFieldsTest extends TestCase
     private function createOpportunityWithWorkplan(array $metadata = [])
     {
         $app = $this->app;
-        $user = $this->userDirector->createUser();
-        $agent = $user->profile;
+        $agent = $app->user?->profile ?? $this->userDirector->createUser()->profile;
 
         // Criar projeto pai
         $project = new \MapasCulturais\Entities\Project;
         $project->name = 'Projeto Teste Workplan';
         $project->shortDescription = 'Teste';
         $project->owner = $agent;
+        $project->type = array_key_first($app->getRegisteredEntityTypes($project));
         $project->save(true);
 
         // Criar oportunidade
-        $opportunity = new \MapasCulturais\Entities\Opportunity;
+        $opportunityClass = $project->opportunityClassName;
+        $opportunity = new $opportunityClass;
         $opportunity->name = 'Oportunidade Teste Workplan';
         $opportunity->shortDescription = 'Teste';
         $opportunity->owner = $agent;
@@ -305,6 +321,10 @@ class OpportunityWorkplanRequireFieldsTest extends TestCase
         }
 
         $delivery->save(true);
+
+        // Refresh do goal para que goal->deliveries seja recarregado do banco,
+        // evitando stale lazy-collections sem descartar o contexto inteiro.
+        $app->em->refresh($goal);
 
         return $registration;
     }
