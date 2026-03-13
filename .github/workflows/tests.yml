@@ -1,0 +1,116 @@
+name: Tests
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  # ──────────────────────────────────────────────────────────────
+  # Job 1: roda todos os testes (sem coverage — rápido)
+  # Roda em todo push e PR
+  # ──────────────────────────────────────────────────────────────
+  test:
+    name: PHPUnit
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build development image
+        run: docker compose build mapas
+
+      - name: Start services
+        run: docker compose up -d --wait
+
+      - name: Wait for database to be ready
+        run: |
+          docker compose exec -T postgres pg_isready -U mapas -d mapas
+
+      - name: Import database dump
+        run: |
+          docker compose exec -T postgres psql -U mapas -d mapas -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public;"
+          docker compose exec -T postgres bash -c "cat /docker-entrypoint-initdb.d/dump.sql | psql -U mapas -d mapas"
+
+      - name: Run database migrations
+        run: |
+          docker compose exec -T mapas bash scripts/db-update.sh
+
+      - name: Run tests
+        run: |
+          docker compose exec -T mapas vendor/bin/phpunit --configuration /var/www/phpunit.xml --no-coverage
+
+      - name: Stop services
+        if: always()
+        run: docker compose down
+
+  # ──────────────────────────────────────────────────────────────
+  # Job 2: gera coverage (pcov, mais lento — só em main e PRs)
+  # ──────────────────────────────────────────────────────────────
+  coverage:
+    name: Coverage
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    needs: test
+    if: github.ref == 'refs/heads/main' || github.event_name == 'pull_request'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build development image
+        run: docker compose build mapas
+
+      - name: Start services
+        run: docker compose up -d --wait
+
+      - name: Wait for database to be ready
+        run: |
+          docker compose exec -T postgres pg_isready -U mapas -d mapas
+
+      - name: Import database dump
+        run: |
+          docker compose exec -T postgres psql -U mapas -d mapas -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public;"
+          docker compose exec -T postgres bash -c "cat /docker-entrypoint-initdb.d/dump.sql | psql -U mapas -d mapas"
+
+      - name: Run database migrations
+        run: |
+          docker compose exec -T mapas bash scripts/db-update.sh
+
+      - name: Create coverage dir
+        run: mkdir -p tests/coverage
+
+      - name: Run tests with coverage (pcov)
+        run: |
+          docker compose exec -T mapas php -d pcov.enabled=1 -d pcov.directory=/var/www/src -d memory_limit=512M vendor/bin/phpunit --configuration /var/www/phpunit.xml --coverage-clover tests/coverage/clover.xml --coverage-html tests/coverage/html --coverage-text
+
+      - name: Upload coverage HTML artifact
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-report
+          path: tests/coverage/html/
+          retention-days: 30
+
+      - name: Upload to Codecov
+        uses: codecov/codecov-action@v4
+        if: always()
+        with:
+          file: tests/coverage/clover.xml
+          fail_ci_if_error: false
+          token: ${{ secrets.CODECOV_TOKEN }}
+
+      - name: Stop services
+        if: always()
+        run: docker compose down
