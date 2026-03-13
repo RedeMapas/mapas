@@ -1,8 +1,15 @@
 <?php
 
 if (file_exists($_SERVER['SCRIPT_FILENAME']) && strtolower(substr($_SERVER['SCRIPT_NAME'],-4)) !== '.php') {
-    $filename = "/var/www/html" . $_SERVER['SCRIPT_NAME'];
-    if(!file_exists($filename)) {
+    $documentRoot = rtrim($_SERVER['DOCUMENT_ROOT'] ?? '/var/www/html', '/');
+    $filename = $documentRoot . $_SERVER['SCRIPT_NAME'];
+    if(!is_file($filename)) {
+        if ($_SERVER['SCRIPT_NAME'] === '/' && is_file($documentRoot . '/index.php')) {
+            chdir($documentRoot);
+            include_once 'index.php';
+            die;
+        }
+
         if ($target = getenv('REDIRECT_404_ASSETS_TO')) {
             header('Location: ' . $target . $_SERVER['SCRIPT_NAME']);
             die;
@@ -34,5 +41,3 @@ if (file_exists($_SERVER['SCRIPT_FILENAME']) && strtolower(substr($_SERVER['SCRI
 }else{
     return false;
 }
-
-
