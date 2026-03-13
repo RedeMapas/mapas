@@ -1,0 +1,4 @@
+mapas.localhost {
+	reverse_proxy mapas:80
+	tls internal
+}
