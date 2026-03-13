@@ -9,6 +9,28 @@ build:
       docker:
         dockerfile: Dockerfile
         target: development
+      sync:
+        manual:
+          - src: "src/**"
+            dest: /var/www/src
+            strip: "src/"
+          - src: "config/**"
+            dest: /var/www/config
+            strip: "config/"
+          - src: "dev/config.d/**"
+            dest: /var/www/config/config.d
+            strip: "dev/config.d/"
+          - src: "public/**"
+            dest: /var/www/html
+            strip: "public/"
+          - src: "scripts/**"
+            dest: /var/www/scripts
+            strip: "scripts/"
+          - src: "tests/**"
+            dest: /var/www/tests
+            strip: "tests/"
+          - src: "phpunit.xml"
+            dest: /var/www
   local:
     useBuildkit: true
 
@@ -25,17 +47,40 @@ deploy:
           image.repository: "{{.IMAGE_REPO_ghcr_io_redemapas_mapas}}"
           image.tag: "{{.IMAGE_TAG_ghcr_io_redemapas_mapas}}"
 
-# portForward:
-#   - resourceType: service
-#     resourceName: mapas-dev
-#     namespace: mapas-dev
-#     port: 80
-#     localPort: 8080
-#   - resourceType: service
-#     resourceName: mapas-dev-postgresql
-#     namespace: mapas-dev
-#     port: 5432
-#     localPort: 5432
+portForward:
+  - resourceType: service
+    resourceName: mapas-dev
+    namespace: mapas-dev
+    port: 80
+    localPort: 8080
+  - resourceType: service
+    resourceName: mapas-dev-postgresql
+    namespace: mapas-dev
+    port: 5432
+    localPort: 5432
+
+verify:
+  - name: phpunit
+    executionMode:
+      kubernetesCluster: {}
+    container:
+      name: phpunit
+      image: ghcr.io/redemapas/mapas
+      command: ["vendor/bin/phpunit"]
+      args: ["--configuration", "/var/www/phpunit.xml", "--no-coverage"]
+      env:
+        - name: DB_HOST
+          value: "mapas-dev-postgresql"
+        - name: DB_PORT
+          value: "5432"
+        - name: DB_NAME
+          value: "mapas"
+        - name: DB_USER
+          value: "mapas"
+        - name: DB_PASS
+          value: "mapas"  # valor de values-dev.yaml (superuserPassword); VerifyEnvVar não suporta valueFrom
+        - name: APP_ENV
+          value: "development"
 
 profiles:
   - name: prod
