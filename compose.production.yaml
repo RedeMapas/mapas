@@ -1,0 +1,51 @@
+services:
+  mapas:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "80"
+    environment:
+      APP_MODE: "development"
+      APP_DEBUG: "false"
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: mapas
+      DB_USER: mapas
+      DB_PASS: mapas
+      DISABLE_SUBSITES: "true"
+      BUILD_ASSETS: "0"
+      MAILER_FROM: "noreply@example.com"
+      PENDING_PCACHE_RECREATION_INTERVAL: "300"
+      JOBS_INTERVAL: "300"
+      REDIRECT_404_ASSETS_TO: ""
+    volumes:
+      - mapas-var:/var/www/var
+      - mapas-files:/var/www/html/files
+      - mapas-private:/var/www/var/private-files
+    restart: unless-stopped
+
+  postgres:
+    image: postgis/postgis:14-3.4
+    environment:
+      POSTGRES_DB: mapas
+      POSTGRES_USER: mapas
+      POSTGRES_PASSWORD: mapas
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U mapas -d mapas"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+volumes:
+  postgres-data:
+  mapas-var:
+  mapas-files:
+  mapas-private:
