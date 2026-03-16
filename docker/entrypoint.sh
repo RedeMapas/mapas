@@ -1,55 +1,78 @@
 #!/bin/bash
 set -e
 
-php -r '
-$dbhost = @$_ENV["DB_HOST"] ?: "db";
-$dbname = @$_ENV["DB_NAME"] ?: "mapas";
-$dbuser = @$_ENV["DB_USER"] ?: "mapas";
-$dbpass = @$_ENV["DB_PASS"] ?: "mapas";
+echo "Starting Mapas Culturais container..."
 
-$pdo = null;
-echo "\naguardando o banco de dados subir corretamente...";
-while(true){
-    try {
-        $pdo = new PDO("pgsql:host={$dbhost};port=5432;dbname={$dbname};user={$dbuser};password={$dbpass}");
-        echo "\nconectado com sucesso ao banco pgsql:host={$dbhost};port=5432;dbname={$dbname};user={$dbuser};\n";
-        break;
-    } catch (Exception $e) {
-        echo "..";
-    }
-    sleep(1);
-}
-'
-
-mkdir -p /var/www/var/DoctrineProxies /var/www/var/logs
-
+# Create necessary directories
+mkdir -p /var/www/var/DoctrineProxies /var/www/var/logs /var/www/var/private-files
 touch /var/www/var/logs/app.log
+chown -R www-data: /var/www/var/DoctrineProxies /var/www/var/logs /var/www/var/private-files
 
-chown -R www-data: /var/www/var/DoctrineProxies /var/www/var/logs
+# Create web directories if they don't exist
+mkdir -p /var/www/html/assets /var/www/html/files
+chown -R www-data:www-data /var/www/html/assets /var/www/html/files
 
-if ! cmp /var/www/version.txt /var/www/var/private-files/deployment-version >/dev/null 2>&1
-then
-    /var/www/scripts/deploy.sh
-    cp /var/www/version.txt /var/www/var/private-files/deployment-version
+# Skip database-dependent operations if database is not available
+# The application will handle database connectivity with retry logic
+echo "Skipping database-dependent initialization (database connectivity handled by application)"
+
+SASS_BIN="/var/www/src/node_scripts/node_modules/.bin/sass"
+if [ ! -x "$SASS_BIN" ]; then
+	SASS_BIN="$(command -v sass || true)"
+fi
+
+if [ -n "$SASS_BIN" ]; then
+	echo "Compiling SASS files..."
+	if [ -f /var/www/src/themes/BaseV1/assets/css/sass/main.scss ]; then
+		"$SASS_BIN" /var/www/src/themes/BaseV1/assets/css/sass/main.scss:/var/www/src/themes/BaseV1/assets/css/main.css --quiet || echo "Warning: SASS compilation failed"
+	fi
 else
-    /var/www/scripts/db-update.sh
-    /var/www/scripts/mc-db-updates.sh
+	echo "Skipping SASS compilation (sass command not available)"
 fi
 
-if [ $BUILD_ASSETS = "1" ]; then
-    chown www-data: /var/www/public/assets
-    cd /var/www/src
-    pnpm install --recursive 
-    pnpm run dev
+# Publish webpack-built assets on every container start.
+# Ensures assets are present even when src/ is volume-mounted in development.
+echo "Publishing webpack-built assets..."
+mkdir -p /var/www/html/assets/js /var/www/html/assets/css
+if [ -d /var/www/src/modules/Components/assets/js ] && [ "$(ls -A /var/www/src/modules/Components/assets/js 2>/dev/null)" ]; then
+	cp -r /var/www/src/modules/Components/assets/js/* /var/www/html/assets/js/
+	echo "JS assets published"
+else
+	echo "Warning: No pre-built JS assets found in src/modules/Components/assets/js"
+fi
+if [ -d /var/www/src/modules/Components/assets/css ] && [ "$(ls -A /var/www/src/modules/Components/assets/css 2>/dev/null)" ]; then
+	cp -r /var/www/src/modules/Components/assets/css/* /var/www/html/assets/css/
+	echo "CSS assets published"
+else
+	echo "Warning: No pre-built CSS assets found in src/modules/Components/assets/css"
+fi
+chown -R www-data:www-data /var/www/html/assets/
+
+# Build assets if BUILD_ASSETS is set (development only)
+if [ "${BUILD_ASSETS:-0}" = "1" ]; then
+	echo "Building development assets..."
+	chown www-data: /var/www/html/assets
+	cd /var/www/src
+	pnpm install --recursive
+	pnpm run dev
 fi
 
+# Ensure proper ownership
+chown -R www-data:www-data /var/www/html /var/www/var
+
+# Start background cron jobs (they will handle their own database connectivity)
+echo "Starting background cron jobs..."
 cd /
 touch /nohup.out
 chown www-data: /nohup.out
-sudo -E -u www-data nohup /jobs-cron.sh >> /dev/stdout &
-sudo -E -u www-data nohup /recreate-pending-pcache-cron.sh >> /dev/stdout &
+sudo -E -u www-data nohup /jobs-cron.sh >>/dev/stdout 2>&1 &
+sudo -E -u www-data nohup /recreate-pending-pcache-cron.sh >>/dev/stdout 2>&1 &
 
-tail -f /nohup.out > /dev/stdout &
+# Tail logs in background
+tail -f /nohup.out >/dev/stdout &
+
+# Create readiness file
 touch /mapas-ready
 
+echo "Entrypoint completed - services will start now"
 exec "$@"

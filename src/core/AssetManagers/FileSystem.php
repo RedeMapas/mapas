@@ -49,9 +49,6 @@ class FileSystem extends \MapasCulturais\AssetManager{
             ], $command_pattern);
 
         
-        if($command_pattern === 'cp -Rf {IN} {PUBLISH_PATH}')
-            die(var_dump($command));
-        
         $result = '';
         $result_code = '';
         exec($command, $result, $result_code);
