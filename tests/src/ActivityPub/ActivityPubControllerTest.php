@@ -4,11 +4,13 @@ declare(strict_types=1);
 namespace Tests\ActivityPub;
 
 use Tests\Abstract\TestCase;
-use MapasCulturais\App;
+use Tests\Traits\UserDirector;
 use Slim\Psr7\Factory\ServerRequestFactory;
 
 class ActivityPubControllerTest extends TestCase
 {
+    use UserDirector;
+
     private function req(string $method, string $uri): \Psr\Http\Message\ServerRequestInterface
     {
         return (new ServerRequestFactory())->createServerRequest($method, $uri);
@@ -16,7 +18,7 @@ class ActivityPubControllerTest extends TestCase
 
     private function ctrl(): \ActivityPub\Controllers\ActivityPub
     {
-        return \ActivityPub\Controllers\ActivityPub::i();
+        return \ActivityPub\Controllers\ActivityPub::i('activitypub');
     }
 
     // --- WebFinger ---
@@ -46,16 +48,10 @@ class ActivityPubControllerTest extends TestCase
 
     public function testActorReturns200WithValidPersonPayload(): void
     {
-        $app = App::i();
-        $app->disableAccessControl();
-        $agent = new \MapasCulturais\Entities\Agent();
-        $agent->name = 'Teste Actor AP';
-        $agent->status = 1;
-        $agent->save(true);
-        $app->enableAccessControl();
+        $user  = $this->userDirector->createUser();
+        $agent = $user->profile;
+        $slug  = (string) $agent->id;
 
-        // Agent::slug é auto-gerado do name no save(). Confirmar que não é null.
-        $slug = $agent->slug;
         $this->assertNotEmpty($slug, 'Agent deveria ter slug após save()');
         $resp = $this->ctrl()->actor($this->req('GET', "/activitypub/agent/{$slug}"), $slug);
 
@@ -75,15 +71,10 @@ class ActivityPubControllerTest extends TestCase
 
     public function testOutboxReturnsOrderedCollection(): void
     {
-        $app = App::i();
-        $app->disableAccessControl();
-        $agent = new \MapasCulturais\Entities\Agent();
-        $agent->name = 'Teste Outbox AP';
-        $agent->status = 1;
-        $agent->save(true);
-        $app->enableAccessControl();
+        $user  = $this->userDirector->createUser();
+        $agent = $user->profile;
+        $slug  = (string) $agent->id;
 
-        $slug = $agent->slug;
         $resp = $this->ctrl()->outbox($this->req('GET', "/activitypub/agent/{$slug}/outbox"), $slug);
 
         $this->assertSame(200, $resp->getStatusCode());
@@ -95,15 +86,10 @@ class ActivityPubControllerTest extends TestCase
 
     public function testOutboxPageReturnsOrderedCollectionPage(): void
     {
-        $app = App::i();
-        $app->disableAccessControl();
-        $agent = new \MapasCulturais\Entities\Agent();
-        $agent->name = 'Teste Outbox Paginado AP';
-        $agent->status = 1;
-        $agent->save(true);
-        $app->enableAccessControl();
+        $user  = $this->userDirector->createUser();
+        $agent = $user->profile;
+        $slug  = (string) $agent->id;
 
-        $slug = $agent->slug;
         $req  = $this->req('GET', "/activitypub/agent/{$slug}/outbox?page=1")
                     ->withQueryParams(['page' => '1']);
         $resp = $this->ctrl()->outbox($req, $slug);

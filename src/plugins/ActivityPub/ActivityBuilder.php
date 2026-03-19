@@ -22,7 +22,7 @@ class ActivityBuilder
         string $domain,
         string $activityId
     ): array {
-        $actorUri  = "https://{$domain}/activitypub/agent/{$actor->slug}";
+        $actorUri  = "https://{$domain}/activitypub/agent/{$actor->id}";
         $published = self::resolvePublished($activityType, $entity);
 
         return [

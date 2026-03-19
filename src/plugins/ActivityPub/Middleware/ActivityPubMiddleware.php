@@ -78,7 +78,7 @@ class ActivityPubMiddleware implements MiddlewareInterface
 
     private function ctrl(): ActivityPubController
     {
-        return ActivityPubController::i();
+        return ActivityPubController::i('activitypub');
     }
 
     private function methodNotAllowed(array $allowed): ResponseInterface
