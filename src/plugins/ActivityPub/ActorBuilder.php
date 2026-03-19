@@ -7,7 +7,8 @@ class ActorBuilder
 {
     public static function build(object $agent, string $domain): array
     {
-        $base = "https://{$domain}/activitypub/agent/{$agent->slug}";
+        $agentId = (string) ($agent->id ?? '');
+        $base = "https://{$domain}/activitypub/agent/{$agentId}";
 
         $actor = [
             '@context' => [
@@ -16,7 +17,7 @@ class ActorBuilder
             ],
             'type'              => 'Person',
             'id'                => $base,
-            'preferredUsername' => $agent->slug,
+            'preferredUsername' => $agentId,
             'name'              => $agent->name ?? '',
             'summary'           => $agent->shortDescription ?? '',
             'url'               => $agent->singleUrl ?? $base,

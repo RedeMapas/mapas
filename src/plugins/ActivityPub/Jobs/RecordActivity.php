@@ -68,7 +68,7 @@ class RecordActivity extends JobType
             default  => time(), // cada Update é único (acumula histórico)
         };
         $hash       = substr(hash('sha256', "{$activityType}:{$entityClass}:{$entityId}:{$tsForHash}"), 0, 16);
-        $activityId = "https://{$domain}/activitypub/agent/{$actor->slug}/activities/{$hash}";
+        $activityId = "https://{$domain}/activitypub/agent/{$actor->id}/activities/{$hash}";
 
         // 5. Construir payload JSON-LD
         $payload = ActivityBuilder::build($activityType, $entity, $entityClass, $actor, $domain, $activityId);
