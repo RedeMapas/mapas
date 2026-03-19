@@ -28,4 +28,8 @@ return [
 
         'publishFolderCommand' => 'cp -R {IN} {PUBLISH_PATH}{FILENAME}'
     ],
+
+    /* ACTIVITYPUB */
+    'activitypub.enabled' => true,
+    'activitypub.domain'  => '',  // vazio = usa host de base.url automaticamente
 ];
