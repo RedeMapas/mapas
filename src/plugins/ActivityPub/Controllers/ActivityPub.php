@@ -187,10 +187,16 @@ class ActivityPub extends \MapasCulturais\Controller
     // Helpers
     // -----------------------------------------------------------------------
 
-    private function findAgent(string $slug): ?object
+    private function findAgent(string $agentId): ?object
     {
         $app   = App::i();
-        $agent = $app->repo('Agent')->findOneBy(['slug' => $slug]);
+        $id    = (int) $agentId;
+
+        if ($id <= 0) {
+            return null;
+        }
+
+        $agent = $app->repo('Agent')->find($id);
 
         if (!$agent || ($agent->status ?? 0) < 1) {
             return null;
