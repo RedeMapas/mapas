@@ -43,7 +43,8 @@
             "MapasCulturais\\": "src/core",
             "MapasCulturais\\Modules\\": "src/modules",
             "MapasCulturais\\Themes\\": "src/themes",
-            "Tests\\": "tests/src"
+            "Tests\\": "tests/src",
+            "ActivityPub\\": "src/plugins/ActivityPub/"
         }
     },
     "repositories": [
