@@ -3227,5 +3227,39 @@ $$
         $app->log->debug("Migração concluída! Atualizados: {$updated} | Sem relations: {$skipped}");
         return true;
     },
-    
+
+    'ActivityPub: cria tabela activitypub_activity' => function() {
+        $app = \MapasCulturais\App::i();
+        $conn = $app->em->getConnection();
+
+        $conn->executeQuery("
+            CREATE TABLE IF NOT EXISTS activitypub_activity (
+                id          BIGSERIAL PRIMARY KEY,
+                agent_id    INT NOT NULL REFERENCES agent(id) ON DELETE CASCADE,
+                activity_id TEXT NOT NULL,
+                type        TEXT NOT NULL,
+                object_type TEXT NOT NULL,
+                object_id   INT NOT NULL,
+                payload     JSONB NOT NULL,
+                published   TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+                CONSTRAINT activitypub_activity_id_unique UNIQUE (activity_id)
+            )
+        ");
+
+        // Índice de performance para leitura do Outbox
+        $conn->executeQuery("
+            CREATE INDEX IF NOT EXISTS activitypub_activity_agent_published
+                ON activitypub_activity (agent_id, published DESC)
+        ");
+
+        // Partial unique index: impede duplicata de Create para o mesmo objeto.
+        $conn->executeQuery("
+            CREATE UNIQUE INDEX IF NOT EXISTS activitypub_activity_create_dedup
+                ON activitypub_activity (agent_id, object_type, object_id)
+                WHERE type = 'Create'
+        ");
+
+        return true;
+    },
+
 ] + $updates ;   
