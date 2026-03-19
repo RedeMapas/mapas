@@ -16,6 +16,8 @@ src/themes/BaseV1/assets/css/main.css.map
 src/plugins/*
 !src/plugins/MapasNetwork
 !src/plugins/MapasNetwork/**
+!src/plugins/ActivityPub
+!src/plugins/ActivityPub/**
 .vscode
 .zed
 public/assets
