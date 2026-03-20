@@ -5,10 +5,21 @@ namespace ActivityPub;
 
 class ActorBuilder
 {
+    public static function slugify(string $name): string
+    {
+        $slug = iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $name);
+        if ($slug === false || $slug === '') {
+            $slug = $name;
+        }
+        $slug = strtolower($slug);
+        $slug = preg_replace('/[^a-z0-9]+/', '-', $slug) ?? '';
+        return trim($slug, '-');
+    }
+
     public static function build(object $agent, string $domain): array
     {
-        $agentId = (string) ($agent->id ?? '');
-        $base = "https://{$domain}/activitypub/agent/{$agentId}";
+        $slug = self::slugify((string) ($agent->name ?? ''));
+        $base = "https://{$domain}/activitypub/agent/{$slug}";
 
         $actor = [
             '@context' => [
@@ -17,7 +28,7 @@ class ActorBuilder
             ],
             'type'              => 'Person',
             'id'                => $base,
-            'preferredUsername' => $agentId,
+            'preferredUsername' => $slug,
             'name'              => $agent->name ?? '',
             'summary'           => $agent->shortDescription ?? '',
             'url'               => $agent->singleUrl ?? $base,

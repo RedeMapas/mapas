@@ -8,10 +8,11 @@ use ActivityPub\ActivityBuilder;
 
 class ActivityBuilderTest extends TestCase
 {
-    private function makeActor(int $id = 42): object
+    private function makeActor(int $id = 42, string $name = 'Test Actor'): object
     {
         $a = new \stdClass();
         $a->id = $id;
+        $a->name = $name;
         return $a;
     }
 
@@ -69,7 +70,7 @@ class ActivityBuilderTest extends TestCase
         return $ar;
     }
 
-    private const ACT_ID = 'https://example.com/activitypub/agent/42/activities/abc123';
+    private const ACT_ID = 'https://example.com/activitypub/agent/test-actor/activities/abc123';
 
     public function testCreateEventActivity(): void
     {
@@ -77,7 +78,7 @@ class ActivityBuilderTest extends TestCase
 
         $this->assertSame('Create', $activity['type']);
         $this->assertSame(self::ACT_ID, $activity['id']);
-        $this->assertSame('https://example.com/activitypub/agent/42', $activity['actor']);
+        $this->assertSame('https://example.com/activitypub/agent/test-actor', $activity['actor']);
         $this->assertSame('Event', $activity['object']['type']);
         $this->assertSame('Festival de Música', $activity['object']['name']);
         $this->assertSame('https://example.com/evento/10', $activity['object']['url']);
@@ -112,7 +113,7 @@ class ActivityBuilderTest extends TestCase
 
         $this->assertSame('Add', $activity['type']);
         $this->assertSame('Relationship', $activity['object']['type']);
-        $this->assertSame('https://example.com/activitypub/agent/42', $activity['object']['subject']);
+        $this->assertSame('https://example.com/activitypub/agent/test-actor', $activity['object']['subject']);
         $this->assertSame('administrator', $activity['object']['relationship']);
         $this->assertSame('https://example.com/espaco/20', $activity['object']['object']);
     }
@@ -128,6 +129,6 @@ class ActivityBuilderTest extends TestCase
     {
         $activity = ActivityBuilder::build('Create', $this->makeEvent(), 'MapasCulturais\Entities\Event', $this->makeActor(), 'example.com', self::ACT_ID);
 
-        $this->assertSame('https://example.com/activitypub/agent/42', $activity['object']['attributedTo']);
+        $this->assertSame('https://example.com/activitypub/agent/test-actor', $activity['object']['attributedTo']);
     }
 }
