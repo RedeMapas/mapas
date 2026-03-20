@@ -39,16 +39,19 @@ class ActivityPub extends \MapasCulturais\Controller
             return $this->ap(['error' => 'Actor not found'], 404, self::CONTENT_TYPE_JRD);
         }
 
-        if (!$this->findAgent($slug)) {
+        $agent = $this->findAgent($slug);
+        if (!$agent) {
             return $this->ap(['error' => 'Actor not found'], 404, self::CONTENT_TYPE_JRD);
         }
 
+        $canonicalSlug = ActorBuilder::slugify((string) ($agent->name ?? ''));
+
         return $this->ap([
-            'subject' => "acct:{$slug}@{$domain}",
+            'subject' => "acct:{$canonicalSlug}@{$domain}",
             'links'   => [[
                 'rel'  => 'self',
                 'type' => 'application/activity+json',
-                'href' => "https://{$domain}/activitypub/agent/{$slug}",
+                'href' => "https://{$domain}/activitypub/agent/{$canonicalSlug}",
             ]],
         ], 200, self::CONTENT_TYPE_JRD);
     }
@@ -187,22 +190,30 @@ class ActivityPub extends \MapasCulturais\Controller
     // Helpers
     // -----------------------------------------------------------------------
 
-    private function findAgent(string $agentId): ?object
+    private function findAgent(string $identifier): ?object
     {
-        $app   = App::i();
-        $id    = (int) $agentId;
+        $app = App::i();
 
-        if ($id <= 0) {
-            return null;
+        // Try numeric ID for backward-compat
+        if (ctype_digit($identifier)) {
+            $agent = $app->repo('Agent')->find((int) $identifier);
+            if ($agent && ($agent->status ?? 0) >= 1) {
+                return $agent;
+            }
         }
 
-        $agent = $app->repo('Agent')->find($id);
+        // Slug lookup: match slugified name against active agents
+        $agents = $app->em
+            ->createQuery('SELECT a FROM MapasCulturais\Entities\Agent a WHERE a.status = 1')
+            ->getResult();
 
-        if (!$agent || ($agent->status ?? 0) < 1) {
-            return null;
+        foreach ($agents as $agent) {
+            if (ActorBuilder::slugify((string) ($agent->name ?? '')) === $identifier) {
+                return $agent;
+            }
         }
 
-        return $agent;
+        return null;
     }
 
     private function domain(): string

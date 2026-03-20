@@ -3,6 +3,8 @@ declare(strict_types=1);
 
 namespace ActivityPub;
 
+use ActivityPub\ActorBuilder;
+
 class ActivityBuilder
 {
     private const OBJECT_TYPES = [
@@ -22,7 +24,7 @@ class ActivityBuilder
         string $domain,
         string $activityId
     ): array {
-        $actorUri  = "https://{$domain}/activitypub/agent/{$actor->id}";
+        $actorUri  = "https://{$domain}/activitypub/agent/" . ActorBuilder::slugify((string) ($actor->name ?? ''));
         $published = self::resolvePublished($activityType, $entity);
 
         return [

@@ -6,6 +6,7 @@ namespace Tests\ActivityPub;
 use Tests\Abstract\TestCase;
 use Tests\Traits\UserDirector;
 use Slim\Psr7\Factory\ServerRequestFactory;
+use ActivityPub\ActorBuilder;
 
 class ActivityPubControllerTest extends TestCase
 {
@@ -50,7 +51,7 @@ class ActivityPubControllerTest extends TestCase
     {
         $user  = $this->userDirector->createUser();
         $agent = $user->profile;
-        $slug  = (string) $agent->id;
+        $slug  = ActorBuilder::slugify((string) ($agent->name ?? ''));
 
         $this->assertNotEmpty($slug, 'Agent deveria ter slug após save()');
         $resp = $this->ctrl()->actor($this->req('GET', "/activitypub/agent/{$slug}"), $slug);
@@ -73,7 +74,7 @@ class ActivityPubControllerTest extends TestCase
     {
         $user  = $this->userDirector->createUser();
         $agent = $user->profile;
-        $slug  = (string) $agent->id;
+        $slug  = ActorBuilder::slugify((string) ($agent->name ?? ''));
 
         $resp = $this->ctrl()->outbox($this->req('GET', "/activitypub/agent/{$slug}/outbox"), $slug);
 
@@ -88,7 +89,7 @@ class ActivityPubControllerTest extends TestCase
     {
         $user  = $this->userDirector->createUser();
         $agent = $user->profile;
-        $slug  = (string) $agent->id;
+        $slug  = ActorBuilder::slugify((string) ($agent->name ?? ''));
 
         $req  = $this->req('GET', "/activitypub/agent/{$slug}/outbox?page=1")
                     ->withQueryParams(['page' => '1']);
