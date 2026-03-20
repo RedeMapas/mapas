@@ -6,6 +6,7 @@ return [
          'AdminLoginAsUser',
          'RecreatePCacheOnLogin',
          'SpamDetector',
+         'ActivityPub'
          /* 'MapasNetwork' => [ */
          /*     'namespace' => 'MapasNetwork', */
          /*     'config' => [ */
