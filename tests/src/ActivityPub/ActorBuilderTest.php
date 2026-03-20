@@ -28,12 +28,12 @@ class ActorBuilderTest extends TestCase
         $actor = ActorBuilder::build($this->makeAgent(), 'example.com');
 
         $this->assertSame('Person', $actor['type']);
-        $this->assertSame('https://example.com/activitypub/agent/42', $actor['id']);
-        $this->assertSame('42', $actor['preferredUsername']);
+        $this->assertSame('https://example.com/activitypub/agent/maria-silva', $actor['id']);
+        $this->assertSame('maria-silva', $actor['preferredUsername']);
         $this->assertSame('Maria Silva', $actor['name']);
         $this->assertSame('Artista visual', $actor['summary']);
-        $this->assertSame('https://example.com/activitypub/agent/42/outbox', $actor['outbox']);
-        $this->assertSame('https://example.com/activitypub/agent/42/inbox', $actor['inbox']);
+        $this->assertSame('https://example.com/activitypub/agent/maria-silva/outbox', $actor['outbox']);
+        $this->assertSame('https://example.com/activitypub/agent/maria-silva/inbox', $actor['inbox']);
     }
 
     public function testActorHasPublicKeyStub(): void
@@ -41,8 +41,8 @@ class ActorBuilderTest extends TestCase
         $actor = ActorBuilder::build($this->makeAgent(), 'example.com');
 
         $this->assertArrayHasKey('publicKey', $actor);
-        $this->assertSame('https://example.com/activitypub/agent/42#main-key', $actor['publicKey']['id']);
-        $this->assertSame('https://example.com/activitypub/agent/42', $actor['publicKey']['owner']);
+        $this->assertSame('https://example.com/activitypub/agent/maria-silva#main-key', $actor['publicKey']['id']);
+        $this->assertSame('https://example.com/activitypub/agent/maria-silva', $actor['publicKey']['owner']);
         $this->assertSame('', $actor['publicKey']['publicKeyPem']);
     }
 
