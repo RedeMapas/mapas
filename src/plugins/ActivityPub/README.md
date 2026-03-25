@@ -66,7 +66,8 @@ Retorna `OrderedCollection` / `OrderedCollectionPage` com as atividades registra
 | GET    | `/.well-known/webfinger?resource=acct:{slug}@{domain}` | Descoberta WebFinger |
 | GET    | `/activitypub/agent/{slug}`                       | Perfil Actor (Person)   |
 | GET    | `/activitypub/agent/{slug}/outbox[?page=N]`       | Outbox paginada         |
-| GET    | `/activitypub/agent/{slug}/inbox`                 | Inbox (stub vazio)      |
+| GET    | `/activitypub/agent/{slug}/inbox`                 | Inbox pública vazia     |
+| POST   | `/activitypub/agent/{slug}/inbox`                 | Aceita atividade com `202 Accepted` (stub) |
 | GET    | `/activitypub/agent/{slug}/activities/{hash}`     | Atividade individual    |
 
 O `{slug}` aceita tanto o nome slugificado (`admin`) quanto o ID numérico do agente (`42`) para compatibilidade.
@@ -132,6 +133,6 @@ dev/psql.sh -c "SELECT id, name FROM agent WHERE status = 1 LIMIT 10;"
 ## Limitações atuais
 
 - **Sem assinatura HTTP**: o `publicKey.publicKeyPem` é vazio — outros servidores ActivityPub não conseguem verificar requisições de saída. Necessário para follow/unfollow real.
-- **Sem Inbox funcional**: requisições recebidas de outros servidores são ignoradas.
+- **Inbox parcial**: `POST` retorna `202 Accepted` para compatibilidade mínima, mas o conteúdo recebido ainda não é processado.
 - **Slug não único**: dois agentes com o mesmo nome geram o mesmo slug; o primeiro ativo encontrado é retornado.
 - **Busca por slug em memória**: `findAgent()` itera todos os agentes ativos. Adequado para instâncias pequenas; instâncias grandes precisarão de coluna `activitypub_username` indexada.
