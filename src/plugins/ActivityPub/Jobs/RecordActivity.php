@@ -4,6 +4,8 @@ declare(strict_types=1);
 namespace ActivityPub\Jobs;
 
 use ActivityPub\ActivityBuilder;
+use ActivityPub\ActorBuilder;
+use ActivityPub\Url;
 use MapasCulturais\App;
 use MapasCulturais\Definitions\JobType;
 use MapasCulturais\Entities\Job;
@@ -60,7 +62,8 @@ class RecordActivity extends JobType
         }
 
         // 4. Computar activity_id
-        $domain    = $this->resolveDomain($app);
+        $baseUrl   = Url::resolveBaseUrl($app);
+        $actorUri  = Url::actor($baseUrl, ActorBuilder::slugify((string) ($actor->name ?? '')));
         $tsForHash = match ($activityType) {
             'Create' => ($entity->createTimestamp instanceof \DateTimeInterface)
                             ? $entity->createTimestamp->getTimestamp()
@@ -68,10 +71,10 @@ class RecordActivity extends JobType
             default  => time(), // cada Update é único (acumula histórico)
         };
         $hash       = substr(hash('sha256', "{$activityType}:{$entityClass}:{$entityId}:{$tsForHash}"), 0, 16);
-        $activityId = "https://{$domain}/activitypub/agent/{$actor->id}/activities/{$hash}";
+        $activityId = "{$actorUri}/activities/{$hash}";
 
         // 5. Construir payload JSON-LD
-        $payload = ActivityBuilder::build($activityType, $entity, $entityClass, $actor, $domain, $activityId);
+        $payload = ActivityBuilder::build($activityType, $entity, $entityClass, $actor, $baseUrl, $activityId);
 
         // 6. Persistir
         $conn       = $app->em->getConnection();
@@ -125,15 +128,6 @@ class RecordActivity extends JobType
         }
 
         return true;
-    }
-
-    private function resolveDomain(App $app): string
-    {
-        $domain = (string) ($app->config['activitypub.domain'] ?? '');
-        if ($domain !== '') {
-            return $domain;
-        }
-        return (string) parse_url((string) ($app->config['base.url'] ?? ''), PHP_URL_HOST);
     }
 
     private function shortClass(string $entityClass): string

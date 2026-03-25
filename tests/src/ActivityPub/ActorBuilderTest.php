@@ -72,4 +72,15 @@ class ActorBuilderTest extends TestCase
 
         $this->assertArrayNotHasKey('icon', $actor);
     }
+
+    public function testActorPreservesExplicitBaseUrlSchemeAndPort(): void
+    {
+        $actor = ActorBuilder::build($this->makeAgent(), 'http://localhost:8080');
+
+        $this->assertSame('http://localhost:8080/activitypub/agent/maria-silva', $actor['id']);
+        $this->assertSame('http://localhost:8080/activitypub/agent/maria-silva/outbox', $actor['outbox']);
+        $this->assertSame('http://localhost:8080/activitypub/agent/maria-silva/inbox', $actor['inbox']);
+        $this->assertSame('http://localhost:8080/activitypub/agent/maria-silva#main-key', $actor['publicKey']['id']);
+        $this->assertSame('http://localhost:8080/activitypub/agent/maria-silva', $actor['publicKey']['owner']);
+    }
 }
