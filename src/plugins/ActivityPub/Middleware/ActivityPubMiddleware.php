@@ -57,11 +57,10 @@ class ActivityPubMiddleware implements MiddlewareInterface
 
             // /activitypub/agent/{slug}/inbox
             if ($sub === 'inbox') {
-                if ($method === 'GET') {
+                if ($method === 'GET' || $method === 'POST') {
                     return $ctrl->inbox($request, $slug);
                 }
-                // POST e outros métodos → 405 (Inbox não implementado ainda)
-                return $this->methodNotAllowed(['GET']);
+                return $this->methodNotAllowed(['GET', 'POST']);
             }
 
             // /activitypub/agent/{slug}/activities/{hash}
