@@ -109,4 +109,23 @@ class ActivityPubControllerTest extends TestCase
         $resp = $this->ctrl()->outbox($this->req('GET', '/x'), 'nonexistent-slug-xyz-987');
         $this->assertSame(404, $resp->getStatusCode());
     }
+
+    public function testWebFingerSelfLinkPreservesBaseUrlSchemeAndPort(): void
+    {
+        $user  = $this->userDirector->createUser();
+        $agent = $user->profile;
+        $slug  = ActorBuilder::slugify((string) ($agent->name ?? ''));
+
+        $resource = "acct:{$slug}@localhost:8080";
+        $req = $this->req('GET', "/.well-known/webfinger?resource={$resource}")
+            ->withQueryParams(['resource' => $resource]);
+
+        $resp = $this->ctrl()->webfinger($req);
+
+        $this->assertSame(200, $resp->getStatusCode());
+
+        $body = json_decode((string) $resp->getBody(), true);
+        $this->assertSame($resource, $body['subject']);
+        $this->assertSame('http://localhost:8080/activitypub/agent/' . $slug, $body['links'][0]['href']);
+    }
 }
