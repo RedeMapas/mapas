@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace ActivityPub\Controllers;
 
 use ActivityPub\ActorBuilder;
+use ActivityPub\Url;
 use MapasCulturais\App;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -33,9 +34,10 @@ class ActivityPub extends \MapasCulturais\Controller
         }
 
         [$slug, $incomingDomain] = array_pad(explode('@', substr($resource, 5), 2), 2, '');
-        $domain = $this->domain();
+        $baseUrl = $this->baseUrl();
+        $authority = Url::authority($baseUrl);
 
-        if ($incomingDomain !== $domain) {
+        if ($incomingDomain !== $authority) {
             return $this->ap(['error' => 'Actor not found'], 404, self::CONTENT_TYPE_JRD);
         }
 
@@ -47,11 +49,11 @@ class ActivityPub extends \MapasCulturais\Controller
         $canonicalSlug = ActorBuilder::slugify((string) ($agent->name ?? ''));
 
         return $this->ap([
-            'subject' => "acct:{$canonicalSlug}@{$domain}",
+            'subject' => "acct:{$canonicalSlug}@{$authority}",
             'links'   => [[
                 'rel'  => 'self',
                 'type' => 'application/activity+json',
-                'href' => "https://{$domain}/activitypub/agent/{$canonicalSlug}",
+                'href' => Url::actor($baseUrl, $canonicalSlug),
             ]],
         ], 200, self::CONTENT_TYPE_JRD);
     }
@@ -67,7 +69,7 @@ class ActivityPub extends \MapasCulturais\Controller
             return $this->ap(['error' => 'Actor not found'], 404);
         }
 
-        return $this->ap(ActorBuilder::build($agent, $this->domain()));
+        return $this->ap(ActorBuilder::build($agent, $this->baseUrl()));
     }
 
     // -----------------------------------------------------------------------
@@ -101,8 +103,7 @@ class ActivityPub extends \MapasCulturais\Controller
 
         $params    = $request->getQueryParams();
         $page      = isset($params['page']) ? max(1, (int) $params['page']) : null;
-        $domain    = $this->domain();
-        $outboxUri = "https://{$domain}/activitypub/agent/{$slug}/outbox";
+        $outboxUri = Url::actor($this->baseUrl(), $slug) . '/outbox';
 
         $app   = App::i();
         $conn  = $app->em->getConnection();
@@ -167,8 +168,7 @@ class ActivityPub extends \MapasCulturais\Controller
             return $this->ap(['error' => 'Actor not found'], 404);
         }
 
-        $domain     = $this->domain();
-        $activityId = "https://{$domain}/activitypub/agent/{$slug}/activities/{$hash}";
+        $activityId = Url::actor($this->baseUrl(), $slug) . "/activities/{$hash}";
         $agentId    = (int) $agent->id;
 
         $app  = App::i();
@@ -216,14 +216,9 @@ class ActivityPub extends \MapasCulturais\Controller
         return null;
     }
 
-    private function domain(): string
+    private function baseUrl(): string
     {
-        $app    = App::i();
-        $domain = (string) ($app->config['activitypub.domain'] ?? '');
-        if ($domain !== '') {
-            return $domain;
-        }
-        return (string) parse_url((string) ($app->config['base.url'] ?? ''), PHP_URL_HOST);
+        return Url::resolveBaseUrl(App::i());
     }
 
     private function ap(array $data, int $status = 200, string $ct = self::CONTENT_TYPE_AP): ResponseInterface

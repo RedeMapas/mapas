@@ -131,4 +131,20 @@ class ActivityBuilderTest extends TestCase
 
         $this->assertSame('https://example.com/activitypub/agent/test-actor', $activity['object']['attributedTo']);
     }
+
+    public function testActivityPreservesExplicitBaseUrlSchemeAndPort(): void
+    {
+        $activity = ActivityBuilder::build(
+            'Create',
+            $this->makeEvent(),
+            'MapasCulturais\Entities\Event',
+            $this->makeActor(),
+            'http://localhost:8080',
+            'http://localhost:8080/activitypub/agent/test-actor/activities/abc123'
+        );
+
+        $this->assertSame('http://localhost:8080/activitypub/agent/test-actor', $activity['actor']);
+        $this->assertSame('http://localhost:8080/activitypub/agent/test-actor', $activity['object']['attributedTo']);
+        $this->assertSame('http://localhost:8080/activitypub/agent/test-actor/activities/abc123', $activity['id']);
+    }
 }

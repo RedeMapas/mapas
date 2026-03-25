@@ -16,10 +16,10 @@ class ActorBuilder
         return trim($slug, '-');
     }
 
-    public static function build(object $agent, string $domain): array
+    public static function build(object $agent, string $baseUrlOrAuthority): array
     {
         $slug = self::slugify((string) ($agent->name ?? ''));
-        $base = "https://{$domain}/activitypub/agent/{$slug}";
+        $base = Url::actor($baseUrlOrAuthority, $slug);
 
         $actor = [
             '@context' => [

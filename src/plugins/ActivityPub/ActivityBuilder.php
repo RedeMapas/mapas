@@ -3,8 +3,6 @@ declare(strict_types=1);
 
 namespace ActivityPub;
 
-use ActivityPub\ActorBuilder;
-
 class ActivityBuilder
 {
     private const OBJECT_TYPES = [
@@ -21,10 +19,10 @@ class ActivityBuilder
         object $entity,
         string $entityClass,
         object $actor,
-        string $domain,
+        string $baseUrlOrAuthority,
         string $activityId
     ): array {
-        $actorUri  = "https://{$domain}/activitypub/agent/" . ActorBuilder::slugify((string) ($actor->name ?? ''));
+        $actorUri  = Url::actor($baseUrlOrAuthority, ActorBuilder::slugify((string) ($actor->name ?? '')));
         $published = self::resolvePublished($activityType, $entity);
 
         return [
@@ -33,7 +31,7 @@ class ActivityBuilder
             'id'        => $activityId,
             'actor'     => $actorUri,
             'published' => $published,
-            'object'    => self::buildObject($entityClass, $entity, $actorUri, $domain),
+            'object'    => self::buildObject($entityClass, $entity, $actorUri),
         ];
     }
 
@@ -54,8 +52,7 @@ class ActivityBuilder
     private static function buildObject(
         string $entityClass,
         object $entity,
-        string $actorUri,
-        string $domain
+        string $actorUri
     ): array {
         $type = self::OBJECT_TYPES[$entityClass] ?? 'Note';
         $base = ['type' => $type, 'attributedTo' => $actorUri];
