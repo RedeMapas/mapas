@@ -82,6 +82,15 @@ class ActivityPub extends \MapasCulturais\Controller
             return $this->ap(['error' => 'Actor not found'], 404);
         }
 
+        if (strtoupper($request->getMethod()) === 'POST') {
+            App::i()->log->info('[activitypub] Inbox recebeu atividade, mas o processamento ainda nao foi implementado', [
+                'slug' => $slug,
+                'content_type' => $request->getHeaderLine('Content-Type'),
+            ]);
+
+            return $this->ap(['status' => 'accepted'], 202);
+        }
+
         return $this->ap([
             '@context'     => 'https://www.w3.org/ns/activitystreams',
             'type'         => 'OrderedCollection',

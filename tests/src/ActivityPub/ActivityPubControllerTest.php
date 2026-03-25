@@ -110,6 +110,19 @@ class ActivityPubControllerTest extends TestCase
         $this->assertSame(404, $resp->getStatusCode());
     }
 
+    public function testInboxPostReturns202ForKnownActor(): void
+    {
+        $user  = $this->userDirector->createUser();
+        $agent = $user->profile;
+        $slug  = ActorBuilder::slugify((string) ($agent->name ?? ''));
+
+        $resp = $this->ctrl()->inbox($this->req('POST', "/activitypub/agent/{$slug}/inbox"), $slug);
+
+        $this->assertSame(202, $resp->getStatusCode());
+        $body = json_decode((string) $resp->getBody(), true);
+        $this->assertSame('accepted', $body['status']);
+    }
+
     public function testWebFingerSelfLinkPreservesBaseUrlSchemeAndPort(): void
     {
         $user  = $this->userDirector->createUser();
