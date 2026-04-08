@@ -1,0 +1,72 @@
+---
+interface Props {
+    title?: string;
+}
+
+const { title = 'MapaCultural' } = Astro.props;
+const phpUrl = import.meta.env.PHP_API_URL;
+---
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" href={`${phpUrl}/favicon.ico`} />
+    <title>{title}</title>
+    <style is:global>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Open Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #f5f5f5;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .mc-header {
+            background: #243b73;
+            color: #fff;
+            padding: 1rem 2rem;
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .mc-header h1 { font-size: 1.25rem; font-weight: 600; }
+        .mc-header a { color: #c8dafc; text-decoration: none; font-size: 0.875rem; }
+        .mc-header a:hover { color: #fff; }
+
+        .mc-container {
+            max-width: 960px;
+            margin: 2rem auto;
+            padding: 0 1.5rem;
+        }
+
+        .mc-card {
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .mc-card h2 {
+            font-size: 1rem;
+            color: #243b73;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid #eee;
+        }
+    </style>
+</head>
+<body>
+    <header class="mc-header">
+        <h1>MapaCultural</h1>
+        <a href={phpUrl || '/'}>Voltar ao portal</a>
+    </header>
+    <main class="mc-container">
+        <slot />
+    </main>
+</body>
+</html>

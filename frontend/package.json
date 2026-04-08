@@ -1,0 +1,19 @@
+{
+  "name": "mapas-frontend",
+  "type": "module",
+  "version": "0.0.1",
+  "scripts": {
+    "dev": "HOST=0.0.0.0 PORT=4321 pnpm astro dev",
+    "build": "pnpm astro build",
+    "preview": "HOST=0.0.0.0 PORT=4321 pnpm astro preview",
+    "astro": "astro"
+  },
+  "dependencies": {
+    "astro": "^5.7.0",
+    "@astrojs/node": "^9.1.0",
+    "@astrojs/vue": "^5.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.0"
+  }
+}

@@ -1,0 +1,343 @@
+---
+import HomeLayout from '../../layouts/HomeLayout.astro';
+
+const { id } = Astro.params;
+const phpUrl = import.meta.env.PHP_API_URL || '';
+
+const fields = 'id,name,shortDescription,longDescription,registrationFrom,registrationTo,status,ownerEntity,type';
+let opp: any = null;
+let notFound = false;
+
+try {
+    const res = await fetch(`${phpUrl}/api/opportunity/${id}?@select=${fields}`);
+    if (res.status === 404) {
+        notFound = true;
+    } else if (res.ok) {
+        opp = await res.json();
+    }
+} catch (_) {}
+
+function parseDate(val: any): Date | null {
+    if (!val) return null;
+    const str = typeof val === 'object' ? val.date : val;
+    return str ? new Date(str) : null;
+}
+
+function formatDate(val: any): string {
+    const d = parseDate(val);
+    if (!d) return '—';
+    return d.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
+}
+
+function isOpen(opp: any): boolean {
+    const now = new Date();
+    const from = parseDate(opp?.registrationFrom);
+    const to = parseDate(opp?.registrationTo);
+    return (!from || now >= from) && (!to || now <= to);
+}
+
+const title = opp ? `${opp.name} — Rede Mapas` : 'Edital não encontrado — Rede Mapas';
+---
+
+<HomeLayout title={title}>
+    <div class="opp-detail-page">
+        <div class="container">
+            <nav class="breadcrumb" aria-label="Navegação">
+                <a href="/spa/">Início</a>
+                <span aria-hidden="true">›</span>
+                <a href="/spa/entidades">Editais</a>
+                <span aria-hidden="true">›</span>
+                <span>{opp?.name ?? 'Edital'}</span>
+            </nav>
+
+            {notFound || !opp ? (
+                <div class="opp-notfound">
+                    <p class="opp-notfound__icon" aria-hidden="true">📄</p>
+                    <h1>Edital não encontrado</h1>
+                    <p>O edital com ID <strong>{id}</strong> não existe ou foi removido.</p>
+                    <a class="opp-btn" href="/spa/entidades">← Voltar para editais</a>
+                </div>
+            ) : (
+                <div class="opp-layout">
+
+                    <!-- Coluna principal -->
+                    <main class="opp-main">
+                        <header class="opp-header">
+                            {isOpen(opp) ? (
+                                <span class="opp-badge opp-badge--open">Inscrições abertas</span>
+                            ) : (
+                                <span class="opp-badge opp-badge--closed">Encerrado</span>
+                            )}
+                            <h1 class="opp-title">{opp.name}</h1>
+                            {opp.shortDescription && (
+                                <p class="opp-subtitle">{opp.shortDescription}</p>
+                            )}
+                        </header>
+
+                        {opp.longDescription ? (
+                            <section class="opp-body">
+                                <h2>Sobre este edital</h2>
+                                <div class="opp-description" set:html={opp.longDescription} />
+                            </section>
+                        ) : (
+                            <section class="opp-body opp-body--empty">
+                                <p>Nenhuma descrição detalhada disponível.</p>
+                            </section>
+                        )}
+
+                        <div class="opp-actions">
+                            {isOpen(opp) && (
+                                <a class="opp-btn opp-btn--primary" href={`/oportunidade/${id}/inscricoes/novo`}>
+                                    Inscrever-se neste edital
+                                </a>
+                            )}
+                            <a class="opp-btn opp-btn--secondary" href={`/oportunidade/${id}/info`} target="_blank" rel="noopener">
+                                Ver no portal ↗
+                            </a>
+                        </div>
+                    </main>
+
+                    <!-- Sidebar -->
+                    <aside class="opp-sidebar">
+                        <div class="opp-info-card">
+                            <h2 class="opp-info-card__title">Informações</h2>
+
+                            <dl class="opp-info-list">
+                                {opp.type?.name && (
+                                    <>
+                                        <dt>Tipo</dt>
+                                        <dd>{opp.type.name}</dd>
+                                    </>
+                                )}
+
+                                <dt>Início das inscrições</dt>
+                                <dd>{formatDate(opp.registrationFrom)}</dd>
+
+                                <dt>Encerramento das inscrições</dt>
+                                <dd class={isOpen(opp) ? 'opp-info-list__deadline--open' : 'opp-info-list__deadline--closed'}>
+                                    {formatDate(opp.registrationTo)}
+                                </dd>
+
+                                {opp.ownerEntity?.name && (
+                                    <>
+                                        <dt>Promovido por</dt>
+                                        <dd>
+                                            <a href={`/agente/${opp.ownerEntity.id}/info`}>
+                                                {opp.ownerEntity.name}
+                                            </a>
+                                        </dd>
+                                    </>
+                                )}
+                            </dl>
+                        </div>
+                    </aside>
+
+                </div>
+            )}
+        </div>
+    </div>
+
+    <style>
+        .opp-detail-page {
+            font-family: 'Source Sans 3', Arial, sans-serif;
+            background: #f2f2f2;
+            min-height: 100vh;
+            padding: 2rem 0 4rem;
+        }
+
+        .container {
+            width: min(1180px, 92vw);
+            margin: 0 auto;
+        }
+
+        /* ── BREADCRUMB ──────────────────────────────────── */
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-size: 0.82rem;
+            color: #666;
+            margin-bottom: 1.5rem;
+        }
+
+        .breadcrumb a { color: #0056c8; text-decoration: none; }
+        .breadcrumb a:hover { text-decoration: underline; }
+        .breadcrumb span:last-child { color: #1f1f1f; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 240px; }
+
+        /* ── NOT FOUND ───────────────────────────────────── */
+        .opp-notfound {
+            background: #fff;
+            border-radius: 10px;
+            padding: 3rem 2rem;
+            text-align: center;
+            border: 1px solid #e8e8e8;
+        }
+
+        .opp-notfound__icon { font-size: 3rem; margin: 0 0 1rem; }
+        .opp-notfound h1 { font-size: 1.4rem; color: #1f1f1f; margin: 0 0 0.5rem; }
+        .opp-notfound p { color: #666; margin: 0 0 1.5rem; }
+
+        /* ── LAYOUT ──────────────────────────────────────── */
+        .opp-layout {
+            display: grid;
+            grid-template-columns: 1fr 320px;
+            gap: 1.5rem;
+            align-items: start;
+        }
+
+        /* ── MAIN ────────────────────────────────────────── */
+        .opp-main {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .opp-header {
+            background: #fff;
+            border: 1px solid #e8e8e8;
+            border-radius: 10px;
+            padding: 1.75rem 2rem;
+        }
+
+        .opp-badge {
+            display: inline-block;
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            border-radius: 999px;
+            padding: 0.25rem 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .opp-badge--open { background: #dcfce7; color: #166534; }
+        .opp-badge--closed { background: #fee2e2; color: #991b1b; }
+
+        .opp-title {
+            margin: 0 0 0.5rem;
+            font-size: clamp(1.3rem, 2.5vw, 2rem);
+            font-weight: 700;
+            color: #0033a0;
+            line-height: 1.15;
+        }
+
+        .opp-subtitle {
+            margin: 0;
+            font-size: 1rem;
+            color: #474747;
+            line-height: 1.5;
+        }
+
+        .opp-body {
+            background: #fff;
+            border: 1px solid #e8e8e8;
+            border-radius: 10px;
+            padding: 1.75rem 2rem;
+        }
+
+        .opp-body h2 {
+            margin: 0 0 1rem;
+            font-size: 1rem;
+            font-weight: 700;
+            color: #0033a0;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .opp-body--empty { color: #888; font-size: 0.9rem; }
+
+        .opp-description {
+            font-size: 0.95rem;
+            color: #333;
+            line-height: 1.7;
+        }
+
+        .opp-description p { margin: 0 0 0.9rem; }
+        .opp-description p:last-child { margin-bottom: 0; }
+
+        /* ── ACTIONS ─────────────────────────────────────── */
+        .opp-actions {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        .opp-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 999px;
+            padding: 0.65rem 1.5rem;
+            min-height: 44px;
+            font-weight: 700;
+            font-size: 0.875rem;
+            text-decoration: none;
+            transition: filter 0.15s, box-shadow 0.15s;
+        }
+
+        .opp-btn:hover { filter: brightness(1.06); box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
+        .opp-btn--primary { background: #0056c8; color: #fff; }
+        .opp-btn--secondary { background: #fff; color: #0056c8; border: 2px solid #0056c8; }
+
+        /* ── SIDEBAR ─────────────────────────────────────── */
+        .opp-info-card {
+            background: #fff;
+            border: 1px solid #e8e8e8;
+            border-radius: 10px;
+            padding: 1.5rem;
+            position: sticky;
+            top: 72px;
+        }
+
+        .opp-info-card__title {
+            margin: 0 0 1rem;
+            font-size: 0.78rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: #888;
+        }
+
+        .opp-info-list {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 0.2rem;
+        }
+
+        .opp-info-list dt {
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: #999;
+            margin-top: 0.75rem;
+        }
+
+        .opp-info-list dt:first-child { margin-top: 0; }
+
+        .opp-info-list dd {
+            margin: 0;
+            font-size: 0.92rem;
+            color: #1f1f1f;
+            font-weight: 600;
+        }
+
+        .opp-info-list dd a { color: #0056c8; text-decoration: none; }
+        .opp-info-list dd a:hover { text-decoration: underline; }
+
+        .opp-info-list__deadline--open { color: #166534; }
+        .opp-info-list__deadline--closed { color: #991b1b; }
+
+        /* ── RESPONSIVE ──────────────────────────────────── */
+        @media (max-width: 860px) {
+            .opp-layout { grid-template-columns: 1fr; }
+            .opp-sidebar { order: -1; }
+            .opp-info-card { position: static; }
+        }
+
+        @media (max-width: 540px) {
+            .opp-header { padding: 1.25rem; }
+            .opp-body { padding: 1.25rem; }
+        }
+    </style>
+</HomeLayout>
