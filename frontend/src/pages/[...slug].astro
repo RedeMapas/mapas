@@ -1,0 +1,31 @@
+---
+import Base from '../layouts/Base.astro';
+
+const slug = Astro.params.slug;
+const api = import.meta.env.PHP_API_URL;
+
+let entity = null;
+if (slug) {
+    const parts = slug.split('/');
+    try {
+        const res = await fetch(`${api}/api/${parts[0]}?@select=id,name,type,shortDescription`);
+        if (res.ok) entity = await res.json();
+    } catch {}
+}
+---
+
+<Base title={`MapaCultural${entity?.name ? ' - ' + entity.name : ''}`}>
+    <main>
+        {entity ? (
+            <div>
+                <h1>{entity.name}</h1>
+                <p>{entity.shortDescription}</p>
+            </div>
+        ) : (
+            <div>
+                <h1>MapaCultural - Astro Frontend</h1>
+                <p>Pagina nao encontrada: /spa/{slug}</p>
+            </div>
+        )}
+    </main>
+</Base>
