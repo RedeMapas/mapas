@@ -1,5 +1,6 @@
 ---
 import { getDb } from '../../../lib/ingestor/db.ts'
+import '../../../styles/global.css'
 
 const tab = Astro.url.searchParams.get('tab') ?? 'pending'
 const search = Astro.url.searchParams.get('q') ?? ''
@@ -50,9 +51,16 @@ const TABS: Array<{ key: Tab; label: string }> = [
 ]
 
 function matchBadge(status: string) {
-  if (status === 'matched') return { bg: '#d1fae5', color: '#065f46', label: '✓ matched' }
-  if (status === 'suggested') return { bg: '#fef3c7', color: '#92400e', label: '~ sugerido' }
-  return { bg: '#f3f4f6', color: '#374151', label: '? pendente' }
+  if (status === 'matched') return { cls: 'badge-success', label: '✓ matched' }
+  if (status === 'suggested') return { cls: 'badge-warning', label: '~ sugerido' }
+  return { cls: 'badge-ghost', label: '? pendente' }
+}
+
+function importBadge(status: string) {
+  if (status === 'imported') return { cls: 'badge-success', label: '✓ importado' }
+  if (status === 'failed') return { cls: 'badge-error', label: '✗ falhou' }
+  if (status === 'exported') return { cls: 'badge-info', label: 'exportado' }
+  return { cls: 'badge-ghost', label: 'pendente' }
 }
 
 function formatDate(iso: string) {
@@ -60,102 +68,77 @@ function formatDate(iso: string) {
 }
 ---
 
-<html lang="pt-br">
+<html lang="pt-br" data-theme="light">
 <head>
   <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Eventos — Ingestor</title>
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: system-ui, sans-serif; background: #f5f5f5; color: #222; }
-    header { background: #0033a0; color: white; padding: 1rem 2rem; }
-    header h1 { font-size: 1.25rem; font-weight: 600; }
-    header nav { margin-top: 0.5rem; display: flex; gap: 1.5rem; }
-    header nav a { color: rgba(255,255,255,0.85); text-decoration: none; font-size: 0.9rem; }
-    main { max-width: 960px; margin: 2rem auto; padding: 0 1rem; }
-    .tabs { display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap; }
-    .tabs a { padding: 0.4rem 0.9rem; border-radius: 20px; font-size: 0.85rem; text-decoration: none;
-              background: white; color: #555; border: 1px solid #ddd; }
-    .tabs a.active { background: #0033a0; color: white; border-color: #0033a0; }
-    .search-row { display: flex; gap: 0.75rem; margin-bottom: 1.25rem; }
-    .search-row input { flex: 1; padding: 0.5rem 0.75rem; border: 1px solid #ddd; border-radius: 6px; font-size: 0.9rem; }
-    .bulk-bar { display: flex; justify-content: space-between; align-items: center;
-                background: white; border-radius: 8px; padding: 0.75rem 1rem;
-                margin-bottom: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.08); font-size: 0.85rem; color: #555; }
-    button { padding: 0.5rem 1rem; border-radius: 6px; font-size: 0.85rem; font-weight: 600; cursor: pointer; border: none; }
-    .btn-primary { background: #0033a0; color: white; }
-    .btn-success { background: #00a76f; color: white; }
-    .event-list { display: flex; flex-direction: column; gap: 0.75rem; }
-    .event-card { background: white; border-radius: 8px; padding: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-                  display: grid; grid-template-columns: auto 1fr auto; gap: 1rem; align-items: start; }
-    .event-card input[type=checkbox] { margin-top: 0.2rem; }
-    .event-card .title { font-weight: 600; margin-bottom: 0.25rem; }
-    .event-card .meta { font-size: 0.8rem; color: #666; display: flex; gap: 0.75rem; flex-wrap: wrap; }
-    .badge { display: inline-block; padding: 0.15rem 0.5rem; border-radius: 10px; font-size: 0.72rem; font-weight: 600; }
-    .event-actions a { font-size: 0.85rem; color: #0033a0; text-decoration: none; }
-    .event-actions a:hover { text-decoration: underline; }
-    .match-note { font-size: 0.75rem; color: #dc3545; margin-top: 0.25rem; }
-    .empty { text-align: center; padding: 3rem 1rem; color: #888; }
-  </style>
 </head>
-<body>
-  <header>
-    <h1>Ingestor de Eventos</h1>
-    <nav>
-      <a href="/ingestor">Dashboard</a>
-      <a href="/ingestor/eventos">Eventos</a>
-      <a href="/ingestor/exportar">Exportar CSV</a>
-    </nav>
-  </header>
+<body class="bg-base-200 min-h-screen">
+  <div class="navbar bg-primary text-primary-content px-6">
+    <div class="navbar-start">
+      <h1 class="text-lg font-semibold">Ingestor de Eventos</h1>
+    </div>
+    <div class="navbar-end gap-2">
+      <a href="/ingestor" class="btn btn-ghost btn-sm text-primary-content/85">Dashboard</a>
+      <a href="/ingestor/eventos" class="btn btn-ghost btn-sm text-primary-content/85">Eventos</a>
+      <a href="/ingestor/exportar" class="btn btn-ghost btn-sm text-primary-content/85">Exportar CSV</a>
+    </div>
+  </div>
 
-  <main>
-    <div class="tabs">
+  <main class="max-w-4xl mx-auto p-4">
+    <div class="flex gap-2 flex-wrap mb-4">
       {TABS.map(t => (
         <a href={`?tab=${t.key}${search ? `&q=${encodeURIComponent(search)}` : ''}`}
-           class={activeTab === t.key ? 'active' : ''}>
+           class={`btn btn-sm ${activeTab === t.key ? 'btn-primary' : 'btn-ghost bg-base-100'}`}>
           {t.label}
         </a>
       ))}
     </div>
 
-    <div class="search-row">
-      <input
-        id="search"
-        type="search"
-        placeholder="Buscar por título..."
-        value={search}
-      />
+    <div class="mb-4">
+      <input id="search" type="search" placeholder="Buscar por título..." value={search}
+             class="input input-bordered w-full" />
     </div>
 
-    <div class="bulk-bar">
-      <span>{total} evento{total !== 1 ? 's' : ''}</span>
-      <button id="bulk-approve-btn" class="btn-success" style="display:none">
-        Aprovar selecionados (0)
-      </button>
+    <div class="flex justify-between items-center bg-base-100 rounded-box p-3 shadow-sm mb-4 text-sm">
+      <label class="flex items-center gap-2 cursor-pointer">
+        <input type="checkbox" id="select-all-checkbox" class="checkbox checkbox-sm checkbox-primary" />
+        <span class="text-base-content/60">{total} evento{total !== 1 ? 's' : ''}</span>
+      </label>
+      <div class="flex gap-2">
+        <button id="bulk-import-btn" class="btn btn-info btn-sm hidden">Importar selecionados (0)</button>
+        <button id="bulk-approve-btn" class="btn btn-success btn-sm hidden">Aprovar selecionados (0)</button>
+      </div>
     </div>
 
     {events.length === 0 ? (
-      <div class="empty">Nenhum evento nesta categoria.</div>
+      <div class="hero min-h-[30vh]">
+        <div class="hero-content text-base-content/50">Nenhum evento nesta categoria.</div>
+      </div>
     ) : (
-      <div class="event-list" id="event-list">
+      <div class="flex flex-col gap-3" id="event-list">
         {events.map(evt => {
           const badge = matchBadge(String(evt.match_status))
           return (
-            <div class="event-card" data-id={evt.id}>
-              <input type="checkbox" class="event-checkbox" data-id={evt.id} />
-              <div>
-                <div class="title">{String(evt.title)}</div>
-                <div class="meta">
-                  <span>{formatDate(String(evt.start_at))}</span>
-                  <span style={`background:${badge.bg};color:${badge.color};`} class="badge">
-                    {badge.label}
-                  </span>
-                  {evt.match_score ? <span>score: {evt.match_score}</span> : null}
-                  {evt.review_status === 'auto_approved' && <span class="badge" style="background:#d1fae5;color:#065f46">auto-aprovado</span>}
+            <div class="card bg-base-100 shadow-sm" data-id={evt.id}>
+              <div class="card-body flex-row items-start gap-4 p-4">
+                <input type="checkbox" class="checkbox checkbox-sm checkbox-primary mt-1 event-checkbox" data-id={evt.id} />
+                <div class="flex-1 min-w-0">
+                  <p class="font-semibold text-sm">{String(evt.title)}</p>
+                  <div class="flex gap-2 flex-wrap mt-1">
+                    <span class="text-xs text-base-content/60">{formatDate(String(evt.start_at))}</span>
+                    <span class={`badge badge-sm ${badge.cls}`}>{badge.label}</span>
+                    {evt.match_score ? <span class="text-xs text-base-content/50">score: {evt.match_score}</span> : null}
+                    {evt.review_status === 'auto_approved' && <span class="badge badge-success badge-sm">auto-aprovado</span>}
+                    {(() => {
+                      const ib = importBadge(String(evt.import_status))
+                      return <span class={`badge badge-sm ${ib.cls}`}>{ib.label}</span>
+                    })()}
+                  </div>
+                  {evt.match_note && <p class="text-xs text-error mt-1">⚠ {String(evt.match_note)}</p>}
                 </div>
-                {evt.match_note && <div class="match-note">⚠ {String(evt.match_note)}</div>}
-              </div>
-              <div class="event-actions">
-                <a href={`/ingestor/eventos/${evt.id}`}>Editar →</a>
+                <a href={`/ingestor/eventos/${evt.id}`} class="btn btn-ghost btn-sm text-primary">Editar →</a>
               </div>
             </div>
           )
@@ -165,7 +148,6 @@ function formatDate(iso: string) {
   </main>
 
   <script>
-    // Search on Enter
     const searchInput = document.getElementById('search') as HTMLInputElement
     searchInput?.addEventListener('keydown', (e: KeyboardEvent) => {
       if (e.key === 'Enter') {
@@ -176,29 +158,37 @@ function formatDate(iso: string) {
       }
     })
 
-    // Bulk approve — scoped to visible (checked) events
-    const bulkBtn = document.getElementById('bulk-approve-btn') as HTMLButtonElement
+    const bulkApproveBtn = document.getElementById('bulk-approve-btn') as HTMLButtonElement
+    const bulkImportBtn = document.getElementById('bulk-import-btn') as HTMLButtonElement
+    const selectAllCheckbox = document.getElementById('select-all-checkbox') as HTMLInputElement
     const checkboxes = document.querySelectorAll<HTMLInputElement>('.event-checkbox')
 
     function updateBulkBar() {
       const checked = [...checkboxes].filter(c => c.checked)
-      if (checked.length > 0) {
-        bulkBtn.style.display = 'block'
-        bulkBtn.textContent = `Aprovar selecionados (${checked.length})`
+      const count = checked.length
+      if (count > 0) {
+        bulkApproveBtn.classList.remove('hidden')
+        bulkApproveBtn.textContent = `Aprovar selecionados (${count})`
+        bulkImportBtn.classList.remove('hidden')
+        bulkImportBtn.textContent = `Importar selecionados (${count})`
       } else {
-        bulkBtn.style.display = 'none'
+        bulkApproveBtn.classList.add('hidden')
+        bulkImportBtn.classList.add('hidden')
       }
     }
 
+    selectAllCheckbox?.addEventListener('change', () => {
+      checkboxes.forEach(cb => { cb.checked = selectAllCheckbox.checked })
+      updateBulkBar()
+    })
+
     checkboxes.forEach(cb => cb.addEventListener('change', updateBulkBar))
 
-    bulkBtn?.addEventListener('click', async () => {
+    bulkApproveBtn?.addEventListener('click', async () => {
       const checked = [...checkboxes].filter(c => c.checked)
       const ids = checked.map(c => Number(c.dataset['id']))
-
       if (!confirm(`Você está aprovando ${ids.length} evento${ids.length !== 1 ? 's' : ''}. Confirmar?`)) return
-
-      bulkBtn.disabled = true
+      bulkApproveBtn.disabled = true
       try {
         const res = await fetch('/api/ingestor/events/bulk-approve', {
           method: 'POST',
@@ -215,7 +205,32 @@ function formatDate(iso: string) {
       } catch {
         alert('Erro de rede')
       } finally {
-        bulkBtn.disabled = false
+        bulkApproveBtn.disabled = false
+      }
+    })
+
+    bulkImportBtn?.addEventListener('click', async () => {
+      const checked = [...checkboxes].filter(c => c.checked)
+      const ids = checked.map(c => Number(c.dataset['id']))
+      if (!confirm(`Importar ${ids.length} evento${ids.length !== 1 ? 's' : ''} para o Mapas?`)) return
+      bulkImportBtn.disabled = true
+      try {
+        const res = await fetch('/api/ingestor/events/import', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ids }),
+        })
+        const data = await res.json()
+        if (res.ok) {
+          alert(`Importados: ${data.imported}, Falhas: ${data.failed}`)
+          location.reload()
+        } else {
+          alert(data.error ?? 'Erro ao importar')
+        }
+      } catch {
+        alert('Erro de rede')
+      } finally {
+        bulkImportBtn.disabled = false
       }
     })
   </script>
