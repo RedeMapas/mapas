@@ -1,5 +1,6 @@
 ---
 import { getDb } from '../../../lib/ingestor/db.ts'
+import '../../../styles/global.css'
 
 const { id } = Astro.params
 const db = getDb()
@@ -9,190 +10,176 @@ if (!event) {
   return Astro.redirect('/ingestor/eventos')
 }
 
-// Load venue cache as JSON for client-side filtering (≤300 venues → ~30KB)
 const venues = db.prepare('SELECT mapas_space_id, name, city FROM venue_cache ORDER BY name').all() as Array<{ mapas_space_id: number; name: string; city: string }>
 
 function formatDate(iso: string) {
   return new Date(iso).toLocaleString('pt-BR', { timeZone: 'America/Fortaleza' })
 }
 
-const matchColors: Record<string, string> = {
-  matched: '#00a76f',
-  suggested: '#f59e0b',
-  pending: '#888',
+const matchBadgeClass: Record<string, string> = {
+  matched: 'badge badge-success',
+  suggested: 'badge badge-warning',
+  pending: 'badge badge-ghost',
 }
 ---
 
-<html lang="pt-br">
+<html lang="pt-br" data-theme="light">
 <head>
   <meta charset="utf-8" />
   <title>{String(event.title)} — Ingestor</title>
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: system-ui, sans-serif; background: #f5f5f5; color: #222; }
-    header { background: #0033a0; color: white; padding: 1rem 2rem; }
-    header h1 { font-size: 1.25rem; font-weight: 600; }
-    header nav { margin-top: 0.5rem; display: flex; gap: 1.5rem; }
-    header nav a { color: rgba(255,255,255,0.85); text-decoration: none; font-size: 0.9rem; }
-    main { max-width: 800px; margin: 2rem auto; padding: 0 1rem; display: flex; flex-direction: column; gap: 1.25rem; }
-    .card { background: white; border-radius: 8px; padding: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
-    .card h2 { font-size: 1rem; font-weight: 700; margin-bottom: 1rem; color: #333; }
-    .field-group { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-    label { display: block; font-size: 0.8rem; color: #666; margin-bottom: 0.3rem; }
-    input[type=text], textarea, select {
-      width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 6px; font-size: 0.9rem;
-    }
-    textarea { min-height: 80px; resize: vertical; }
-    .readonly-field { background: #f9f9f9; padding: 0.5rem; border-radius: 6px; font-size: 0.9rem; color: #444; }
-    .badge { display: inline-block; padding: 0.2rem 0.6rem; border-radius: 12px; font-size: 0.8rem; font-weight: 600; }
-    .actions { display: flex; gap: 0.75rem; flex-wrap: wrap; }
-    button { padding: 0.6rem 1.25rem; border-radius: 6px; font-size: 0.9rem; font-weight: 600; cursor: pointer; border: none; }
-    .btn-approve { background: #00a76f; color: white; }
-    .btn-reject  { background: #dc3545; color: white; }
-    .btn-save    { background: #0033a0; color: white; }
-    .btn-back    { background: #f0f0f0; color: #333; }
-    .venue-search { position: relative; }
-    .venue-search input { width: 100%; }
-    .venue-dropdown { position: absolute; top: 100%; left: 0; right: 0; background: white;
-                      border: 1px solid #ddd; border-radius: 6px; max-height: 200px; overflow-y: auto;
-                      z-index: 10; display: none; }
-    .venue-dropdown.open { display: block; }
-    .venue-option { padding: 0.5rem 0.75rem; cursor: pointer; font-size: 0.85rem; }
-    .venue-option:hover { background: #f0f0f0; }
-    .match-info { font-size: 0.85rem; color: #555; display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: center; }
-  </style>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
 </head>
-<body>
-  <header>
-    <h1>Ingestor de Eventos</h1>
-    <nav>
-      <a href="/ingestor">Dashboard</a>
-      <a href="/ingestor/eventos">← Eventos</a>
-      <a href="/ingestor/exportar">Exportar CSV</a>
-    </nav>
-  </header>
+<body class="bg-base-200 min-h-screen">
+  <div class="navbar bg-primary text-primary-content">
+    <div class="flex-1">
+      <span class="text-lg font-semibold">Ingestor de Eventos</span>
+    </div>
+    <div class="flex-none gap-4">
+      <a href="/ingestor" class="link link-hover text-sm opacity-85">Dashboard</a>
+      <a href="/ingestor/eventos" class="link link-hover text-sm opacity-85">← Eventos</a>
+      <a href="/ingestor/exportar" class="link link-hover text-sm opacity-85">Exportar CSV</a>
+    </div>
+  </div>
 
-  <main>
-    <div class="card">
-      <h2>Informações do Evento</h2>
-      <div style="margin-bottom: 1rem;">
-        <label>Título</label>
-        <div class="readonly-field">{String(event.title)}</div>
-      </div>
-      <div class="field-group">
-        <div>
-          <label>Início</label>
-          <div class="readonly-field">{formatDate(String(event.start_at))}</div>
+  <main class="max-w-3xl mx-auto p-4 mt-6 flex flex-col gap-5">
+    <div class="card bg-base-100 shadow-sm">
+      <div class="card-body">
+        <h2 class="card-title text-base">Informações do Evento</h2>
+        <div class="mb-3">
+          <label class="label"><span class="label-text">Título</span></label>
+          <div class="bg-base-200 rounded-lg p-2 text-sm">{String(event.title)}</div>
         </div>
-        <div>
-          <label>Fim</label>
-          <div class="readonly-field">{formatDate(String(event.end_at))}</div>
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="label"><span class="label-text">Início</span></label>
+            <div class="bg-base-200 rounded-lg p-2 text-sm">{formatDate(String(event.start_at))}</div>
+          </div>
+          <div>
+            <label class="label"><span class="label-text">Fim</span></label>
+            <div class="bg-base-200 rounded-lg p-2 text-sm">{formatDate(String(event.end_at))}</div>
+          </div>
         </div>
-      </div>
-      <div style="margin-top: 1rem;">
-        <label>Link Sympla</label>
-        <div class="readonly-field">
-          <a href={String(event.source_url)} target="_blank" rel="noopener" style="color: #0033a0;">
-            {String(event.source_url)}
-          </a>
+        <div class="mt-3">
+          <label class="label"><span class="label-text">Link Sympla</span></label>
+          <div class="bg-base-200 rounded-lg p-2 text-sm">
+            <a href={String(event.source_url)} target="_blank" rel="noopener" class="link link-primary">
+              {String(event.source_url)}
+            </a>
+          </div>
         </div>
       </div>
     </div>
 
-    <div class="card">
-      <h2>Matching de Local</h2>
-      <div class="match-info" style="margin-bottom: 1rem;">
-        <span>Status: <strong style={`color: ${matchColors[String(event.match_status)] ?? '#888'}`}>{String(event.match_status)}</strong></span>
-        <span>Score: <strong>{String(event.match_score ?? 0)}</strong>/100</span>
-        {event.match_note && <span style="color: #dc3545;">⚠ {String(event.match_note)}</span>}
-      </div>
-
-      <label>Selecionar local no Mapas (busca por nome)</label>
-      <div class="venue-search">
-        <input
-          id="venue-search-input"
-          type="text"
-          placeholder="Digite o nome do espaço..."
-          autocomplete="off"
-          value={event.mapas_space_id ? (venues.find(v => v.mapas_space_id === event.mapas_space_id)?.name ?? '') : ''}
-        />
-        <div class="venue-dropdown" id="venue-dropdown"></div>
-      </div>
-      <input type="hidden" id="selected-space-id" value={String(event.mapas_space_id ?? '')} />
-    </div>
-
-    <div class="card">
-      <h2>Campos Editáveis</h2>
-      <div style="margin-bottom: 1rem;">
-        <label>Descrição curta (obrigatório para auto-aprovação)</label>
-        <textarea id="field-description_short">{String(event.description_short ?? '')}</textarea>
-      </div>
-      <div style="margin-bottom: 1rem;">
-        <label>Descrição longa</label>
-        <textarea id="field-description_long" rows="4">{String(event.description_long ?? '')}</textarea>
-      </div>
-      <div class="field-group">
-        <div>
-          <label>Preço</label>
-          <input type="text" id="field-price" value={String(event.price ?? '')} />
+    <div class="card bg-base-100 shadow-sm">
+      <div class="card-body">
+        <h2 class="card-title text-base">Matching de Local</h2>
+        <div class="flex flex-wrap gap-3 items-center text-sm mb-3">
+          <span>Status: <span class={matchBadgeClass[String(event.match_status)] ?? 'badge badge-ghost'}>{String(event.match_status)}</span></span>
+          <span>Score: <span class="font-bold">{String(event.match_score ?? 0)}</span>/100</span>
+          {event.match_note && <span class="text-error">⚠ {String(event.match_note)}</span>}
         </div>
-        <div>
-          <label>PROPRIETARIO (ID do agente no Mapas)</label>
-          <input type="text" id="field-proprietario" value={String(event.proprietario ?? '')} />
+
+        <label class="label"><span class="label-text">Selecionar local no Mapas (busca por nome)</span></label>
+        <div class="relative">
+          <input
+            id="venue-search-input"
+            type="text"
+            class="input input-bordered w-full"
+            placeholder="Digite o nome do espaço..."
+            autocomplete="off"
+            value={event.mapas_space_id ? (venues.find(v => v.mapas_space_id === event.mapas_space_id)?.name ?? '') : ''}
+          />
+          <ul class="absolute left-0 right-0 bg-base-100 border border-base-300 rounded-lg max-h-52 overflow-y-auto z-10 hidden" id="venue-dropdown"></ul>
         </div>
-      </div>
-      <div style="margin-top: 1rem;">
-        <button class="btn-save" id="save-btn">Salvar</button>
+        <input type="hidden" id="selected-space-id" value={String(event.mapas_space_id ?? '')} />
       </div>
     </div>
 
-    <div class="card">
-      <h2>Ações</h2>
-      <div class="match-info" style="margin-bottom: 1rem;">
-        <span>Status de revisão: <strong>{String(event.review_status)}</strong></span>
-        <span>Import: <strong>{String(event.import_status)}</strong></span>
+    <div class="card bg-base-100 shadow-sm">
+      <div class="card-body">
+        <h2 class="card-title text-base">Campos Editáveis</h2>
+        <div class="mb-3">
+          <label class="label"><span class="label-text">Descrição curta (obrigatório para auto-aprovação)</span></label>
+          <textarea id="field-description_short" class="textarea textarea-bordered w-full min-h-20">{String(event.description_short ?? '')}</textarea>
+        </div>
+        <div class="mb-3">
+          <label class="label"><span class="label-text">Descrição longa</span></label>
+          <textarea id="field-description_long" class="textarea textarea-bordered w-full" rows="4">{String(event.description_long ?? '')}</textarea>
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="label"><span class="label-text">Preço</span></label>
+            <input type="text" id="field-price" class="input input-bordered w-full" value={String(event.price ?? '')} />
+          </div>
+          <div>
+            <label class="label"><span class="label-text">PROPRIETARIO (ID do agente no Mapas)</span></label>
+            <input type="text" id="field-proprietario" class="input input-bordered w-full" value={String(event.proprietario ?? '')} />
+          </div>
+        </div>
+        <div class="mt-4">
+          <button class="btn btn-primary" id="save-btn">Salvar</button>
+        </div>
       </div>
-      <div class="actions">
-        {event.review_status !== 'approved' && event.review_status !== 'auto_approved' && (
-          <button class="btn-approve" id="approve-btn">✓ Aprovar</button>
-        )}
-        {event.review_status !== 'rejected' && (
-          <button class="btn-reject" id="reject-btn">✗ Rejeitar</button>
-        )}
-        <button class="btn-back" onclick="history.back()">← Voltar</button>
+    </div>
+
+    <div class="card bg-base-100 shadow-sm">
+      <div class="card-body">
+        <h2 class="card-title text-base">Ações</h2>
+        <div class="flex flex-wrap gap-3 items-center text-sm mb-3">
+          <span>Status de revisão: <span class="font-bold">{String(event.review_status)}</span></span>
+          <span>Import: <span class="font-bold">{String(event.import_status)}</span></span>
+        </div>
+        <div class="flex flex-wrap gap-3">
+          {(event.review_status === 'approved' || event.review_status === 'auto_approved') && event.import_status === 'pending' && event.mapas_space_id && (
+            <button class="btn btn-info" id="import-btn">Importar para Mapas</button>
+          )}
+          {event.review_status !== 'approved' && event.review_status !== 'auto_approved' && (
+            <button class="btn btn-success" id="approve-btn">✓ Aprovar</button>
+          )}
+          {event.review_status !== 'rejected' && (
+            <button class="btn btn-error" id="reject-btn">✗ Rejeitar</button>
+          )}
+          <button class="btn btn-ghost" onclick="history.back()">← Voltar</button>
+        </div>
+        <div class="flex flex-wrap gap-2 mt-2">
+          {event.import_status === 'imported' && (
+            <span class="badge badge-success">✓ Importado</span>
+          )}
+          {event.import_status === 'failed' && (
+            <span class="badge badge-error">✗ Falhou</span>
+          )}
+        </div>
       </div>
     </div>
   </main>
 
   <script define:vars={{ venues, eventId: event.id }}>
-    // Venue search — client-side filtering over preloaded venue list
     const venueInput = document.getElementById('venue-search-input')
     const dropdown = document.getElementById('venue-dropdown')
     const selectedSpaceInput = document.getElementById('selected-space-id')
 
     venueInput?.addEventListener('input', () => {
       const q = venueInput.value.toLowerCase().trim()
-      if (q.length < 2) { dropdown.classList.remove('open'); return }
+      if (q.length < 2) { dropdown.classList.add('hidden'); return }
 
       const matches = venues.filter(v =>
         v.name.toLowerCase().includes(q) || v.city.toLowerCase().includes(q)
       ).slice(0, 20)
 
       dropdown.innerHTML = matches.map(v =>
-        `<div class="venue-option" data-id="${v.mapas_space_id}">${v.name} <small style="color:#888">${v.city}</small></div>`
+        `<li class="px-3 py-2 cursor-pointer text-sm hover:bg-base-200" data-id="${v.mapas_space_id}">${v.name} <small class="text-base-content/50">${v.city}</small></li>`
       ).join('')
-      dropdown.classList.toggle('open', matches.length > 0)
+      dropdown.classList.toggle('hidden', matches.length === 0)
     })
 
     dropdown?.addEventListener('click', async (e) => {
-      const opt = e.target.closest('.venue-option')
+      const opt = e.target.closest('li[data-id]')
       if (!opt) return
       const spaceId = opt.dataset.id
       venueInput.value = opt.querySelector('small') ? opt.childNodes[0].textContent.trim() : opt.textContent.trim()
       selectedSpaceInput.value = spaceId
-      dropdown.classList.remove('open')
+      dropdown.classList.add('hidden')
 
-      // Immediately save the space selection
       const res = await fetch(`/api/ingestor/events/${eventId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
@@ -202,14 +189,12 @@ const matchColors: Record<string, string> = {
       else alert('Erro ao salvar local')
     })
 
-    // Close dropdown on outside click
     document.addEventListener('click', (e) => {
       if (!venueInput.contains(e.target) && !dropdown.contains(e.target)) {
-        dropdown.classList.remove('open')
+        dropdown.classList.add('hidden')
       }
     })
 
-    // Save editable fields
     document.getElementById('save-btn')?.addEventListener('click', async () => {
       const body = {
         description_short: document.getElementById('field-description_short').value || null,
@@ -226,7 +211,6 @@ const matchColors: Record<string, string> = {
       else alert('Erro ao salvar')
     })
 
-    // Approve
     document.getElementById('approve-btn')?.addEventListener('click', async () => {
       const res = await fetch(`/api/ingestor/events/${eventId}`, {
         method: 'PATCH',
@@ -237,7 +221,6 @@ const matchColors: Record<string, string> = {
       else alert('Erro ao aprovar')
     })
 
-    // Reject
     document.getElementById('reject-btn')?.addEventListener('click', async () => {
       if (!confirm('Rejeitar este evento?')) return
       const res = await fetch(`/api/ingestor/events/${eventId}`, {
@@ -247,6 +230,25 @@ const matchColors: Record<string, string> = {
       })
       if (res.ok) history.back()
       else alert('Erro ao rejeitar')
+    })
+
+    document.getElementById('import-btn')?.addEventListener('click', async () => {
+      const btn = document.getElementById('import-btn') as HTMLButtonElement
+      btn.disabled = true
+      try {
+        const res = await fetch(`/api/ingestor/events/${eventId}/import`, { method: 'POST' })
+        const data = await res.json()
+        if (res.ok) {
+          alert(`Evento importado! ID no Mapas: ${data.mapasEventId}`)
+          location.reload()
+        } else {
+          alert(data.error ?? 'Erro ao importar')
+        }
+      } catch {
+        alert('Erro de rede')
+      } finally {
+        btn.disabled = false
+      }
     })
   </script>
 </body>
