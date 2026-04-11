@@ -31,3 +31,5 @@ tests/coverage/
 .phpunit*
 *.phar
 docs/
+data/
+frontend/.astro

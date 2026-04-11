@@ -7,15 +7,12 @@ const devApiUrl = process.env.PHP_API_URL || 'http://localhost:8080';
 export default defineConfig({
   output: 'server',
   adapter: node({ mode: 'standalone' }),
-  base: '/spa',
   vite: {
+    ssr: {
+      external: ['better-sqlite3'],
+    },
     server: {
       allowedHosts: true,
-      proxy: {
-        '/api': devApiUrl,
-        '/assets': devApiUrl,
-        '/files': devApiUrl,
-      },
     },
   },
 });

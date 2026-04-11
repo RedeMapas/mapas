@@ -3,17 +3,26 @@
   "type": "module",
   "version": "0.0.1",
   "scripts": {
-    "dev": "HOST=0.0.0.0 PORT=4321 pnpm astro dev",
-    "build": "pnpm astro build",
-    "preview": "HOST=0.0.0.0 PORT=4321 pnpm astro preview",
+    "dev": "HOST=0.0.0.0 PORT=4321 bun astro dev",
+    "build": "bun astro build",
+    "preview": "HOST=0.0.0.0 PORT=4321 bun ./dist/server/entry.mjs",
     "astro": "astro"
   },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "better-sqlite3",
+      "esbuild",
+      "sharp"
+    ]
+  },
   "dependencies": {
-    "astro": "^5.7.0",
     "@astrojs/node": "^9.1.0",
-    "@astrojs/vue": "^5.0.0"
+    "@astrojs/vue": "^5.0.0",
+    "astro": "^5.7.0",
+    "better-sqlite3": "^12.8.0"
   },
   "devDependencies": {
+    "@types/better-sqlite3": "^7.6.13",
     "typescript": "^5.7.0"
   }
 }

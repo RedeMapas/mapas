@@ -1,0 +1,253 @@
+---
+import { getDb } from '../../../lib/ingestor/db.ts'
+
+const { id } = Astro.params
+const db = getDb()
+
+const event = db.prepare('SELECT * FROM events WHERE id = ?').get(Number(id)) as Record<string, unknown> | null
+if (!event) {
+  return Astro.redirect('/ingestor/eventos')
+}
+
+// Load venue cache as JSON for client-side filtering (≤300 venues → ~30KB)
+const venues = db.prepare('SELECT mapas_space_id, name, city FROM venue_cache ORDER BY name').all() as Array<{ mapas_space_id: number; name: string; city: string }>
+
+function formatDate(iso: string) {
+  return new Date(iso).toLocaleString('pt-BR', { timeZone: 'America/Fortaleza' })
+}
+
+const matchColors: Record<string, string> = {
+  matched: '#00a76f',
+  suggested: '#f59e0b',
+  pending: '#888',
+}
+---
+
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8" />
+  <title>{String(event.title)} — Ingestor</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: system-ui, sans-serif; background: #f5f5f5; color: #222; }
+    header { background: #0033a0; color: white; padding: 1rem 2rem; }
+    header h1 { font-size: 1.25rem; font-weight: 600; }
+    header nav { margin-top: 0.5rem; display: flex; gap: 1.5rem; }
+    header nav a { color: rgba(255,255,255,0.85); text-decoration: none; font-size: 0.9rem; }
+    main { max-width: 800px; margin: 2rem auto; padding: 0 1rem; display: flex; flex-direction: column; gap: 1.25rem; }
+    .card { background: white; border-radius: 8px; padding: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+    .card h2 { font-size: 1rem; font-weight: 700; margin-bottom: 1rem; color: #333; }
+    .field-group { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    label { display: block; font-size: 0.8rem; color: #666; margin-bottom: 0.3rem; }
+    input[type=text], textarea, select {
+      width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 6px; font-size: 0.9rem;
+    }
+    textarea { min-height: 80px; resize: vertical; }
+    .readonly-field { background: #f9f9f9; padding: 0.5rem; border-radius: 6px; font-size: 0.9rem; color: #444; }
+    .badge { display: inline-block; padding: 0.2rem 0.6rem; border-radius: 12px; font-size: 0.8rem; font-weight: 600; }
+    .actions { display: flex; gap: 0.75rem; flex-wrap: wrap; }
+    button { padding: 0.6rem 1.25rem; border-radius: 6px; font-size: 0.9rem; font-weight: 600; cursor: pointer; border: none; }
+    .btn-approve { background: #00a76f; color: white; }
+    .btn-reject  { background: #dc3545; color: white; }
+    .btn-save    { background: #0033a0; color: white; }
+    .btn-back    { background: #f0f0f0; color: #333; }
+    .venue-search { position: relative; }
+    .venue-search input { width: 100%; }
+    .venue-dropdown { position: absolute; top: 100%; left: 0; right: 0; background: white;
+                      border: 1px solid #ddd; border-radius: 6px; max-height: 200px; overflow-y: auto;
+                      z-index: 10; display: none; }
+    .venue-dropdown.open { display: block; }
+    .venue-option { padding: 0.5rem 0.75rem; cursor: pointer; font-size: 0.85rem; }
+    .venue-option:hover { background: #f0f0f0; }
+    .match-info { font-size: 0.85rem; color: #555; display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: center; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Ingestor de Eventos</h1>
+    <nav>
+      <a href="/ingestor">Dashboard</a>
+      <a href="/ingestor/eventos">← Eventos</a>
+      <a href="/ingestor/exportar">Exportar CSV</a>
+    </nav>
+  </header>
+
+  <main>
+    <div class="card">
+      <h2>Informações do Evento</h2>
+      <div style="margin-bottom: 1rem;">
+        <label>Título</label>
+        <div class="readonly-field">{String(event.title)}</div>
+      </div>
+      <div class="field-group">
+        <div>
+          <label>Início</label>
+          <div class="readonly-field">{formatDate(String(event.start_at))}</div>
+        </div>
+        <div>
+          <label>Fim</label>
+          <div class="readonly-field">{formatDate(String(event.end_at))}</div>
+        </div>
+      </div>
+      <div style="margin-top: 1rem;">
+        <label>Link Sympla</label>
+        <div class="readonly-field">
+          <a href={String(event.source_url)} target="_blank" rel="noopener" style="color: #0033a0;">
+            {String(event.source_url)}
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Matching de Local</h2>
+      <div class="match-info" style="margin-bottom: 1rem;">
+        <span>Status: <strong style={`color: ${matchColors[String(event.match_status)] ?? '#888'}`}>{String(event.match_status)}</strong></span>
+        <span>Score: <strong>{String(event.match_score ?? 0)}</strong>/100</span>
+        {event.match_note && <span style="color: #dc3545;">⚠ {String(event.match_note)}</span>}
+      </div>
+
+      <label>Selecionar local no Mapas (busca por nome)</label>
+      <div class="venue-search">
+        <input
+          id="venue-search-input"
+          type="text"
+          placeholder="Digite o nome do espaço..."
+          autocomplete="off"
+          value={event.mapas_space_id ? (venues.find(v => v.mapas_space_id === event.mapas_space_id)?.name ?? '') : ''}
+        />
+        <div class="venue-dropdown" id="venue-dropdown"></div>
+      </div>
+      <input type="hidden" id="selected-space-id" value={String(event.mapas_space_id ?? '')} />
+    </div>
+
+    <div class="card">
+      <h2>Campos Editáveis</h2>
+      <div style="margin-bottom: 1rem;">
+        <label>Descrição curta (obrigatório para auto-aprovação)</label>
+        <textarea id="field-description_short">{String(event.description_short ?? '')}</textarea>
+      </div>
+      <div style="margin-bottom: 1rem;">
+        <label>Descrição longa</label>
+        <textarea id="field-description_long" rows="4">{String(event.description_long ?? '')}</textarea>
+      </div>
+      <div class="field-group">
+        <div>
+          <label>Preço</label>
+          <input type="text" id="field-price" value={String(event.price ?? '')} />
+        </div>
+        <div>
+          <label>PROPRIETARIO (ID do agente no Mapas)</label>
+          <input type="text" id="field-proprietario" value={String(event.proprietario ?? '')} />
+        </div>
+      </div>
+      <div style="margin-top: 1rem;">
+        <button class="btn-save" id="save-btn">Salvar</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Ações</h2>
+      <div class="match-info" style="margin-bottom: 1rem;">
+        <span>Status de revisão: <strong>{String(event.review_status)}</strong></span>
+        <span>Import: <strong>{String(event.import_status)}</strong></span>
+      </div>
+      <div class="actions">
+        {event.review_status !== 'approved' && event.review_status !== 'auto_approved' && (
+          <button class="btn-approve" id="approve-btn">✓ Aprovar</button>
+        )}
+        {event.review_status !== 'rejected' && (
+          <button class="btn-reject" id="reject-btn">✗ Rejeitar</button>
+        )}
+        <button class="btn-back" onclick="history.back()">← Voltar</button>
+      </div>
+    </div>
+  </main>
+
+  <script define:vars={{ venues, eventId: event.id }}>
+    // Venue search — client-side filtering over preloaded venue list
+    const venueInput = document.getElementById('venue-search-input')
+    const dropdown = document.getElementById('venue-dropdown')
+    const selectedSpaceInput = document.getElementById('selected-space-id')
+
+    venueInput?.addEventListener('input', () => {
+      const q = venueInput.value.toLowerCase().trim()
+      if (q.length < 2) { dropdown.classList.remove('open'); return }
+
+      const matches = venues.filter(v =>
+        v.name.toLowerCase().includes(q) || v.city.toLowerCase().includes(q)
+      ).slice(0, 20)
+
+      dropdown.innerHTML = matches.map(v =>
+        `<div class="venue-option" data-id="${v.mapas_space_id}">${v.name} <small style="color:#888">${v.city}</small></div>`
+      ).join('')
+      dropdown.classList.toggle('open', matches.length > 0)
+    })
+
+    dropdown?.addEventListener('click', async (e) => {
+      const opt = e.target.closest('.venue-option')
+      if (!opt) return
+      const spaceId = opt.dataset.id
+      venueInput.value = opt.querySelector('small') ? opt.childNodes[0].textContent.trim() : opt.textContent.trim()
+      selectedSpaceInput.value = spaceId
+      dropdown.classList.remove('open')
+
+      // Immediately save the space selection
+      const res = await fetch(`/api/ingestor/events/${eventId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ mapas_space_id: Number(spaceId) }),
+      })
+      if (res.ok) location.reload()
+      else alert('Erro ao salvar local')
+    })
+
+    // Close dropdown on outside click
+    document.addEventListener('click', (e) => {
+      if (!venueInput.contains(e.target) && !dropdown.contains(e.target)) {
+        dropdown.classList.remove('open')
+      }
+    })
+
+    // Save editable fields
+    document.getElementById('save-btn')?.addEventListener('click', async () => {
+      const body = {
+        description_short: document.getElementById('field-description_short').value || null,
+        description_long: document.getElementById('field-description_long').value || null,
+        price: document.getElementById('field-price').value || null,
+        proprietario: document.getElementById('field-proprietario').value || null,
+      }
+      const res = await fetch(`/api/ingestor/events/${eventId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      })
+      if (res.ok) location.reload()
+      else alert('Erro ao salvar')
+    })
+
+    // Approve
+    document.getElementById('approve-btn')?.addEventListener('click', async () => {
+      const res = await fetch(`/api/ingestor/events/${eventId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'approve' }),
+      })
+      if (res.ok) location.reload()
+      else alert('Erro ao aprovar')
+    })
+
+    // Reject
+    document.getElementById('reject-btn')?.addEventListener('click', async () => {
+      if (!confirm('Rejeitar este evento?')) return
+      const res = await fetch(`/api/ingestor/events/${eventId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'reject' }),
+      })
+      if (res.ok) history.back()
+      else alert('Erro ao rejeitar')
+    })
+  </script>
+</body>
+</html>

@@ -1,0 +1,112 @@
+---
+import { getDb } from '../../lib/ingestor/db.ts'
+
+let pendingCount = 0
+let exportHistory: Array<{ exported_at: string; event_count: number }> = []
+
+try {
+  const db = getDb()
+  const result = db.prepare(`
+    SELECT COUNT(*) as n FROM events
+    WHERE review_status IN ('approved', 'auto_approved') AND import_status = 'pending'
+  `).get() as { n: number }
+  pendingCount = result.n
+
+  exportHistory = db.prepare(`
+    SELECT exported_at, event_count FROM export_runs ORDER BY exported_at DESC LIMIT 10
+  `).all() as typeof exportHistory
+} catch (e) {
+  console.error('[exportar] DB error:', e)
+}
+
+function formatDate(iso: string) {
+  return new Date(iso).toLocaleString('pt-BR', { timeZone: 'America/Fortaleza' })
+}
+---
+
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8" />
+  <title>Exportar CSV — Ingestor</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: system-ui, sans-serif; background: #f5f5f5; color: #222; }
+    header { background: #0033a0; color: white; padding: 1rem 2rem; }
+    header h1 { font-size: 1.25rem; font-weight: 600; }
+    header nav { margin-top: 0.5rem; display: flex; gap: 1.5rem; }
+    header nav a { color: rgba(255,255,255,0.85); text-decoration: none; font-size: 0.9rem; }
+    main { max-width: 800px; margin: 2rem auto; padding: 0 1rem; display: flex; flex-direction: column; gap: 1.25rem; }
+    .card { background: white; border-radius: 8px; padding: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+    .card h2 { font-size: 1rem; font-weight: 700; margin-bottom: 1rem; }
+    .count { font-size: 2.5rem; font-weight: 700; color: #00a76f; }
+    .sub { color: #666; font-size: 0.9rem; margin-top: 0.25rem; margin-bottom: 1.5rem; }
+    button, a.btn { padding: 0.7rem 1.5rem; border-radius: 6px; font-size: 0.95rem; font-weight: 600;
+                    cursor: pointer; border: none; text-decoration: none; display: inline-block; }
+    .btn-export { background: #00a76f; color: white; }
+    .btn-export:disabled { background: #aaa; cursor: not-allowed; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+    th { text-align: left; padding: 0.5rem 0.75rem; border-bottom: 2px solid #eee; color: #555; }
+    td { padding: 0.5rem 0.75rem; border-bottom: 1px solid #f0f0f0; }
+    .empty { color: #888; font-style: italic; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Ingestor de Eventos</h1>
+    <nav>
+      <a href="/ingestor">Dashboard</a>
+      <a href="/ingestor/eventos">Eventos</a>
+      <a href="/ingestor/exportar">Exportar CSV</a>
+    </nav>
+  </header>
+
+  <main>
+    <div class="card">
+      <h2>Exportar para Mapas Culturais</h2>
+      <div class="count">{pendingCount}</div>
+      <div class="sub">
+        evento{pendingCount !== 1 ? 's' : ''} aprovado{pendingCount !== 1 ? 's' : ''} prontos para exportação
+      </div>
+
+      {pendingCount > 0 ? (
+        <a href="/api/ingestor/export" class="btn btn-export" id="export-btn">
+          ↓ Baixar CSV (mapas-export-*.csv)
+        </a>
+      ) : (
+        <button class="btn-export" disabled>
+          Nenhum evento pendente de exportação
+        </button>
+      )}
+
+      <div style="margin-top: 1rem; font-size: 0.8rem; color: #888;">
+        O download inclui todos os eventos com status "aprovado" ou "auto-aprovado" ainda não exportados.
+        Após o download, eles são marcados como exportados e não aparecem no próximo CSV.
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Histórico de exportações</h2>
+      {exportHistory.length === 0 ? (
+        <p class="empty">Nenhuma exportação realizada ainda.</p>
+      ) : (
+        <table>
+          <thead>
+            <tr>
+              <th>Data / Hora</th>
+              <th>Eventos exportados</th>
+            </tr>
+          </thead>
+          <tbody>
+            {exportHistory.map(r => (
+              <tr>
+                <td>{formatDate(r.exported_at)}</td>
+                <td>{r.event_count}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+    </div>
+  </main>
+</body>
+</html>

@@ -1,0 +1,107 @@
+---
+import HomeLayout from '../layouts/HomeLayout.astro';
+
+interface Props {
+    title?: string;
+}
+const { title = 'Erro — Rede Mapas' } = Astro.props;
+---
+
+<HomeLayout title={title}>
+    <div class="error-page">
+        <div class="container">
+            <div class="error-card">
+                <p class="error-card__icon" aria-hidden="true">500</p>
+                <h1>Ocorreu um erro inesperado</h1>
+                <p>Desculpe, algo deu errado. Tente novamente em alguns instantes.</p>
+                <div class="error-card__actions">
+                    <a class="error-btn error-btn--primary" href="/">← Voltar ao início</a>
+                    <button class="error-btn" onclick="window.location.reload()">Tentar novamente</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .error-page {
+            font-family: 'Source Sans 3', Arial, sans-serif;
+            background: #f2f2f2;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .container {
+            width: min(1180px, 92vw);
+        }
+
+        .error-card {
+            background: #fff;
+            border: 1px solid #e8e8e8;
+            border-radius: 10px;
+            padding: 3rem 2rem;
+            text-align: center;
+        }
+
+        .error-card__icon {
+            font-size: 4rem;
+            font-weight: 700;
+            color: #dc2626;
+            margin: 0 0 1rem;
+            line-height: 1;
+        }
+
+        .error-card h1 {
+            margin: 0 0 0.5rem;
+            font-size: 1.4rem;
+            color: #1f1f1f;
+        }
+
+        .error-card p {
+            margin: 0 0 1.5rem;
+            color: #666;
+            font-size: 1rem;
+        }
+
+        .error-card__actions {
+            display: flex;
+            gap: 0.75rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .error-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 999px;
+            padding: 0.65rem 1.5rem;
+            min-height: 44px;
+            font-family: inherit;
+            font-weight: 700;
+            font-size: 0.875rem;
+            cursor: pointer;
+            text-decoration: none;
+            transition: filter 0.15s, box-shadow 0.15s;
+        }
+
+        .error-btn--primary {
+            background: #0056c8;
+            color: #fff;
+            border: none;
+        }
+
+        .error-btn:not(.error-btn--primary) {
+            background: #fff;
+            color: #0056c8;
+            border: 2px solid #0056c8;
+        }
+
+        .error-btn:hover {
+            filter: brightness(1.07);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+    </style>
+</HomeLayout>

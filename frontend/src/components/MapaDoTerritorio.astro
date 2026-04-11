@@ -1,0 +1,206 @@
+---
+interface Props {
+    phpApiUrl: string;
+}
+const { phpApiUrl } = Astro.props;
+---
+
+<link rel="stylesheet" href="https://unpkg.com/maplibre-gl@5.22.0/dist/maplibre-gl.css" />
+
+<div class="mapa-territorio" id="redemapas-map"></div>
+
+<style>
+    .mapa-territorio {
+        width: 100%;
+        height: 100%;
+    }
+</style>
+
+<script define:vars={{ phpApiUrl }}>
+    const PHP_API = phpApiUrl;
+
+    function waitForLibre() {
+        return new Promise((resolve) => {
+            if (window.maplibregl) { resolve(window.maplibregl); return; }
+            const s = document.createElement('script');
+            s.src = 'https://unpkg.com/maplibre-gl@5.22.0/dist/maplibre-gl.js';
+            s.onload = () => resolve(window.maplibregl);
+            s.onerror = () => resolve(null);
+            document.head.appendChild(s);
+        });
+    }
+
+    async function initMap() {
+        const maplibregl = await waitForLibre();
+        if (!maplibregl) { console.error('[mapa-territorio] maplibre-gl not loaded'); return; }
+
+        const container = document.getElementById('redemapas-map');
+        if (!container) return;
+
+        const map = new maplibregl.Map({
+            container,
+            style: {
+                version: 8,
+                name: 'Mapa Cultural',
+                sources: {
+                    'osm-tiles': {
+                        type: 'raster',
+                        tiles: [
+                            'https://a.tile.openstreetmap.org/{z}/{x}/{y}.png',
+                            'https://b.tile.openstreetmap.org/{z}/{x}/{y}.png',
+                            'https://c.tile.openstreetmap.org/{z}/{x}/{y}.png',
+                        ],
+                        tileSize: 256,
+                        attribution: '&copy; OpenStreetMap contributors',
+                    },
+                },
+                layers: [{
+                    id: 'osm-layer',
+                    type: 'raster',
+                    source: 'osm-tiles',
+                    minzoom: 0,
+                    maxzoom: 19,
+                }],
+            },
+            center: [-51.9, -14.2],
+            zoom: 4,
+            attributionControl: false,
+        });
+
+        map.addControl(new maplibregl.NavigationControl(), 'top-left');
+        map.addControl(new maplibregl.AttributionControl({ compact: true }), 'bottom-right');
+
+        map.on('load', async () => {
+            await loadGeoJSON(map, 'agent', 'agentes', '#0056c8');
+            await loadGeoJSON(map, 'space', 'espacos', '#00a76f');
+            await loadGeoJSON(map, 'event', 'eventos', '#b45309');
+        });
+    }
+
+    async function loadGeoJSON(map, type, label, color) {
+        try {
+            const res = await fetch(
+                `/api/${type}/find?status=EQ(1)&@select=id,name,location,type&@limit=500`
+            );
+            if (!res.ok) return;
+            const items = await res.json();
+            const features = items
+                .filter((item) => item.location && item.location.longitude !== 0)
+                .map((item) => ({
+                    type: 'Feature',
+                    geometry: {
+                        type: 'Point',
+                        coordinates: [item.location.longitude, item.location.latitude],
+                    },
+                    properties: {
+                        id: item.id,
+                        name: item.name,
+                        type: item.type?.name || label,
+                    },
+                }));
+
+            if (features.length === 0) return;
+
+            const sourceId = `source-${type}`;
+            const layerId = `layer-${type}`;
+
+            if (map.getSource(sourceId)) {
+                map.getSource(sourceId).setData({ type: 'FeatureCollection', features });
+            } else {
+                map.addSource(sourceId, {
+                    type: 'geojson',
+                    data: { type: 'FeatureCollection', features },
+                    cluster: true,
+                    clusterMaxZoom: 14,
+                    clusterRadius: 50,
+                });
+
+                map.addLayer({
+                    id: `${layerId}-clusters`,
+                    type: 'circle',
+                    source: sourceId,
+                    filter: ['has', 'point_count'],
+                    paint: {
+                        'circle-color': color,
+                        'circle-radius': [
+                            'interpolate',
+                            ['linear'],
+                            ['get', 'point_count'],
+                            0, 15,
+                            200, 20,
+                            750, 25,
+                        ],
+                        'circle-opacity': 0.6,
+                    },
+                });
+
+                map.addLayer({
+                    id: `${layerId}-cluster-count`,
+                    type: 'symbol',
+                    source: sourceId,
+                    filter: ['has', 'point_count'],
+                    layout: {
+                        'text-field': '{point_count_abbreviated}',
+                        'text-font': ['DIN Pro Medium', 'Arial Unicode MS Bold'],
+                        'text-size': 12,
+                    },
+                    paint: {
+                        'text-color': '#fff',
+                    },
+                });
+
+                map.addLayer({
+                    id: layerId,
+                    type: 'circle',
+                    source: sourceId,
+                    filter: ['!', ['has', 'point_count']],
+                    paint: {
+                        'circle-color': color,
+                        'circle-radius': 4,
+                        'circle-stroke-width': 1,
+                        'circle-stroke-color': '#fff',
+                        'circle-opacity': 0.85,
+                    },
+                });
+
+                map.on('click', `${layerId}-clusters`, (e) => {
+                    const features = map.queryRenderedFeatures(e.point, {
+                        layers: [`${layerId}-clusters`],
+                    });
+                    const clusterId = features[0].properties.cluster_id;
+                    map.getSource(sourceId).getClusterExpansionZoom(clusterId, (err, zoom) => {
+                        if (err) return;
+                        map.easeTo({
+                            center: features[0].geometry.coordinates,
+                            zoom: zoom,
+                        });
+                    });
+                });
+
+                map.on('click', layerId, (e) => {
+                    const props = e.features[0].properties;
+                    if (props.id) {
+                        const slugMap = {
+                            agent: 'agente',
+                            space: 'espaco',
+                            event: 'evento',
+                        };
+                        const slug = slugMap[type] || type;
+                        window.open(`/${slug}/${props.id}`, '_blank');
+                    }
+                });
+
+                map.on('mouseenter', layerId, () => {
+                    map.getCanvas().style.cursor = 'pointer';
+                });
+                map.on('mouseleave', layerId, () => {
+                    map.getCanvas().style.cursor = '';
+                });
+            }
+        } catch (err) {
+            console.error(`[mapa-territorio] Failed to load ${type}:`, err);
+        }
+    }
+
+    initMap();
+</script>

@@ -43,9 +43,9 @@ const title = opp ? `${opp.name} — Rede Mapas` : 'Edital não encontrado — R
     <div class="opp-detail-page">
         <div class="container">
             <nav class="breadcrumb" aria-label="Navegação">
-                <a href="/spa/">Início</a>
+                <a href="/">Início</a>
                 <span aria-hidden="true">›</span>
-                <a href="/spa/entidades">Editais</a>
+                <a href="/entidades">Editais</a>
                 <span aria-hidden="true">›</span>
                 <span>{opp?.name ?? 'Edital'}</span>
             </nav>
@@ -55,7 +55,7 @@ const title = opp ? `${opp.name} — Rede Mapas` : 'Edital não encontrado — R
                     <p class="opp-notfound__icon" aria-hidden="true">📄</p>
                     <h1>Edital não encontrado</h1>
                     <p>O edital com ID <strong>{id}</strong> não existe ou foi removido.</p>
-                    <a class="opp-btn" href="/spa/entidades">← Voltar para editais</a>
+                    <a class="opp-btn" href="/entidades">← Voltar para editais</a>
                 </div>
             ) : (
                 <div class="opp-layout">
