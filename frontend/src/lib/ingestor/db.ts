@@ -58,7 +58,7 @@ function migrate(db: Database) {
       review_status     TEXT NOT NULL DEFAULT 'pending'
                           CHECK (review_status IN ('pending', 'auto_approved', 'approved', 'rejected')),
       import_status     TEXT NOT NULL DEFAULT 'pending'
-                          CHECK (import_status IN ('pending', 'exported')),
+                          CHECK (import_status IN ('pending', 'exported', 'imported', 'failed')),
       raw_json          TEXT,
       synced_at         TEXT NOT NULL,
       UNIQUE (platform, external_id)
