@@ -1,9 +1,12 @@
 import { defineMiddleware } from 'astro:middleware';
 
-/**
- * Proxy temporariamente desabilitado.
- * Todas as rotas são renderizadas pelo Astro.
- */
 export const onRequest = defineMiddleware(async (context, next) => {
+    const url = context.url.pathname;
+    if (url.startsWith('/ingestor')) {
+        const admCookie = context.cookies.get('mapasculturais.adm');
+        if (!admCookie?.value) {
+            return context.redirect('/auth/login');
+        }
+    }
     return next();
 });
