@@ -51,6 +51,11 @@ export const POST: APIRoute = async ({ params, request }) => {
 
     const eventData = await eventRes.json() as { id?: number }
     mapasEventId = eventData.id ?? 0
+
+    if (mapasEventId <= 0) {
+      db.prepare(`UPDATE events SET import_status = 'failed' WHERE id = ?`).run(id)
+      return new Response(JSON.stringify({ error: 'Mapas event creation failed: no ID returned' }), { status: 502, headers: { 'Content-Type': 'application/json' } })
+    }
   } catch (err) {
     db.prepare(`UPDATE events SET import_status = 'failed' WHERE id = ?`).run(id)
     return new Response(JSON.stringify({ error: 'Network error creating event', detail: String(err) }), { status: 502, headers: { 'Content-Type': 'application/json' } })
@@ -79,10 +84,18 @@ export const POST: APIRoute = async ({ params, request }) => {
     if (!occRes.ok) {
       const errText = await occRes.text()
       db.prepare(`UPDATE events SET import_status = 'failed' WHERE id = ?`).run(id)
+      fetch(`${mapasUrl}/api/event/single/${mapasEventId}`, {
+        method: 'DELETE',
+        headers: { 'Cookie': admCookie },
+      }).catch(() => {})
       return new Response(JSON.stringify({ error: 'Mapas occurrence creation failed', detail: errText }), { status: 502, headers: { 'Content-Type': 'application/json' } })
     }
   } catch (err) {
     db.prepare(`UPDATE events SET import_status = 'failed' WHERE id = ?`).run(id)
+    fetch(`${mapasUrl}/api/event/single/${mapasEventId}`, {
+      method: 'DELETE',
+      headers: { 'Cookie': admCookie },
+    }).catch(() => {})
     return new Response(JSON.stringify({ error: 'Network error creating occurrence', detail: String(err) }), { status: 502, headers: { 'Content-Type': 'application/json' } })
   }
 
