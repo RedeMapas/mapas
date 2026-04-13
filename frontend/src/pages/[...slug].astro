@@ -17,14 +17,20 @@ if (slug) {
 <Base title={`MapaCultural${entity?.name ? ' - ' + entity.name : ''}`}>
     <main>
         {entity ? (
-            <div>
-                <h1>{entity.name}</h1>
-                <p>{entity.shortDescription}</p>
+            <div class="card bg-base-100 shadow-sm">
+                <div class="card-body">
+                    <h1 class="card-title">{entity.name}</h1>
+                    <p class="text-base-content/70">{entity.shortDescription}</p>
+                </div>
             </div>
         ) : (
-            <div>
-                <h1>MapaCultural - Astro Frontend</h1>
-                <p>Pagina nao encontrada: /{slug}</p>
+            <div class="hero min-h-[40vh]">
+                <div class="hero-content text-center">
+                    <div>
+                        <h1 class="text-2xl font-bold">MapaCultural - Astro Frontend</h1>
+                        <p class="text-base-content/60 mt-2">Página não encontrada: /{slug}</p>
+                    </div>
+                </div>
             </div>
         )}
     </main>

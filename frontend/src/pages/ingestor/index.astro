@@ -1,5 +1,6 @@
 ---
 import { getDb } from '../../lib/ingestor/db.ts'
+import '../../styles/global.css'
 
 let db
 let stats = { total: 0, pending: 0, auto_approved: 0, approved: 0, rejected: 0, exported: 0 }
@@ -44,109 +45,76 @@ function formatDate(iso: string) {
 }
 ---
 
-<html lang="pt-br">
+<html lang="pt-br" data-theme="light">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Ingestor de Eventos — Rede Mapas</title>
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: system-ui, sans-serif; background: #f5f5f5; color: #222; }
-    header { background: #0033a0; color: white; padding: 1rem 2rem; }
-    header h1 { font-size: 1.25rem; font-weight: 600; }
-    header nav { margin-top: 0.5rem; display: flex; gap: 1.5rem; }
-    header nav a { color: rgba(255,255,255,0.85); text-decoration: none; font-size: 0.9rem; }
-    header nav a:hover { color: white; }
-    main { max-width: 960px; margin: 2rem auto; padding: 0 1rem; }
-    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
-    .stat-card { background: white; border-radius: 8px; padding: 1.25rem; box-shadow: 0 1px 3px rgba(0,0,0,0.08); text-align: center; }
-    .stat-card .number { font-size: 2rem; font-weight: 700; color: #0033a0; }
-    .stat-card .label { font-size: 0.8rem; color: #666; margin-top: 0.25rem; }
-    .stat-card.approved .number { color: #00a76f; }
-    .stat-card.rejected .number { color: #dc3545; }
-    .stat-card.pending .number { color: #f59e0b; }
-    .panel { background: white; border-radius: 8px; padding: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.08); margin-bottom: 1.5rem; }
-    .panel h2 { font-size: 1rem; font-weight: 600; margin-bottom: 1rem; }
-    .status-row { display: flex; align-items: center; gap: 0.75rem; font-size: 0.9rem; color: #444; }
-    .badge { display: inline-block; padding: 0.2rem 0.6rem; border-radius: 12px; font-size: 0.75rem; font-weight: 600; }
-    .badge.done { background: #d1fae5; color: #065f46; }
-    .badge.running { background: #fef3c7; color: #92400e; }
-    .badge.error { background: #fee2e2; color: #991b1b; }
-    .actions { display: flex; gap: 1rem; margin-top: 1rem; }
-    button, .btn { padding: 0.6rem 1.25rem; border-radius: 6px; font-size: 0.9rem; font-weight: 600; cursor: pointer; border: none; text-decoration: none; display: inline-block; }
-    .btn-primary { background: #0033a0; color: white; }
-    .btn-primary:hover { background: #0056c8; }
-    .btn-primary:disabled { background: #aaa; cursor: not-allowed; }
-    .btn-secondary { background: #f0f0f0; color: #333; }
-    .btn-secondary:hover { background: #e0e0e0; }
-    .btn-success { background: #00a76f; color: white; }
-    .btn-success:hover { background: #008a5b; }
-  </style>
 </head>
-<body>
-  <header>
-    <h1>Ingestor de Eventos</h1>
-    <nav>
-      <a href="/ingestor">Dashboard</a>
-      <a href="/ingestor/eventos">Eventos</a>
-      <a href="/ingestor/exportar">Exportar CSV</a>
-    </nav>
-  </header>
+<body class="bg-base-200 min-h-screen">
+  <div class="navbar bg-primary text-primary-content px-6">
+    <div class="navbar-start">
+      <h1 class="text-lg font-semibold">Ingestor de Eventos</h1>
+    </div>
+    <div class="navbar-end gap-2">
+      <a href="/ingestor" class="btn btn-ghost btn-sm text-primary-content/85">Dashboard</a>
+      <a href="/ingestor/eventos" class="btn btn-ghost btn-sm text-primary-content/85">Eventos</a>
+      <a href="/ingestor/exportar" class="btn btn-ghost btn-sm text-primary-content/85">Exportar CSV</a>
+    </div>
+  </div>
 
-  <main>
-    <div class="stats-grid">
-      <div class="stat-card">
-        <div class="number">{stats.total}</div>
-        <div class="label">Total</div>
+  <main class="max-w-4xl mx-auto p-4">
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
+      <div class="stat bg-base-100 rounded-box shadow-sm text-center p-4">
+        <div class="stat-value text-2xl text-primary">{stats.total}</div>
+        <div class="stat-title text-xs">Total</div>
       </div>
-      <div class="stat-card pending">
-        <div class="number">{stats.pending}</div>
-        <div class="label">Pendentes</div>
+      <div class="stat bg-base-100 rounded-box shadow-sm text-center p-4">
+        <div class="stat-value text-2xl text-warning">{stats.pending}</div>
+        <div class="stat-title text-xs">Pendentes</div>
       </div>
-      <div class="stat-card">
-        <div class="number">{stats.auto_approved}</div>
-        <div class="label">Auto-aprovados</div>
+      <div class="stat bg-base-100 rounded-box shadow-sm text-center p-4">
+        <div class="stat-value text-2xl">{stats.auto_approved}</div>
+        <div class="stat-title text-xs">Auto-aprovados</div>
       </div>
-      <div class="stat-card approved">
-        <div class="number">{stats.approved}</div>
-        <div class="label">Aprovados</div>
+      <div class="stat bg-base-100 rounded-box shadow-sm text-center p-4">
+        <div class="stat-value text-2xl text-success">{stats.approved}</div>
+        <div class="stat-title text-xs">Aprovados</div>
       </div>
-      <div class="stat-card rejected">
-        <div class="number">{stats.rejected}</div>
-        <div class="label">Rejeitados</div>
+      <div class="stat bg-base-100 rounded-box shadow-sm text-center p-4">
+        <div class="stat-value text-2xl text-error">{stats.rejected}</div>
+        <div class="stat-title text-xs">Rejeitados</div>
       </div>
-      <div class="stat-card">
-        <div class="number">{stats.exported}</div>
-        <div class="label">Exportados</div>
+      <div class="stat bg-base-100 rounded-box shadow-sm text-center p-4">
+        <div class="stat-value text-2xl">{stats.exported}</div>
+        <div class="stat-title text-xs">Exportados</div>
       </div>
     </div>
 
-    <div class="panel">
-      <h2>Última sincronização</h2>
-      {lastRun ? (
-        <div class="status-row">
-          <span class={`badge ${lastRun.status}`}>{lastRun.status}</span>
-          <span>{formatDate(lastRun.started_at)}</span>
-          <span>— {lastRun.events_fetched} eventos, {lastRun.events_new} novos</span>
+    <div class="card bg-base-100 shadow-sm">
+      <div class="card-body">
+        <h2 class="card-title text-sm">Última sincronização</h2>
+        {lastRun ? (
+          <div class="flex items-center gap-3 text-sm">
+            <span class={`badge ${lastRun.status === 'done' ? 'badge-success' : lastRun.status === 'running' ? 'badge-warning' : 'badge-error'}`}>{lastRun.status}</span>
+            <span>{formatDate(lastRun.started_at)}</span>
+            <span class="text-base-content/60">— {lastRun.events_fetched} eventos, {lastRun.events_new} novos</span>
+          </div>
+        ) : (
+          <p class="text-base-content/50 text-sm">Nenhuma sincronização realizada ainda.</p>
+        )}
+        <div class="card-actions justify-start mt-4">
+          <button id="sync-btn" class="btn btn-primary btn-sm" disabled={isRunning}>
+            {isRunning ? 'Sincronizando...' : 'Sincronizar agora'}
+          </button>
+          <a href="/ingestor/eventos" class="btn btn-ghost btn-sm">Ver eventos</a>
         </div>
-      ) : (
-        <p style="color: #888; font-size: 0.9rem;">Nenhuma sincronização realizada ainda.</p>
-      )}
-      <div class="actions">
-        <button
-          id="sync-btn"
-          class="btn-primary"
-          disabled={isRunning}
-        >
-          {isRunning ? 'Sincronizando...' : 'Sincronizar agora'}
-        </button>
-        <a href="/ingestor/eventos" class="btn btn-secondary">Ver eventos</a>
       </div>
     </div>
   </main>
 
   <script>
-    const btn = document.getElementById('sync-btn') as HTMLButtonElement
+    const btn = document.getElementById('sync-btn')
     btn?.addEventListener('click', async () => {
       btn.disabled = true
       btn.textContent = 'Iniciando...'
@@ -155,7 +123,6 @@ function formatDate(iso: string) {
         const data = await res.json()
         if (res.ok) {
           btn.textContent = 'Sincronizando...'
-          // Reload after 3s to show updated last-run
           setTimeout(() => location.reload(), 3000)
         } else {
           alert(data.error ?? 'Erro ao iniciar sincronização')

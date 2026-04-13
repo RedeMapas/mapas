@@ -3,9 +3,9 @@
   "type": "module",
   "version": "0.0.1",
   "scripts": {
-    "dev": "HOST=0.0.0.0 PORT=4321 bun astro dev",
-    "build": "bun astro build",
-    "preview": "HOST=0.0.0.0 PORT=4321 bun ./dist/server/entry.mjs",
+    "dev": "HOST=0.0.0.0 PORT=4321 astro dev",
+    "build": "astro build",
+    "preview": "HOST=0.0.0.0 PORT=4321 node ./dist/server/entry.mjs",
     "astro": "astro"
   },
   "pnpm": {
@@ -18,8 +18,11 @@
   "dependencies": {
     "@astrojs/node": "^9.1.0",
     "@astrojs/vue": "^5.0.0",
+    "@tailwindcss/vite": "^4.2.2",
     "astro": "^5.7.0",
-    "better-sqlite3": "^12.8.0"
+    "better-sqlite3": "^12.8.0",
+    "daisyui": "^5.5.19",
+    "tailwindcss": "^4.2.2"
   },
   "devDependencies": {
     "@types/better-sqlite3": "^7.6.13",

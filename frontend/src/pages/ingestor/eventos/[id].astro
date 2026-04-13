@@ -233,7 +233,7 @@ const matchBadgeClass: Record<string, string> = {
     })
 
     document.getElementById('import-btn')?.addEventListener('click', async () => {
-      const btn = document.getElementById('import-btn') as HTMLButtonElement
+      const btn = document.getElementById('import-btn')
       btn.disabled = true
       try {
         const res = await fetch(`/api/ingestor/events/${eventId}/import`, { method: 'POST' })

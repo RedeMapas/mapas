@@ -5,146 +5,134 @@ const { id } = Astro.params;
 ---
 
 <HomeLayout title="Editar agente — Rede Mapas">
-    <div class="edit-page">
-        <div class="page-container">
-
-            <nav class="breadcrumb" aria-label="Navegação">
-                <a href="/">Início</a>
-                <span aria-hidden="true">›</span>
-                <a href="/entidades">Entidades</a>
-                <span aria-hidden="true">›</span>
-                <span id="breadcrumb-name">Editar agente</span>
-            </nav>
-
-            <!-- Estado de carregamento -->
-            <div id="state-loading" class="edit-state">
-                <div class="edit-spinner" aria-label="Carregando…"></div>
-                <p>Carregando dados do agente…</p>
+    <div class="bg-base-200 min-h-screen py-8">
+        <div class="container mx-auto w-full max-w-[1180px] px-[4vw]">
+            <div class="breadcrumbs text-sm mb-6">
+                <ul>
+                    <li><a href="/" class="text-primary hover:underline">Início</a></li>
+                    <li><a href="/entidades" class="text-primary hover:underline">Entidades</a></li>
+                    <li class="font-semibold" id="breadcrumb-name">Editar agente</li>
+                </ul>
             </div>
 
-            <!-- Estado: não autenticado -->
-            <div id="state-forbidden" class="edit-state" hidden>
-                <p class="edit-state__icon" aria-hidden="true">🔒</p>
-                <h1>Acesso restrito</h1>
-                <p>Você precisa estar autenticado para editar este agente.</p>
-                <div class="edit-state__actions">
-                    <a id="login-link" class="edit-back-btn edit-back-btn--primary" href="/auth/login">Fazer login</a>
+            <div id="state-loading" class="hero min-h-[40vh]">
+                <div class="hero-content flex-col gap-4 text-base-content/60">
+                    <span class="loading loading-spinner loading-lg text-primary"></span>
+                    <p>Carregando dados do agente…</p>
                 </div>
             </div>
 
-            <!-- Estado: não encontrado -->
-            <div id="state-notfound" class="edit-state" hidden>
-                <p class="edit-state__icon" aria-hidden="true">🔍</p>
-                <h1>Agente não encontrado</h1>
-                <p>O agente com ID <strong>{id}</strong> não existe, foi removido, ou você não tem permissão para editá-lo.</p>
-                <div class="edit-state__actions">
-                    <a class="edit-back-btn" href="/entidades">← Voltar</a>
+            <div id="state-forbidden" hidden>
+                <div class="hero min-h-[40vh]">
+                    <div class="hero-content">
+                        <div class="text-center">
+                            <p class="text-5xl mb-4" aria-hidden="true">🔒</p>
+                            <h1 class="text-2xl font-bold">Acesso restrito</h1>
+                            <p class="text-base-content/60 mt-2">Você precisa estar autenticado para editar este agente.</p>
+                            <a id="login-link" class="btn btn-primary mt-6" href="/auth/login">Fazer login</a>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <!-- Estado: erro genérico -->
-            <div id="state-error" class="edit-state" hidden>
-                <p class="edit-state__icon" aria-hidden="true">⚠️</p>
-                <h1>Erro ao carregar</h1>
-                <p id="state-error-msg">Não foi possível conectar ao servidor.</p>
-                <div class="edit-state__actions">
-                    <button class="edit-back-btn edit-back-btn--primary" onclick="window.location.reload()">Tentar novamente</button>
-                    <a class="edit-back-btn" href="/entidades">← Voltar</a>
+            <div id="state-notfound" hidden>
+                <div class="hero min-h-[40vh]">
+                    <div class="hero-content">
+                        <div class="text-center">
+                            <p class="text-5xl mb-4" aria-hidden="true">🔍</p>
+                            <h1 class="text-2xl font-bold">Agente não encontrado</h1>
+                            <p class="text-base-content/60 mt-2">O agente com ID <strong>{id}</strong> não existe, foi removido, ou você não tem permissão para editá-lo.</p>
+                            <a class="btn btn-outline btn-primary mt-6" href="/entidades">← Voltar</a>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <!-- Formulário (oculto até carregar) -->
-            <div id="edit-layout" class="edit-layout" hidden>
-                <header class="edit-header">
-                    <div class="edit-header__label">Agente</div>
-                    <h1 id="header-title" class="edit-header__title"></h1>
-                    <span id="header-type" class="edit-header__type"></span>
-                </header>
+            <div id="state-error" hidden>
+                <div class="hero min-h-[40vh]">
+                    <div class="hero-content">
+                        <div class="text-center">
+                            <p class="text-5xl mb-4" aria-hidden="true">⚠️</p>
+                            <h1 class="text-2xl font-bold">Erro ao carregar</h1>
+                            <p class="text-base-content/60 mt-2" id="state-error-msg">Não foi possível conectar ao servidor.</p>
+                            <div class="flex gap-3 justify-center mt-6">
+                                <button class="btn btn-primary" onclick="window.location.reload()">Tentar novamente</button>
+                                <a class="btn btn-outline btn-primary" href="/entidades">← Voltar</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-                <div class="edit-body">
-                    <div class="edit-main">
-                        <div class="edit-card">
-                            <h2 class="edit-card__title">Informações básicas</h2>
+            <div id="edit-layout" hidden>
+                <div class="card bg-base-100 shadow-sm mb-6">
+                    <div class="card-body">
+                        <p class="text-xs font-bold uppercase tracking-wider text-primary">Agente</p>
+                        <h1 id="header-title" class="text-xl md:text-2xl font-bold text-primary"></h1>
+                        <span id="header-type" class="text-sm text-base-content/60 font-semibold"></span>
+                    </div>
+                </div>
 
-                            <div id="alert-success" class="edit-alert edit-alert--success" role="alert" hidden>
+                <div class="grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-6 items-start">
+                    <div class="card bg-base-100 shadow-sm">
+                        <div class="card-body">
+                            <h2 class="text-xs font-bold uppercase tracking-wider text-base-content/50 border-b border-base-200 pb-3 mb-6">Informações básicas</h2>
+
+                            <div id="alert-success" class="alert alert-success" role="alert" hidden>
                                 Alterações salvas com sucesso.
                             </div>
-                            <div id="alert-error" class="edit-alert edit-alert--error" role="alert" hidden></div>
+                            <div id="alert-error" class="alert alert-error" role="alert" hidden></div>
 
-                            <form id="edit-form" class="edit-form" novalidate>
-                                <div class="edit-form__field">
-                                    <label class="edit-form__label" for="field-name">
-                                        Nome <span aria-hidden="true" class="edit-form__required">*</span>
+                            <form id="edit-form" class="flex flex-col gap-6" novalidate>
+                                <div class="form-control">
+                                    <label class="label" for="field-name">
+                                        <span class="label-text font-bold">Nome <span class="text-error">*</span></span>
                                     </label>
-                                    <input
-                                        id="field-name"
-                                        name="name"
-                                        class="edit-form__input"
-                                        type="text"
-                                        required
-                                        maxlength="255"
-                                        autocomplete="off"
-                                    />
-                                    <span id="error-name" class="edit-form__error-msg" role="alert" hidden></span>
+                                    <input id="field-name" name="name" type="text" required maxlength="255" autocomplete="off" class="input input-bordered w-full" />
+                                    <span id="error-name" class="text-error text-sm font-semibold mt-1" role="alert" hidden></span>
                                 </div>
 
-                                <div class="edit-form__field">
-                                    <label class="edit-form__label" for="field-short">
-                                        Descrição curta
-                                        <span class="edit-form__hint">Aparece nos cards e buscas (máx. 400 caracteres)</span>
+                                <div class="form-control">
+                                    <label class="label" for="field-short">
+                                        <span class="label-text font-bold">Descrição curta</span>
+                                        <span class="label-text-alt text-base-content/50">Aparece nos cards e buscas (máx. 400 caracteres)</span>
                                     </label>
-                                    <textarea
-                                        id="field-short"
-                                        name="shortDescription"
-                                        class="edit-form__textarea edit-form__textarea--short"
-                                        maxlength="400"
-                                        rows="3"
-                                    ></textarea>
-                                    <span id="char-count" class="edit-form__char-count">0/400</span>
+                                    <textarea id="field-short" name="shortDescription" maxlength="400" rows="3" class="textarea textarea-bordered w-full"></textarea>
+                                    <span id="char-count" class="text-right text-xs text-base-content/40 mt-1">0/400</span>
                                 </div>
 
-                                <div class="edit-form__field">
-                                    <label class="edit-form__label" for="field-long">
-                                        Descrição completa
-                                        <span class="edit-form__hint">Apresentada na página de detalhes</span>
+                                <div class="form-control">
+                                    <label class="label" for="field-long">
+                                        <span class="label-text font-bold">Descrição completa</span>
+                                        <span class="label-text-alt text-base-content/50">Apresentada na página de detalhes</span>
                                     </label>
-                                    <textarea
-                                        id="field-long"
-                                        name="longDescription"
-                                        class="edit-form__textarea edit-form__textarea--long"
-                                        rows="10"
-                                    ></textarea>
+                                    <textarea id="field-long" name="longDescription" rows="10" class="textarea textarea-bordered w-full"></textarea>
                                 </div>
 
-                                <div class="edit-form__actions">
-                                    <button id="submit-btn" type="submit" class="edit-form__btn edit-form__btn--primary">
-                                        Salvar alterações
-                                    </button>
-                                    <a id="cancel-link" class="edit-form__btn edit-form__btn--secondary" href="#">
-                                        Cancelar
-                                    </a>
+                                <div class="flex gap-3 flex-wrap pt-4 border-t border-base-200">
+                                    <button id="submit-btn" type="submit" class="btn btn-primary">Salvar alterações</button>
+                                    <a id="cancel-link" class="btn btn-outline btn-primary" href="#">Cancelar</a>
                                 </div>
                             </form>
                         </div>
                     </div>
 
-                    <aside class="edit-sidebar">
-                        <div class="edit-info-card">
-                            <h2 class="edit-info-card__title">Sobre este agente</h2>
-                            <dl class="edit-info-list">
-                                <dt>ID</dt>
-                                <dd>#{id}</dd>
-                                <dt id="type-label" hidden>Tipo</dt>
-                                <dd id="type-value"></dd>
-                            </dl>
-                            <a id="portal-link" class="edit-portal-link" href={`/agente/${id}/info`} target="_blank" rel="noopener">
-                                Ver página pública ↗
-                            </a>
+                    <aside>
+                        <div class="card bg-base-100 shadow-sm sticky top-20">
+                            <div class="card-body gap-3">
+                                <h2 class="text-xs font-bold uppercase tracking-wider text-base-content/50">Sobre este agente</h2>
+                                <dl class="space-y-2">
+                                    <dt class="text-xs font-bold uppercase tracking-wider text-base-content/40">ID</dt>
+                                    <dd class="text-sm font-semibold">#{id}</dd>
+                                    <dt id="type-label" class="text-xs font-bold uppercase tracking-wider text-base-content/40" hidden>Tipo</dt>
+                                    <dd id="type-value" class="text-sm font-semibold"></dd>
+                                </dl>
+                                <a id="portal-link" class="btn btn-ghost btn-sm text-primary" href={`/agente/${id}/info`} target="_blank" rel="noopener">Ver página pública ↗</a>
+                            </div>
                         </div>
                     </aside>
                 </div>
             </div>
-
         </div>
     </div>
 
@@ -194,7 +182,7 @@ const { id } = Astro.params;
                     return;
                 }
                 populateForm(agent);
-                showState(null); // mostra o formulário
+                showState(null);
             } catch (err) {
                 $('state-error-msg').textContent = 'Não foi possível conectar ao servidor.';
                 showState('error');
@@ -237,13 +225,13 @@ const { id } = Astro.params;
             $('alert-success').hidden = true;
             $('alert-error').hidden = true;
             $('error-name').hidden = true;
-            $('field-name').classList.remove('edit-form__input--error');
+            $('field-name').classList.remove('input-error');
 
             const name = $('field-name').value.trim();
             if (!name) {
                 $('error-name').textContent = 'O nome é obrigatório.';
                 $('error-name').hidden = false;
-                $('field-name').classList.add('edit-form__input--error');
+                $('field-name').classList.add('input-error');
                 $('field-name').focus();
                 return;
             }
@@ -300,287 +288,4 @@ const { id } = Astro.params;
 
         loadAgent();
     </script>
-
-    <style>
-        .edit-page {
-            min-height: 100vh;
-            padding: 2rem 0 4rem;
-        }
-
-        .container {
-            width: min(1180px, 92vw);
-            margin: 0 auto;
-        }
-
-        /* ── BREADCRUMB ──────────────────────────────── */
-        .breadcrumb {
-            display: flex;
-            align-items: center;
-            gap: 0.4rem;
-            font-size: 0.82rem;
-            color: #666;
-            margin-bottom: 1.5rem;
-            flex-wrap: wrap;
-        }
-
-        .breadcrumb a { color: #0056c8; text-decoration: none; }
-        .breadcrumb a:hover { text-decoration: underline; }
-        .breadcrumb span:last-child { color: #1f1f1f; font-weight: 600; }
-
-        /* ── STATES ──────────────────────────────────── */
-        .edit-state {
-            background: #fff;
-            border-radius: 10px;
-            border: 1px solid #e8e8e8;
-            padding: 3rem 2rem;
-            text-align: center;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 0.75rem;
-        }
-
-        .edit-spinner {
-            width: 36px;
-            height: 36px;
-            border: 3px solid #e0e0e0;
-            border-top-color: #0056c8;
-            border-radius: 50%;
-            animation: spin 0.7s linear infinite;
-        }
-
-        @keyframes spin { to { transform: rotate(360deg); } }
-
-        .edit-state__icon { font-size: 3rem; margin: 0; }
-        .edit-state h1 { font-size: 1.4rem; color: #1f1f1f; margin: 0; }
-        .edit-state p { color: #666; margin: 0; max-width: 420px; }
-        .edit-state__actions { display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap; margin-top: 0.5rem; }
-
-        /* ── BUTTONS ─────────────────────────────────── */
-        .edit-back-btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            border: 2px solid #0056c8;
-            border-radius: 999px;
-            padding: 0.65rem 1.5rem;
-            min-height: 44px;
-            font-family: inherit;
-            font-weight: 700;
-            font-size: 0.875rem;
-            text-decoration: none;
-            background: #fff;
-            color: #0056c8;
-            cursor: pointer;
-            transition: filter 0.15s;
-        }
-
-        .edit-back-btn--primary { background: #0056c8; color: #fff; }
-        .edit-back-btn:hover { filter: brightness(1.07); }
-
-        /* ── HEADER ──────────────────────────────────── */
-        .edit-header {
-            background: #fff;
-            border: 1px solid #e8e8e8;
-            border-radius: 10px;
-            padding: 1.5rem 2rem;
-            margin-bottom: 1.5rem;
-            display: flex;
-            flex-direction: column;
-            gap: 0.25rem;
-        }
-
-        .edit-header__label {
-            font-size: 0.72rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
-            color: #0056c8;
-        }
-
-        .edit-header__title {
-            margin: 0;
-            font-size: clamp(1.2rem, 2.5vw, 1.8rem);
-            font-weight: 700;
-            color: #0033a0;
-            line-height: 1.15;
-        }
-
-        .edit-header__type { font-size: 0.82rem; color: #666; font-weight: 600; }
-
-        /* ── LAYOUT ──────────────────────────────────── */
-        .edit-body {
-            display: grid;
-            grid-template-columns: 1fr 280px;
-            gap: 1.5rem;
-            align-items: start;
-        }
-
-        /* ── CARD ────────────────────────────────────── */
-        .edit-card {
-            background: #fff;
-            border: 1px solid #e8e8e8;
-            border-radius: 10px;
-            padding: 1.75rem 2rem;
-        }
-
-        .edit-card__title {
-            margin: 0 0 1.5rem;
-            font-size: 0.78rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.08em;
-            color: #888;
-            padding-bottom: 0.75rem;
-            border-bottom: 1px solid #eee;
-        }
-
-        /* ── ALERTS ──────────────────────────────────── */
-        .edit-alert {
-            border-radius: 8px;
-            padding: 0.875rem 1.125rem;
-            font-size: 0.92rem;
-            font-weight: 600;
-            line-height: 1.4;
-            margin-bottom: 1.25rem;
-        }
-
-        .edit-alert--success { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
-        .edit-alert--error   { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
-
-        /* ── FORM ────────────────────────────────────── */
-        .edit-form { display: flex; flex-direction: column; gap: 1.5rem; }
-
-        .edit-form__field { display: flex; flex-direction: column; gap: 0.4rem; }
-
-        .edit-form__label {
-            font-size: 0.875rem;
-            font-weight: 700;
-            color: #1f1f1f;
-            display: flex;
-            flex-direction: column;
-            gap: 0.2rem;
-        }
-
-        .edit-form__required { color: #dc2626; }
-
-        .edit-form__hint { font-size: 0.78rem; font-weight: 400; color: #666; }
-
-        .edit-form__input,
-        .edit-form__textarea {
-            font-family: inherit;
-            font-size: 0.95rem;
-            color: #1f1f1f;
-            background: #fff;
-            border: 1.5px solid #d1d5db;
-            border-radius: 6px;
-            padding: 0.6rem 0.875rem;
-            transition: border-color 0.15s, box-shadow 0.15s;
-            width: 100%;
-        }
-
-        .edit-form__input:focus,
-        .edit-form__textarea:focus {
-            outline: none;
-            border-color: #0056c8;
-            box-shadow: 0 0 0 3px rgba(0, 86, 200, 0.12);
-        }
-
-        .edit-form__input--error { border-color: #dc2626; }
-        .edit-form__input--error:focus {
-            border-color: #dc2626;
-            box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.12);
-        }
-
-        .edit-form__textarea { resize: vertical; line-height: 1.5; }
-        .edit-form__textarea--short { min-height: 80px; }
-        .edit-form__textarea--long  { min-height: 200px; }
-
-        .edit-form__char-count { font-size: 0.75rem; color: #999; text-align: right; margin-top: -0.2rem; }
-        .edit-form__error-msg  { font-size: 0.8rem; color: #dc2626; font-weight: 600; }
-
-        .edit-form__actions {
-            display: flex;
-            gap: 0.75rem;
-            flex-wrap: wrap;
-            padding-top: 0.5rem;
-            border-top: 1px solid #e8e8e8;
-        }
-
-        .edit-form__btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            border: none;
-            border-radius: 999px;
-            padding: 0.65rem 1.5rem;
-            min-height: 44px;
-            font-family: inherit;
-            font-size: 0.875rem;
-            font-weight: 700;
-            cursor: pointer;
-            text-decoration: none;
-            transition: filter 0.15s, box-shadow 0.15s, opacity 0.15s;
-        }
-
-        .edit-form__btn:hover:not(:disabled) {
-            filter: brightness(1.07);
-            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-        }
-
-        .edit-form__btn:disabled { opacity: 0.6; cursor: not-allowed; }
-        .edit-form__btn--primary  { background: #0056c8; color: #fff; }
-        .edit-form__btn--secondary { background: #fff; color: #0056c8; border: 2px solid #0056c8; }
-
-        /* ── SIDEBAR ─────────────────────────────────── */
-        .edit-info-card {
-            background: #fff;
-            border: 1px solid #e8e8e8;
-            border-radius: 10px;
-            padding: 1.25rem 1.5rem;
-            position: sticky;
-            top: 72px;
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-        }
-
-        .edit-info-card__title {
-            margin: 0;
-            font-size: 0.75rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.08em;
-            color: #888;
-        }
-
-        .edit-info-list { display: grid; grid-template-columns: 1fr; gap: 0.15rem; }
-
-        .edit-info-list dt {
-            font-size: 0.72rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.06em;
-            color: #999;
-            margin-top: 0.65rem;
-        }
-
-        .edit-info-list dt:first-child { margin-top: 0; }
-        .edit-info-list dd { margin: 0; font-size: 0.9rem; color: #1f1f1f; font-weight: 600; }
-
-        .edit-portal-link { font-size: 0.82rem; font-weight: 700; color: #0056c8; text-decoration: none; }
-        .edit-portal-link:hover { text-decoration: underline; }
-
-        /* ── RESPONSIVE ──────────────────────────────── */
-        @media (max-width: 860px) {
-            .edit-body { grid-template-columns: 1fr; }
-            .edit-sidebar { order: -1; }
-            .edit-info-card { position: static; }
-        }
-
-        @media (max-width: 540px) {
-            .edit-card { padding: 1.25rem; }
-            .edit-header { padding: 1.25rem; }
-        }
-    </style>
 </HomeLayout>

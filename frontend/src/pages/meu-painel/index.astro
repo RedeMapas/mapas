@@ -3,145 +3,158 @@ import HomeLayout from '../../layouts/HomeLayout.astro';
 ---
 
 <HomeLayout title="Meu painel — Rede Mapas">
-    <div class="panel-page">
-
-        <!-- Estado: carregando -->
-        <div id="state-loading" class="panel-loading" hidden>
-            <div class="panel-spinner" aria-label="Carregando…"></div>
-            <p>Carregando seu painel…</p>
+    <div class="min-h-screen bg-base-200">
+        <div id="state-loading" class="hero min-h-[60vh]" hidden>
+            <div class="hero-content flex-col gap-4 text-base-content/60">
+                <span class="loading loading-spinner loading-lg text-primary"></span>
+                <p>Carregando seu painel…</p>
+            </div>
         </div>
 
-        <!-- Estado: não autenticado -->
-        <div id="state-guest" class="panel-guest" hidden>
-            <div class="panel-guest__inner">
-                <div class="panel-guest__icon" aria-hidden="true">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                        <circle cx="12" cy="8" r="4"/>
-                        <path d="M20 21a8 8 0 1 0-16 0"/>
-                    </svg>
-                </div>
-                <h1>Acesso ao painel</h1>
-                <p>Para acessar seu painel, você precisa estar autenticado.</p>
-                <div class="panel-guest__actions">
-                    <a class="panel-btn panel-btn--primary" href="/auth/login?next=/meu-painel">Fazer login</a>
-                    <a class="panel-btn panel-btn--outline" href="/">Voltar ao início</a>
+        <div id="state-guest" hidden>
+            <div class="hero min-h-[70vh]">
+                <div class="hero-content">
+                    <div class="card bg-base-100 shadow-xl max-w-md w-full">
+                        <div class="card-body items-center text-center">
+                            <div class="text-primary mb-4">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                    <circle cx="12" cy="8" r="4"/>
+                                    <path d="M20 21a8 8 0 1 0-16 0"/>
+                                </svg>
+                            </div>
+                            <h1 class="card-title text-xl text-primary">Acesso ao painel</h1>
+                            <p class="text-base-content/60">Para acessar seu painel, você precisa estar autenticado.</p>
+                            <div class="card-actions flex gap-3 mt-4">
+                                <a class="btn btn-primary" href="/auth/login?next=/meu-painel">Fazer login</a>
+                                <a class="btn btn-outline" href="/">Voltar ao início</a>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- Painel autenticado -->
         <div id="panel-main" hidden>
-            <div class="panel-header">
-                <div class="container">
-                    <div class="panel-header__inner">
+            <div class="bg-gradient-to-br from-primary to-secondary text-primary-content py-6">
+                <div class="container mx-auto w-full max-w-[1180px] px-[4vw]">
+                    <div class="flex items-center justify-between gap-4 flex-wrap">
                         <div>
-                            <p class="panel-header__label">Meu painel</p>
-                            <h1 id="panel-user-name" class="panel-header__title">…</h1>
+                            <p class="text-xs font-bold uppercase tracking-wider text-primary-content/60">Meu painel</p>
+                            <h1 id="panel-user-name" class="text-xl md:text-2xl font-bold">…</h1>
                         </div>
-                        <nav class="panel-nav" aria-label="Navegação do painel">
-                            <a class="panel-nav__link" href="/entidades">Explorar</a>
-                            <a class="panel-nav__link" href="/">Início</a>
-                            <a class="panel-nav__link panel-nav__link--danger" href="/logout">Sair</a>
+                        <nav class="flex items-center gap-1" aria-label="Navegação do painel">
+                            <a class="btn btn-ghost btn-sm text-primary-content/85 hover:text-primary-content" href="/entidades">Explorar</a>
+                            <a class="btn btn-ghost btn-sm text-primary-content/85 hover:text-primary-content" href="/">Início</a>
+                            <a class="btn btn-ghost btn-sm text-error/80 hover:text-error-content hover:bg-error/10" href="/logout">Sair</a>
                         </nav>
                     </div>
                 </div>
             </div>
 
-            <div class="container panel-body">
+            <div class="container mx-auto w-full max-w-[1180px] px-[4vw] py-8 flex flex-col gap-8">
 
-                <!-- Ações rápidas -->
-                <section class="panel-section panel-quickactions">
-                    <h2 class="panel-section__title">Ações rápidas</h2>
-                    <div class="panel-quickactions__grid">
-                        <a id="new-agent-link" class="panel-action-card" href="/edicao-de-agente/novo">
-                            <span class="panel-action-card__icon" aria-hidden="true">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/><line x1="12" y1="3" x2="12" y2="1"/><line x1="12" y1="3" x2="14" y2="3"/></svg>
-                            </span>
-                            <span class="panel-action-card__label">Novo agente</span>
+                <section>
+                    <h2 class="text-xs font-bold uppercase tracking-wider text-base-content/50 mb-3">Ações rápidas</h2>
+                    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                        <a id="new-agent-link" class="card bg-base-100 shadow-sm hover:shadow-md transition-all hover:-translate-y-0.5" href="/edicao-de-agente/novo">
+                            <div class="card-body items-center text-center py-5">
+                                <span class="text-primary" aria-hidden="true">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/><line x1="12" y1="3" x2="12" y2="1"/><line x1="12" y1="3" x2="14" y2="3"/></svg>
+                                </span>
+                                <span class="text-sm font-bold">Novo agente</span>
+                            </div>
                         </a>
-                        <a class="panel-action-card" href="/edicao-de-espaco/novo">
-                            <span class="panel-action-card__icon" aria-hidden="true">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-                            </span>
-                            <span class="panel-action-card__label">Novo espaço</span>
+                        <a class="card bg-base-100 shadow-sm hover:shadow-md transition-all hover:-translate-y-0.5" href="/edicao-de-espaco/novo">
+                            <div class="card-body items-center text-center py-5">
+                                <span class="text-primary" aria-hidden="true">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                                </span>
+                                <span class="text-sm font-bold">Novo espaço</span>
+                            </div>
                         </a>
-                        <a class="panel-action-card" href="/edicao-de-evento/novo">
-                            <span class="panel-action-card__icon" aria-hidden="true">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                            </span>
-                            <span class="panel-action-card__label">Novo evento</span>
+                        <a class="card bg-base-100 shadow-sm hover:shadow-md transition-all hover:-translate-y-0.5" href="/edicao-de-evento/novo">
+                            <div class="card-body items-center text-center py-5">
+                                <span class="text-primary" aria-hidden="true">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                                </span>
+                                <span class="text-sm font-bold">Novo evento</span>
+                            </div>
                         </a>
-                        <a class="panel-action-card" href="/gestao-de-oportunidade/novo">
-                            <span class="panel-action-card__icon" aria-hidden="true">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
-                            </span>
-                            <span class="panel-action-card__label">Novo edital</span>
+                        <a class="card bg-base-100 shadow-sm hover:shadow-md transition-all hover:-translate-y-0.5" href="/gestao-de-oportunidade/novo">
+                            <div class="card-body items-center text-center py-5">
+                                <span class="text-primary" aria-hidden="true">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+                                </span>
+                                <span class="text-sm font-bold">Novo edital</span>
+                            </div>
                         </a>
                     </div>
                 </section>
 
-                <!-- Agentes -->
-                <section class="panel-section" id="section-agents">
-                    <div class="panel-section__header">
-                        <h2 class="panel-section__title" style="color:#0056c8">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                            Meus agentes
-                        </h2>
-                        <a class="panel-section__link" href="/edicao-de-agente/novo" style="color:#0056c8">+ Novo agente</a>
-                    </div>
-                    <div id="agents-list" class="panel-entity-grid">
-                        <div class="panel-loading-inline"><div class="panel-spinner panel-spinner--sm"></div></div>
-                    </div>
-                </section>
-
-                <!-- Espaços -->
-                <section class="panel-section" id="section-spaces">
-                    <div class="panel-section__header">
-                        <h2 class="panel-section__title" style="color:#00a76f">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-                            Meus espaços
-                        </h2>
-                        <a class="panel-section__link" href="/edicao-de-espaco/novo" style="color:#00a76f">+ Novo espaço</a>
-                    </div>
-                    <div id="spaces-list" class="panel-entity-grid">
-                        <div class="panel-loading-inline"><div class="panel-spinner panel-spinner--sm"></div></div>
+                <section class="card bg-base-100 shadow-sm" id="section-agents">
+                    <div class="card-body">
+                        <div class="flex items-center justify-between mb-4">
+                            <h2 class="card-title text-primary text-base">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                                Meus agentes
+                            </h2>
+                            <a class="btn btn-ghost btn-xs text-primary" href="/edicao-de-agente/novo">+ Novo agente</a>
+                        </div>
+                        <div id="agents-list" class="flex flex-col gap-2">
+                            <div class="flex justify-center py-8"><span class="loading loading-spinner loading-sm text-primary"></span></div>
+                        </div>
                     </div>
                 </section>
 
-                <!-- Eventos -->
-                <section class="panel-section" id="section-events">
-                    <div class="panel-section__header">
-                        <h2 class="panel-section__title" style="color:#b45309">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                            Meus eventos
-                        </h2>
-                        <a class="panel-section__link" href="/edicao-de-evento/novo" style="color:#b45309">+ Novo evento</a>
-                    </div>
-                    <div id="events-list" class="panel-entity-grid">
-                        <div class="panel-loading-inline"><div class="panel-spinner panel-spinner--sm"></div></div>
+                <section class="card bg-base-100 shadow-sm" id="section-spaces">
+                    <div class="card-body">
+                        <div class="flex items-center justify-between mb-4">
+                            <h2 class="card-title text-accent text-base">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                                Meus espaços
+                            </h2>
+                            <a class="btn btn-ghost btn-xs text-accent" href="/edicao-de-espaco/novo">+ Novo espaço</a>
+                        </div>
+                        <div id="spaces-list" class="flex flex-col gap-2">
+                            <div class="flex justify-center py-8"><span class="loading loading-spinner loading-sm text-accent"></span></div>
+                        </div>
                     </div>
                 </section>
 
-                <!-- Editais -->
-                <section class="panel-section" id="section-opportunities">
-                    <div class="panel-section__header">
-                        <h2 class="panel-section__title" style="color:#7c3aed">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-                            Meus editais
-                        </h2>
-                        <a class="panel-section__link" href="/gestao-de-oportunidade/novo" style="color:#7c3aed">+ Novo edital</a>
+                <section class="card bg-base-100 shadow-sm" id="section-events">
+                    <div class="card-body">
+                        <div class="flex items-center justify-between mb-4">
+                            <h2 class="card-title text-warning text-base">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                                Meus eventos
+                            </h2>
+                            <a class="btn btn-ghost btn-xs text-warning" href="/edicao-de-evento/novo">+ Novo evento</a>
+                        </div>
+                        <div id="events-list" class="flex flex-col gap-2">
+                            <div class="flex justify-center py-8"><span class="loading loading-spinner loading-sm text-warning"></span></div>
+                        </div>
                     </div>
-                    <div id="opportunities-list" class="panel-entity-grid">
-                        <div class="panel-loading-inline"><div class="panel-spinner panel-spinner--sm"></div></div>
+                </section>
+
+                <section class="card bg-base-100 shadow-sm" id="section-opportunities">
+                    <div class="card-body">
+                        <div class="flex items-center justify-between mb-4">
+                            <h2 class="card-title text-secondary text-base">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                                Meus editais
+                            </h2>
+                            <a class="btn btn-ghost btn-xs text-secondary" href="/gestao-de-oportunidade/novo">+ Novo edital</a>
+                        </div>
+                        <div id="opportunities-list" class="flex flex-col gap-2">
+                            <div class="flex justify-center py-8"><span class="loading loading-spinner loading-sm text-secondary"></span></div>
+                        </div>
                     </div>
                 </section>
 
             </div>
         </div>
-
     </div>
 
-    <!-- Mostra loading imediatamente (antes do JS async carregar) -->
     <script is:inline>
         document.getElementById('state-loading').removeAttribute('hidden');
     </script>
@@ -158,10 +171,10 @@ import HomeLayout from '../../layouts/HomeLayout.astro';
         }
 
         function formatStatus(status) {
-            if (status === 1) return '<span class="panel-badge panel-badge--active">Publicado</span>';
-            if (status === 0) return '<span class="panel-badge panel-badge--draft">Rascunho</span>';
-            if (status === -9) return '<span class="panel-badge panel-badge--disabled">Desativado</span>';
-            if (status === -10) return '<span class="panel-badge panel-badge--trash">Lixeira</span>';
+            if (status === 1) return '<span class="badge badge-success badge-sm">Publicado</span>';
+            if (status === 0) return '<span class="badge badge-warning badge-sm">Rascunho</span>';
+            if (status === -9) return '<span class="badge badge-error badge-sm">Desativado</span>';
+            if (status === -10) return '<span class="badge badge-ghost badge-sm">Lixeira</span>';
             return '';
         }
 
@@ -169,9 +182,9 @@ import HomeLayout from '../../layouts/HomeLayout.astro';
             const container = document.getElementById(containerId);
             if (!items || items.length === 0) {
                 container.innerHTML = `
-                    <div class="panel-empty">
+                    <div class="alert alert-info">
                         <p>Nenhum(a) ${config.label} cadastrado(a) ainda.</p>
-                        <a class="panel-btn panel-btn--sm" href="${config.newUrl}">Criar ${config.label}</a>
+                        <a class="btn btn-primary btn-sm" href="${config.newUrl}">Criar ${config.label}</a>
                     </div>`;
                 return;
             }
@@ -180,23 +193,23 @@ import HomeLayout from '../../layouts/HomeLayout.astro';
                 const editUrl = config.editUrl(item);
                 const viewUrl = config.viewUrl(item);
                 return `
-                    <div class="panel-entity-card">
-                        <div class="panel-entity-card__main">
-                            <div class="panel-entity-card__info">
-                                <span class="panel-entity-card__name">${escHtml(item.name ?? '—')}</span>
-                                ${item.type?.name ? `<span class="panel-entity-card__type">${escHtml(item.type.name)}</span>` : ''}
+                    <div class="flex items-center justify-between gap-4 p-3 rounded-lg bg-base-200 hover:bg-base-300 transition">
+                        <div class="flex flex-col gap-1 min-w-0 flex-1">
+                            <div class="flex items-center gap-2 flex-wrap">
+                                <span class="text-sm font-bold truncate">${escHtml(item.name ?? '—')}</span>
+                                ${item.type?.name ? `<span class="badge badge-sm badge-primary">${escHtml(item.type.name)}</span>` : ''}
                             </div>
-                            <div class="panel-entity-card__meta">
+                            <div class="flex items-center gap-2 flex-wrap">
                                 ${formatStatus(item.status)}
-                                ${item.shortDescription ? `<span class="panel-entity-card__desc">${escHtml(item.shortDescription.slice(0, 80))}${item.shortDescription.length > 80 ? '…' : ''}</span>` : ''}
+                                ${item.shortDescription ? `<span class="text-xs text-base-content/60">${escHtml(item.shortDescription.slice(0, 80))}${item.shortDescription.length > 80 ? '…' : ''}</span>` : ''}
                             </div>
                         </div>
-                        <div class="panel-entity-card__actions">
-                            <a class="panel-entity-action" href="${viewUrl}" target="_blank" rel="noopener" title="Ver">
+                        <div class="flex gap-1 shrink-0">
+                            <a class="btn btn-ghost btn-xs" href="${viewUrl}" target="_blank" rel="noopener" title="Ver">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                                 Ver
                             </a>
-                            <a class="panel-entity-action panel-entity-action--edit" href="${editUrl}" title="Editar">
+                            <a class="btn btn-primary btn-xs" href="${editUrl}" title="Editar">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                                 Editar
                             </a>
@@ -210,11 +223,9 @@ import HomeLayout from '../../layouts/HomeLayout.astro';
         }
 
         async function initPanel() {
-            // Auth check: try to get user's profile agent
             const agents = await apiFetch('/api/agent/find?@select=id,name,type,status,shortDescription&user=EQ(@me)&@limit=50&@order=name+ASC&status=EQ(1)');
 
             if (agents === null) {
-                // Could be not authenticated — also try draft
                 const allAgents = await apiFetch('/api/agent/find?@select=id,name,userId&user=EQ(@me)&@limit=1&status=GTE(-10)');
                 if (!allAgents || allAgents.length === 0) {
                     document.getElementById('state-loading').hidden = true;
@@ -223,22 +234,19 @@ import HomeLayout from '../../layouts/HomeLayout.astro';
                 }
             }
 
-            // Get user's first agent to extract userId and display name
             const profileAgents = await apiFetch('/api/agent/find?@select=id,name,userId&user=EQ(@me)&@limit=1&@order=id+ASC&status=GTE(-10)');
             const userId = profileAgents?.[0]?.userId;
             const profileName = profileAgents?.[0]?.name;
 
             document.getElementById('panel-user-name').textContent = profileName ?? 'Usuário';
 
-            // Show panel
             document.getElementById('state-loading').hidden = true;
             document.getElementById('panel-main').hidden = false;
 
             const userFilter = userId ? `user=EQ(${userId})` : 'user=EQ(@me)';
             const baseFields = 'id,name,type,status,shortDescription';
-            const statusFilter = 'status=GTE(-9)'; // enabled + draft
+            const statusFilter = 'status=GTE(-9)';
 
-            // Load all entity sections in parallel
             const [myAgents, mySpaces, myEvents, myOpps] = await Promise.all([
                 apiFetch(`/api/agent/find?@select=${baseFields}&${userFilter}&${statusFilter}&@limit=50&@order=name+ASC`),
                 apiFetch(`/api/space/find?@select=${baseFields}&${userFilter}&${statusFilter}&@limit=50&@order=name+ASC`),
@@ -281,389 +289,4 @@ import HomeLayout from '../../layouts/HomeLayout.astro';
             document.getElementById('state-guest').hidden = false;
         });
     </script>
-
-    <style>
-        .panel-page {
-            font-family: 'Source Sans 3', Arial, sans-serif;
-            min-height: 100vh;
-            background: #f2f2f2;
-        }
-
-        /* Garante que hidden funcione mesmo com display flex nos estados */
-        .panel-page [hidden] { display: none !important; }
-
-        /* ── LOADING ─────────────────────────────────────── */
-        .panel-loading {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 60vh;
-            gap: 1rem;
-            color: #666;
-            font-size: 0.95rem;
-        }
-
-        .panel-spinner {
-            width: 36px;
-            height: 36px;
-            border: 3px solid #e0e0e0;
-            border-top-color: #0056c8;
-            border-radius: 50%;
-            animation: panel-spin 0.7s linear infinite;
-        }
-
-        .panel-spinner--sm { width: 20px; height: 20px; border-width: 2px; }
-
-        @keyframes panel-spin { to { transform: rotate(360deg); } }
-
-        .panel-loading-inline {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 2rem;
-        }
-
-        /* ── GUEST ───────────────────────────────────────── */
-        .panel-guest {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 70vh;
-        }
-
-        .panel-guest__inner {
-            background: #fff;
-            border: 1px solid #e8e8e8;
-            border-radius: 12px;
-            padding: 3rem 2.5rem;
-            text-align: center;
-            max-width: 440px;
-            width: 100%;
-        }
-
-        .panel-guest__icon {
-            color: #0056c8;
-            margin-bottom: 1.25rem;
-            display: flex;
-            justify-content: center;
-        }
-
-        .panel-guest__inner h1 {
-            margin: 0 0 0.6rem;
-            font-size: 1.4rem;
-            font-weight: 700;
-            color: #0033a0;
-        }
-
-        .panel-guest__inner p {
-            margin: 0 0 2rem;
-            color: #555;
-            font-size: 1rem;
-            line-height: 1.5;
-        }
-
-        .panel-guest__actions {
-            display: flex;
-            gap: 0.75rem;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-
-        /* ── BUTTONS ─────────────────────────────────────── */
-        .panel-btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 999px;
-            padding: 0.65rem 1.5rem;
-            min-height: 44px;
-            font-weight: 700;
-            font-size: 0.875rem;
-            text-decoration: none;
-            transition: filter 0.15s;
-        }
-
-        .panel-btn:hover { filter: brightness(1.07); }
-        .panel-btn--primary { background: #0056c8; color: #fff; }
-        .panel-btn--outline { background: #fff; color: #0056c8; border: 2px solid #0056c8; }
-        .panel-btn--sm { padding: 0.4rem 1rem; min-height: 36px; font-size: 0.8rem; background: #0056c8; color: #fff; }
-
-        /* ── HEADER ──────────────────────────────────────── */
-        .panel-header {
-            background: linear-gradient(135deg, #0033a0 0%, #0056c8 100%);
-            color: #fff;
-            padding: 1.5rem 0;
-        }
-
-        .panel-header__inner {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 1rem;
-            flex-wrap: wrap;
-        }
-
-        .panel-header__label {
-            margin: 0;
-            font-size: 0.75rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.08em;
-            color: rgba(255,255,255,0.7);
-        }
-
-        .panel-header__title {
-            margin: 0;
-            font-size: clamp(1.2rem, 2.5vw, 1.8rem);
-            font-weight: 700;
-            line-height: 1.15;
-        }
-
-        .panel-nav {
-            display: flex;
-            align-items: center;
-            gap: 0.25rem;
-        }
-
-        .panel-nav__link {
-            color: rgba(255,255,255,0.85);
-            text-decoration: none;
-            font-size: 0.875rem;
-            font-weight: 600;
-            padding: 0.4rem 0.75rem;
-            border-radius: 6px;
-            transition: background 0.15s;
-        }
-
-        .panel-nav__link:hover { background: rgba(255,255,255,0.15); color: #fff; }
-        .panel-nav__link--danger { color: rgba(255,160,160,0.9); }
-        .panel-nav__link--danger:hover { background: rgba(255,0,0,0.15); color: #ffc8c8; }
-
-        /* ── BODY ────────────────────────────────────────── */
-        .container {
-            width: min(1180px, 92vw);
-            margin: 0 auto;
-        }
-
-        .panel-body {
-            padding: 2rem 0 4rem;
-            display: flex;
-            flex-direction: column;
-            gap: 2rem;
-        }
-
-        /* ── QUICK ACTIONS ───────────────────────────────── */
-        .panel-quickactions .panel-section__title {
-            color: #1f1f1f;
-            font-size: 0.85rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.06em;
-            margin: 0 0 0.75rem;
-        }
-
-        .panel-quickactions__grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 0.75rem;
-        }
-
-        .panel-action-card {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 0.5rem;
-            background: #fff;
-            border: 1px solid #e8e8e8;
-            border-radius: 10px;
-            padding: 1.25rem 1rem;
-            text-decoration: none;
-            color: #1f1f1f;
-            transition: box-shadow 0.15s, transform 0.15s;
-            text-align: center;
-        }
-
-        .panel-action-card:hover {
-            box-shadow: 0 4px 14px rgba(0,0,0,0.09);
-            transform: translateY(-2px);
-        }
-
-        .panel-action-card__icon { color: #0056c8; line-height: 0; }
-
-        .panel-action-card__label {
-            font-size: 0.82rem;
-            font-weight: 700;
-            color: #1f1f1f;
-        }
-
-        /* ── SECTIONS ────────────────────────────────────── */
-        .panel-section {
-            background: #fff;
-            border: 1px solid #e8e8e8;
-            border-radius: 10px;
-            padding: 1.5rem;
-        }
-
-        .panel-section__header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 1.25rem;
-        }
-
-        .panel-section__title {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            margin: 0;
-            font-size: 1rem;
-            font-weight: 700;
-            line-height: 1;
-        }
-
-        .panel-section__link {
-            font-size: 0.82rem;
-            font-weight: 700;
-            text-decoration: none;
-            opacity: 0.85;
-        }
-
-        .panel-section__link:hover { opacity: 1; text-decoration: underline; }
-
-        /* ── ENTITY LIST ─────────────────────────────────── */
-        .panel-entity-grid {
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-        }
-
-        .panel-entity-card {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 1rem;
-            padding: 0.75rem 1rem;
-            border: 1px solid #f0f0f0;
-            border-radius: 8px;
-            background: #fafafa;
-            transition: background 0.12s;
-        }
-
-        .panel-entity-card:hover { background: #f5f7ff; }
-
-        .panel-entity-card__main {
-            display: flex;
-            flex-direction: column;
-            gap: 0.25rem;
-            flex: 1;
-            min-width: 0;
-        }
-
-        .panel-entity-card__info {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            flex-wrap: wrap;
-        }
-
-        .panel-entity-card__name {
-            font-size: 0.95rem;
-            font-weight: 700;
-            color: #1f1f1f;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .panel-entity-card__type {
-            font-size: 0.72rem;
-            font-weight: 700;
-            color: #0056c8;
-            background: #e8f0fe;
-            border-radius: 999px;
-            padding: 0.15rem 0.5rem;
-            white-space: nowrap;
-        }
-
-        .panel-entity-card__meta {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            flex-wrap: wrap;
-        }
-
-        .panel-entity-card__desc {
-            font-size: 0.8rem;
-            color: #666;
-        }
-
-        /* ── BADGES ──────────────────────────────────────── */
-        .panel-badge {
-            display: inline-block;
-            font-size: 0.65rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.06em;
-            border-radius: 999px;
-            padding: 0.15rem 0.55rem;
-        }
-
-        .panel-badge--active { background: #dcfce7; color: #166534; }
-        .panel-badge--draft { background: #fef9c3; color: #713f12; }
-        .panel-badge--disabled { background: #fee2e2; color: #991b1b; }
-        .panel-badge--trash { background: #f0f0f0; color: #666; }
-
-        /* ── ENTITY ACTIONS ──────────────────────────────── */
-        .panel-entity-card__actions {
-            display: flex;
-            gap: 0.25rem;
-            flex-shrink: 0;
-        }
-
-        .panel-entity-action {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.3rem;
-            font-size: 0.75rem;
-            font-weight: 600;
-            color: #555;
-            text-decoration: none;
-            padding: 0.35rem 0.65rem;
-            border-radius: 6px;
-            border: 1px solid #e0e0e0;
-            background: #fff;
-            transition: background 0.12s, color 0.12s;
-        }
-
-        .panel-entity-action:hover { background: #f0f4ff; color: #0056c8; border-color: #cdd8f8; }
-        .panel-entity-action--edit { color: #0056c8; border-color: #cdd8f8; background: #f0f4ff; }
-        .panel-entity-action--edit:hover { background: #0056c8; color: #fff; }
-
-        /* ── EMPTY ───────────────────────────────────────── */
-        .panel-empty {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 0.75rem;
-            padding: 2rem;
-            text-align: center;
-            color: #888;
-            font-size: 0.9rem;
-            background: #fafafa;
-            border-radius: 6px;
-            border: 1px dashed #ddd;
-        }
-
-        /* ── RESPONSIVE ──────────────────────────────────── */
-        @media (max-width: 860px) {
-            .panel-quickactions__grid { grid-template-columns: repeat(2, 1fr); }
-        }
-
-        @media (max-width: 540px) {
-            .panel-entity-card { flex-direction: column; align-items: flex-start; }
-            .panel-entity-card__actions { width: 100%; }
-            .panel-entity-action { flex: 1; justify-content: center; }
-        }
-    </style>
 </HomeLayout>

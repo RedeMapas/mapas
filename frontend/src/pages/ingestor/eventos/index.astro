@@ -148,8 +148,8 @@ function formatDate(iso: string) {
   </main>
 
   <script>
-    const searchInput = document.getElementById('search') as HTMLInputElement
-    searchInput?.addEventListener('keydown', (e: KeyboardEvent) => {
+    const searchInput = document.getElementById('search')
+    searchInput?.addEventListener('keydown', (e) => {
       if (e.key === 'Enter') {
         const url = new URL(location.href)
         url.searchParams.set('q', searchInput.value)
@@ -158,9 +158,9 @@ function formatDate(iso: string) {
       }
     })
 
-    const bulkApproveBtn = document.getElementById('bulk-approve-btn') as HTMLButtonElement
-    const bulkImportBtn = document.getElementById('bulk-import-btn') as HTMLButtonElement
-    const selectAllCheckbox = document.getElementById('select-all-checkbox') as HTMLInputElement
+    const bulkApproveBtn = document.getElementById('bulk-approve-btn')
+    const bulkImportBtn = document.getElementById('bulk-import-btn')
+    const selectAllCheckbox = document.getElementById('select-all-checkbox')
     const checkboxes = document.querySelectorAll<HTMLInputElement>('.event-checkbox')
 
     function updateBulkBar() {

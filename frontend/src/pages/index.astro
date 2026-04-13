@@ -3,7 +3,6 @@ import HomeLayout from '../layouts/HomeLayout.astro';
 
 const phpUrl = import.meta.env.PHP_API_URL || '';
 
-// Fetch editais abertos server-side
 let opportunities: any[] = [];
 try {
     const params = new URLSearchParams({
@@ -26,216 +25,198 @@ const circuitsImg = 'https://rede.mapas.tec.br/wp-content/uploads/sites/11/2024/
 ---
 
 <HomeLayout title="Rede Mapas — A plataforma livre de cultura do Brasil">
-    <div class="redemapas-home-page" data-home-redemapas>
 
-        <!-- ── HERO ─────────────────────────────────────── -->
-        <section class="hero">
-            <div class="hero__inner">
-                <p class="kicker">Rede Mapas</p>
-                <h1>A plataforma livre que conecta secretarias de cultura ao território brasileiro</h1>
-                <p class="hero__description">Editais rastreáveis, dados abertos e gestão territorial — tudo em um sistema público que já funciona em secretarias estaduais e municipais em todo o Brasil.</p>
-                <div class="hero__ctas">
-                    <a class="btn btn--panel" href="/auth/login">Entrar</a>
-                    <a class="btn btn--light" href="#gestores">Para gestores públicos →</a>
-                </div>
-                <span class="hero__scroll-cue" aria-hidden="true">↓</span>
+    <div class="hero min-h-[60vh] bg-gradient-to-br from-primary to-secondary text-primary-content text-center">
+        <div class="hero-content flex-col gap-4 max-w-xl py-16">
+            <p class="text-xs uppercase tracking-widest opacity-90">Rede Mapas</p>
+            <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight">A plataforma livre que conecta secretarias de cultura ao território brasileiro</h1>
+            <p class="text-base md:text-lg opacity-80 max-w-md">Editais rastreáveis, dados abertos e gestão territorial — tudo em um sistema público que já funciona em secretarias estaduais e municipais em todo o Brasil.</p>
+            <div class="flex flex-wrap gap-3 justify-center mt-2">
+                <a class="btn btn-accent" href="/auth/login">Entrar</a>
+                <a class="btn btn-ghost text-primary-content border border-primary-content/30 hover:bg-primary-content/10" href="#gestores">Para gestores públicos →</a>
             </div>
-        </section>
-
-        <!-- ── SPLIT ────────────────────────────────────── -->
-        <section class="split">
-            <a class="split__card split__card--gestor" href="#gestores" aria-label="Sou gestor público — conhecer a solução">
-                <div class="split__card-inner">
-                    <span class="split__icon" aria-hidden="true">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
-                    </span>
-                    <h2>Sou gestor público</h2>
-                    <p>Gerencie editais, monitore indicadores territoriais e publique dados abertos com rastreabilidade para auditoria.</p>
-                    <span class="split__cta">Conhecer a solução →</span>
-                </div>
-            </a>
-            <a class="split__card split__card--cultural" href="#explorar" aria-label="Sou agente cultural — explorar conteúdo">
-                <div class="split__card-inner">
-                    <span class="split__icon" aria-hidden="true">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
-                    </span>
-                    <h2>Sou agente cultural</h2>
-                    <p>Descubra editais abertos, espaços culturais e eventos no seu território. Tudo em dados abertos, sem intermediários.</p>
-                    <span class="split__cta">Explorar conteúdo →</span>
-                </div>
-            </a>
-        </section>
-
-        <!-- ── ONDE FUNCIONA ─────────────────────────────── -->
-        <section class="onde-funciona">
-            <div class="container">
-                <p class="onde-funciona__label">Onde isso já funciona</p>
-                <ul class="onde-funciona__list" aria-label="Governos e instituições que usam a plataforma">
-                    <li class="onde-funciona__item">
-                        <span class="onde-funciona__name">Governo do Pará</span>
-                        <span class="onde-funciona__use">Gestão territorial e editais</span>
-                    </li>
-                    <li class="onde-funciona__item">
-                        <span class="onde-funciona__name">Governo de Pernambuco</span>
-                        <span class="onde-funciona__use">Política cultural estadual</span>
-                    </li>
-                    <li class="onde-funciona__item">
-                        <span class="onde-funciona__name">Governo Federal</span>
-                        <span class="onde-funciona__use">Programa Cultura Viva</span>
-                    </li>
-                    <li class="onde-funciona__item">
-                        <span class="onde-funciona__name">Municípios em todo o Brasil</span>
-                        <span class="onde-funciona__use">Editais e mapeamento cultural</span>
-                    </li>
-                </ul>
-            </div>
-        </section>
-
-        <!-- ── EDITAIS ABERTOS ───────────────────────────── -->
-        <section class="opportunities" id="explorar">
-            <div class="container">
-                <div class="section-header">
-                    <h2>Editais abertos</h2>
-                    <a class="section-header__link" href="/busca#opportunity">Ver todos →</a>
-                </div>
-                <div class="opportunities__grid">
-                    {opportunities.length === 0 ? (
-                        <div class="opportunities__empty">
-                            <p>Nenhum edital aberto no momento.</p>
-                        </div>
-                    ) : (
-                        opportunities.map(op => (
-                            <article class="opp-card">
-                                <div class="opp-card__header">
-                                    <span class="opp-card__deadline">{formatDate(op.registrationTo)}</span>
-                                </div>
-                                <div class="opp-card__body">
-                                    <h3 class="opp-card__title">{op.name}</h3>
-                                    {op.ownerEntity?.name && <p class="opp-card__org">{op.ownerEntity.name}</p>}
-                                    {op.shortDescription && <p class="opp-card__desc">{op.shortDescription}</p>}
-                                </div>
-                                <a class="opp-card__link" href={`/oportunidade/${op.id}`}>Ver edital</a>
-                            </article>
-                        ))
-                    )}
-                </div>
-            </div>
-        </section>
-
-        <!-- ── GESTORES PÚBLICOS ─────────────────────────── -->
-        <section class="gestores" id="gestores">
-            <div class="container">
-                <div class="section-header">
-                    <h2>Para gestores públicos</h2>
-                </div>
-                <p class="gestores__intro">Como secretarias de cultura usam o Mapas Culturais para executar política pública com rastreabilidade e transparência.</p>
-                <div class="gestores__grid">
-                    <div class="gestores__feature">
-                        <span class="gestores__feature-icon" aria-hidden="true">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-                        </span>
-                        <h3>Fomento e editais</h3>
-                        <p>Fluxos de inscrição colaborativos, avaliação por comissão e rastreabilidade de ponta a ponta — do edital à prestação de contas.</p>
-                    </div>
-                    <div class="gestores__feature">
-                        <span class="gestores__feature-icon" aria-hidden="true">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-                        </span>
-                        <h3>Monitoramento territorial</h3>
-                        <p>Indicadores georreferenciados de agentes, espaços e eventos. Visão do território em tempo real com dados que você controla.</p>
-                    </div>
-                    <div class="gestores__feature">
-                        <span class="gestores__feature-icon" aria-hidden="true">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-                        </span>
-                        <h3>Transparência pública</h3>
-                        <p>Dados abertos, API pública e registros auditáveis por cidadãos, parceiros e órgãos de controle. Sem planilhas paralelas.</p>
-                    </div>
-                    <div class="gestores__feature">
-                        <span class="gestores__feature-icon" aria-hidden="true">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/></svg>
-                        </span>
-                        <h3>Integração com outros sistemas</h3>
-                        <p>Interoperabilidade por API aberta com plataformas federais, municipais e estaduais. Os dados do seu município conectados ao Brasil.</p>
-                    </div>
-                </div>
-                <div class="gestores__cta">
-                    <a class="btn btn--panel" href="/auth/register">Quero ativar no meu município</a>
-                </div>
-            </div>
-        </section>
-
-        <!-- ── EM BREVE ──────────────────────────────────── -->
-        <section class="em-breve">
-            <div class="container">
-                <div class="section-header">
-                    <h2>O que estamos construindo</h2>
-                </div>
-                <p class="em-breve__intro">Novidades em desenvolvimento pela comunidade Rede Mapas, com previsão para os próximos meses.</p>
-                <div class="em-breve__grid">
-                    <div class="em-breve__item">
-                        <span class="em-breve__badge">Em breve</span>
-                        <h3>Status ao vivo de eventos públicos</h3>
-                        <p>Produtores de campo vão poder publicar atualizações de status de eventos em tempo real — atrasos, cancelamentos, andamento. Cidadãos verão em uma página única, sem depender de Instagram ou boatos.</p>
-                    </div>
-                    <div class="em-breve__item">
-                        <span class="em-breve__badge">Em breve</span>
-                        <h3>Painel de defensibilidade de editais</h3>
-                        <p>Coordenadores vão poder revisar a classificação, flags de anomalia e variância entre avaliadores diretamente no sistema — antes de publicar o resultado, sem precisar exportar para planilha.</p>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- ── MAPA ──────────────────────────────────────── -->
-        <section class="map-section" id="mapa">
-            <div class="container">
-                <h2>Cartografia do território brasileiro</h2>
-                <p class="map-section__description">Dados georreferenciados de agentes, espaços e eventos em todo o Brasil — todos abertos, todos verificáveis.</p>
-                <div class="map-section__frame">
-                    <iframe
-                        src="/busca#agents"
-                        title="Mapa colaborativo Rede Mapas"
-                        loading="lazy"
-                        allowfullscreen
-                    ></iframe>
-                </div>
-                <div class="map-section__footer">
-                    <a class="btn" href="/busca#agents">Abrir mapa completo →</a>
-                </div>
-            </div>
-        </section>
-
-        <!-- ── COMMUNITY ─────────────────────────────────── -->
-        <section class="community" id="comunidade">
-            <div class="container community__inner">
-                <div class="community__text">
-                    <h2>Software livre, comunidade aberta, evolução contínua</h2>
-                    <p>O Mapas Culturais é desenvolvido em comunidade: governos, universidades e organizações da sociedade civil contribuem com código, dados e governança.</p>
-                    <p>Qualquer município pode adotar, adaptar e contribuir de volta. O conhecimento não fica preso em nenhum fornecedor.</p>
-                    <a class="btn" href="https://rede.mapas.tec.br/" target="_blank" rel="noopener noreferrer">Conhecer a Rede Mapas</a>
-                </div>
-                <div class="community__art">
-                    <img src={circuitsImg} alt="Comunidade Rede Mapas — governos, universidades e organizações colaborando" loading="lazy" />
-                </div>
-            </div>
-        </section>
-
-        <!-- ── CTA FINAL ─────────────────────────────────── -->
-        <section class="cta-footer">
-            <div class="container cta-footer__inner">
-                <h2>Pronto para começar?</h2>
-                <div class="cta-footer__actions">
-                    <a class="btn cta-footer__btn--primary" href="/auth/register">
-                        Cadastre-se como agente cultural
-                    </a>
-                    <a class="btn cta-footer__btn--secondary" href="https://rede.mapas.tec.br/" target="_blank" rel="noopener noreferrer">
-                        Fale com nossa equipe
-                    </a>
-                </div>
-                <p class="cta-footer__hint">Para gestores públicos: fale com nossa equipe para ativar a plataforma no seu município</p>
-            </div>
-        </section>
-
+            <span class="text-2xl opacity-40 animate-bounce block mt-2" aria-hidden="true">↓</span>
+        </div>
     </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2">
+        <a class="card bg-primary text-primary-content rounded-none p-8 md:p-10 hover:brightness-110 transition" href="#gestores" aria-label="Sou gestor público — conhecer a solução">
+            <div class="card-body max-w-md">
+                <span class="text-3xl opacity-90 mb-3" aria-hidden="true">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
+                </span>
+                <h2 class="card-title text-xl md:text-2xl">Sou gestor público</h2>
+                <p class="opacity-90">Gerencie editais, monitore indicadores territoriais e publique dados abertos com rastreabilidade para auditoria.</p>
+                <span class="text-sm font-bold uppercase tracking-wider border-b-2 border-primary-content/40 pb-0.5 self-start">Conhecer a solução →</span>
+            </div>
+        </a>
+        <a class="card bg-accent text-accent-content rounded-none p-8 md:p-10 hover:brightness-110 transition" href="#explorar" aria-label="Sou agente cultural — explorar conteúdo">
+            <div class="card-body max-w-md">
+                <span class="text-3xl opacity-90 mb-3" aria-hidden="true">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
+                </span>
+                <h2 class="card-title text-xl md:text-2xl">Sou agente cultural</h2>
+                <p class="opacity-90">Descubra editais abertos, espaços culturais e eventos no seu território. Tudo em dados abertos, sem intermediários.</p>
+                <span class="text-sm font-bold uppercase tracking-wider border-b-2 border-accent-content/40 pb-0.5 self-start">Explorar conteúdo →</span>
+            </div>
+        </a>
+    </div>
+
+    <section class="bg-base-100 py-6 border-y border-base-300">
+        <div class="container mx-auto w-full max-w-[1180px] px-[4vw]">
+            <p class="text-xs uppercase tracking-widest text-base-content/50 font-bold mb-4">Onde isso já funciona</p>
+            <ul class="grid grid-cols-2 md:grid-cols-4 gap-4" aria-label="Governos e instituições que usam a plataforma">
+                <li class="flex flex-col gap-0.5">
+                    <span class="font-bold text-sm">Governo do Pará</span>
+                    <span class="text-sm text-base-content/60">Gestão territorial e editais</span>
+                </li>
+                <li class="flex flex-col gap-0.5">
+                    <span class="font-bold text-sm">Governo de Pernambuco</span>
+                    <span class="text-sm text-base-content/60">Política cultural estadual</span>
+                </li>
+                <li class="flex flex-col gap-0.5">
+                    <span class="font-bold text-sm">Governo Federal</span>
+                    <span class="text-sm text-base-content/60">Programa Cultura Viva</span>
+                </li>
+                <li class="flex flex-col gap-0.5">
+                    <span class="font-bold text-sm">Municípios em todo o Brasil</span>
+                    <span class="text-sm text-base-content/60">Editais e mapeamento cultural</span>
+                </li>
+            </ul>
+        </div>
+    </section>
+
+    <section class="bg-base-200 py-10" id="explorar">
+        <div class="container mx-auto w-full max-w-[1180px] px-[4vw]">
+            <div class="flex items-baseline justify-between mb-6">
+                <h2 class="text-2xl md:text-3xl font-bold text-primary">Editais abertos</h2>
+                <a class="text-sm font-bold text-primary hover:underline" href="/busca#opportunity">Ver todos →</a>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {opportunities.length === 0 ? (
+                    <div class="col-span-full text-base-content/50 py-6">
+                        <p>Nenhum edital aberto no momento.</p>
+                    </div>
+                ) : (
+                    opportunities.map(op => (
+                        <article class="card bordered shadow-sm hover:shadow-md transition-all hover:-translate-y-0.5 overflow-hidden">
+                            <div class="bg-primary px-4 py-2">
+                                <span class="text-xs font-bold text-primary-content uppercase tracking-wider">{formatDate(op.registrationTo)}</span>
+                            </div>
+                            <div class="card-body gap-1 p-4">
+                                <h3 class="card-title text-base font-bold">{op.name}</h3>
+                                {op.ownerEntity?.name && <p class="text-sm text-base-content/60">{op.ownerEntity.name}</p>}
+                                {op.shortDescription && <p class="text-sm text-base-content/70 line-clamp-3">{op.shortDescription}</p>}
+                            </div>
+                            <a class="px-4 py-3 text-xs font-bold text-primary uppercase tracking-wider border-t border-base-200 hover:bg-primary/5 min-h-[44px] flex items-center" href={`/oportunidade/${op.id}`}>Ver edital</a>
+                        </article>
+                    ))
+                )}
+            </div>
+        </div>
+    </section>
+
+    <section class="bg-primary/5 py-10 border-y border-primary/10" id="gestores">
+        <div class="container mx-auto w-full max-w-[1180px] px-[4vw]">
+            <h2 class="text-2xl md:text-3xl font-bold text-primary mb-2">Para gestores públicos</h2>
+            <p class="text-base-content/70 mb-8 max-w-2xl">Como secretarias de cultura usam o Mapas Culturais para executar política pública com rastreabilidade e transparência.</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                <div class="flex flex-col gap-2">
+                    <span class="text-primary" aria-hidden="true">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                    </span>
+                    <h3 class="font-bold text-primary">Fomento e editais</h3>
+                    <p class="text-sm text-base-content/70">Fluxos de inscrição colaborativos, avaliação por comissão e rastreabilidade de ponta a ponta.</p>
+                </div>
+                <div class="flex flex-col gap-2">
+                    <span class="text-primary" aria-hidden="true">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+                    </span>
+                    <h3 class="font-bold text-primary">Monitoramento territorial</h3>
+                    <p class="text-sm text-base-content/70">Indicadores georreferenciados de agentes, espaços e eventos. Visão do território em tempo real.</p>
+                </div>
+                <div class="flex flex-col gap-2">
+                    <span class="text-primary" aria-hidden="true">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                    </span>
+                    <h3 class="font-bold text-primary">Transparência pública</h3>
+                    <p class="text-sm text-base-content/70">Dados abertos, API pública e registros auditáveis por cidadãos, parceiros e órgãos de controle.</p>
+                </div>
+                <div class="flex flex-col gap-2">
+                    <span class="text-primary" aria-hidden="true">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/></svg>
+                    </span>
+                    <h3 class="font-bold text-primary">Integração com outros sistemas</h3>
+                    <p class="text-sm text-base-content/70">Interoperabilidade por API aberta com plataformas federais, municipais e estaduais.</p>
+                </div>
+            </div>
+            <div class="text-center">
+                <a class="btn btn-primary" href="/auth/register">Quero ativar no meu município</a>
+            </div>
+        </div>
+    </section>
+
+    <section class="bg-base-100 py-10 border-y border-base-300">
+        <div class="container mx-auto w-full max-w-[1180px] px-[4vw]">
+            <h2 class="text-2xl md:text-3xl font-bold text-primary mb-2">O que estamos construindo</h2>
+            <p class="text-base-content/70 mb-8 max-w-2xl">Novidades em desenvolvimento pela comunidade Rede Mapas, com previsão para os próximos meses.</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="card bordered shadow-sm">
+                    <div class="card-body">
+                        <span class="badge badge-primary badge-sm">Em breve</span>
+                        <h3 class="card-title text-base">Status ao vivo de eventos públicos</h3>
+                        <p class="text-sm text-base-content/70">Produtores de campo vão poder publicar atualizações de status de eventos em tempo real — atrasos, cancelamentos, andamento.</p>
+                    </div>
+                </div>
+                <div class="card bordered shadow-sm">
+                    <div class="card-body">
+                        <span class="badge badge-primary badge-sm">Em breve</span>
+                        <h3 class="card-title text-base">Painel de defensibilidade de editais</h3>
+                        <p class="text-sm text-base-content/70">Coordenadores vão poder revisar a classificação, flags de anomalia e variância entre avaliadores diretamente no sistema.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="bg-neutral text-neutral-content py-10" id="mapa">
+        <div class="container mx-auto w-full max-w-[1180px] px-[4vw]">
+            <h2 class="text-2xl md:text-3xl font-bold mb-3">Cartografia do território brasileiro</h2>
+            <p class="opacity-80 mb-6 max-w-xl">Dados georreferenciados de agentes, espaços e eventos em todo o Brasil — todos abertos, todos verificáveis.</p>
+            <div class="rounded-lg overflow-hidden border border-neutral-content/15 h-[400px]">
+                <iframe src="/busca#agents" title="Mapa colaborativo Rede Mapas" loading="lazy" allowfullscreen class="w-full h-full border-0 block"></iframe>
+            </div>
+            <div class="text-right mt-5">
+                <a class="btn btn-ghost text-neutral-content border border-neutral-content/30 hover:bg-neutral-content/10" href="/busca#agents">Abrir mapa completo →</a>
+            </div>
+        </div>
+    </section>
+
+    <section class="bg-base-100 py-10 border-t border-base-300" id="comunidade">
+        <div class="container mx-auto w-full max-w-[1180px] px-[4vw]">
+            <div class="grid grid-cols-1 md:grid-cols-[1.1fr_0.9fr] gap-12 items-center">
+                <div>
+                    <h2 class="text-2xl md:text-3xl font-bold text-primary mb-4">Software livre, comunidade aberta, evolução contínua</h2>
+                    <p class="text-base-content/70 mb-3">O Mapas Culturais é desenvolvido em comunidade: governos, universidades e organizações da sociedade civil contribuem com código, dados e governança.</p>
+                    <p class="text-base-content/70 mb-4">Qualquer município pode adotar, adaptar e contribuir de volta. O conhecimento não fica preso em nenhum fornecedor.</p>
+                    <a class="btn btn-primary" href="https://rede.mapas.tec.br/" target="_blank" rel="noopener noreferrer">Conhecer a Rede Mapas</a>
+                </div>
+                <div>
+                    <img src={circuitsImg} alt="Comunidade Rede Mapas — governos, universidades e organizações colaborando" loading="lazy" class="w-full rounded-lg" />
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="bg-gradient-to-br from-primary to-accent text-primary-content py-12">
+        <div class="container mx-auto w-full max-w-[1180px] px-[4vw] text-center">
+            <h2 class="text-3xl md:text-4xl font-bold mb-6">Pronto para começar?</h2>
+            <div class="flex flex-wrap gap-4 justify-center mb-4">
+                <a class="btn bg-base-100 text-primary hover:bg-base-200 border-0" href="/auth/register">Cadastre-se como agente cultural</a>
+                <a class="btn btn-ghost text-primary-content border-2 border-primary-content/50 hover:bg-primary-content/10" href="https://rede.mapas.tec.br/" target="_blank" rel="noopener noreferrer">Fale com nossa equipe</a>
+            </div>
+            <p class="text-sm opacity-60">Para gestores públicos: fale com nossa equipe para ativar a plataforma no seu município</p>
+        </div>
+    </section>
+
 </HomeLayout>

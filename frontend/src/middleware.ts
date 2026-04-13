@@ -6,8 +6,9 @@ export const onRequest = defineMiddleware(async (context, next) => {
     const url = context.url.pathname;
     if (url.startsWith('/ingestor')) {
         const cookieHeader = context.request.headers.get('cookie') ?? '';
+        const redirectTo = encodeURIComponent(context.url.href);
         if (!cookieHeader) {
-            return context.redirect('/auth/login');
+            return context.redirect(`/auth/login?redirectTo=${redirectTo}`);
         }
         try {
             const res = await fetch(
@@ -20,14 +21,14 @@ export const onRequest = defineMiddleware(async (context, next) => {
                 },
             );
             if (!res.ok) {
-                return context.redirect('/auth/login');
+                return context.redirect(`/auth/login?redirectTo=${redirectTo}`);
             }
             const data = await res.json();
             if (!Array.isArray(data) || data.length === 0) {
-                return context.redirect('/auth/login');
+                return context.redirect(`/auth/login?redirectTo=${redirectTo}`);
             }
         } catch {
-            return context.redirect('/auth/login');
+            return context.redirect(`/auth/login?redirectTo=${redirectTo}`);
         }
     }
     return next();
