@@ -42,15 +42,23 @@ export const POST: APIRoute = async ({ request }) => {
     const mapasUrl = process.env['MAPAS_API_URL'] ?? 'http://localhost:8080'
 
     try {
+      const eventBody: Record<string, unknown> = {
+        name: evt['title'],
+        shortDescription: evt['description_short'] ?? '',
+        longDescription: evt['description_long'] ?? null,
+        status: 1,
+        classificacaoEtaria: evt['classificacao_etaria'] ?? 'Livre',
+        acessibilidade: evt['acessibilidade'] ? 1 : 0,
+      }
+
+      if (evt['telefone']) eventBody['telefonePublico'] = evt['telefone']
+      if (evt['email']) eventBody['emailPublico'] = evt['email']
+      if (evt['site']) eventBody['site'] = evt['site']
+
       const eventRes = await fetch(`${mapasUrl}/api/event/index`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Cookie': admCookie },
-        body: JSON.stringify({
-          name: evt['title'],
-          shortDescription: evt['description_short'] ?? '',
-          longDescription: evt['description_long'] ?? null,
-          status: 1,
-        }),
+        body: JSON.stringify(eventBody),
       })
 
       if (!eventRes.ok) {
@@ -85,6 +93,33 @@ export const POST: APIRoute = async ({ request }) => {
         db.prepare(`UPDATE events SET import_status = 'failed' WHERE id = ?`).run(eventId)
         resultados.push({ id: eventId, status: 'failed', error: 'occurrence creation failed' })
         continue
+      }
+
+      const langRows = db.prepare(
+        `SELECT l.nome FROM event_languages el JOIN languages l ON el.language_id = l.id WHERE el.event_id = ?`
+      ).all(eventId) as Array<{ nome: string }>
+
+      if (langRows.length > 0) {
+        const termData = { area: langRows.map(r => r.nome) }
+        await fetch(`${mapasUrl}/api/event/${mapasEventId}/terms/area`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Cookie': admCookie },
+          body: JSON.stringify(termData),
+        }).catch(() => {})
+      }
+
+      const tagStr = evt['tags'] as string | null
+      if (tagStr) {
+        try {
+          const tags = JSON.parse(tagStr) as string[]
+          if (tags.length > 0) {
+            await fetch(`${mapasUrl}/api/event/${mapasEventId}/terms/tag`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', 'Cookie': admCookie },
+              body: JSON.stringify({ tag: tags }),
+            }).catch(() => {})
+          }
+        } catch {}
       }
 
       db.prepare(`UPDATE events SET import_status = 'imported' WHERE id = ?`).run(eventId)

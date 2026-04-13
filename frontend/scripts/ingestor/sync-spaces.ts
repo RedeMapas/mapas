@@ -1,15 +1,3 @@
-/**
- * Bun script — Mapas spaces sync (venue_cache refresh).
- * Fetches active spaces from Mapas PHP API and upserts into venue_cache.
- *
- * Usage:
- *   bun scripts/ingestor/sync-spaces.ts [city]
- *   Default city: Fortaleza
- *
- * Called by: POST /spa/api/ingestor/sync (inline, no subprocess)
- * Also schedulable via daily cron for background refresh.
- */
-
 import { getDb } from '../../src/lib/ingestor/db.ts'
 import { fetchMapasSpaces, upsertVenueCache } from '../../src/lib/ingestor/mapas.ts'
 
