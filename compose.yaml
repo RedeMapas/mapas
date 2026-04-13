@@ -15,16 +15,12 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-    ports:
-      - "8080:80"
     environment:
       DB_HOST: postgres
       DB_PORT: 5432
       DB_NAME: mapas
       DB_USER: mapas
       DB_PASS: mapas-dev
-      # No REDIS_CACHE → falls back to APCu (or FilesystemAdapter if APCu unavailable)
-      # No SESSIONS_SAVE_PATH → defaults to /var/www/var/sessions/ (filesystem)
       MAILER_TRANSPORT: "smtp://mailpit:1025"
       MAILER_FROM: "dev@mapas.local"
       BUILD_ASSETS: "0"
@@ -36,31 +32,24 @@ services:
       JOBS_INTERVAL: "5"
       NUM_PROCESSES: "2"
       MC_UPDATES_PROCESSES: "2"
-      # Test reCAPTCHA keys (public Google test keys, safe to commit)
       GOOGLE_RECAPTCHA_SITEKEY: "6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI"
       GOOGLE_RECAPTCHA_SECRET: "6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe"
       REDIRECT_404_ASSETS_TO: ""
     volumes:
-      # Development PHP configuration
       - ./dev/docker/php.ini:/usr/local/etc/php/php.ini:ro
-      # - ./dev/docker/xdebug.ini:/usr/local/etc/php/conf.d/xdebug.ini:ro
-      # Entrypoint and cron scripts
       - ./docker/entrypoint.sh:/entrypoint.sh:ro
       - ./docker/jobs-cron.sh:/jobs-cron.sh:ro
       - ./docker/recreate-pending-pcache-cron.sh:/recreate-pending-pcache-cron.sh:ro
-      # Source code (live editing)
       - ./src:/var/www/src:cached
       - ./config:/var/www/config:cached
       - ./public:/var/www/html:cached
       - ./scripts:/var/www/scripts:cached
       - ./composer.json:/var/www/composer.json:cached
       - ./composer.lock:/var/www/composer.lock:cached
-      # Runtime data (named volumes for persistence)
       - mapas-var:/var/www/var
       - mapas-assets:/var/www/html/assets
       - mapas-files:/var/www/html/files
       - mapas-private:/var/www/var/private-files
-      # Development configuration overrides
       - ./dev/config.d:/var/www/config/config.d:ro
       - ./tests/:/var/www/tests
       - ./phpunit.xml:/var/www/phpunit.xml:ro
@@ -97,8 +86,46 @@ services:
     image: axllent/mailpit:v1.18
     container_name: mapas-dev-mailpit
     ports:
-      - "1025:1025" # SMTP
-      - "8025:8025" # Web UI
+      - "1025:1025"
+      - "8025:8025"
+    networks:
+      - mapas-dev
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      target: development
+    container_name: mapas-dev-frontend
+    depends_on:
+      mapas:
+        condition: service_healthy
+    environment:
+      MAPAS_API_URL: "http://mapas:80"
+      PHP_API_URL: "http://mapas:80"
+    volumes:
+      - ./frontend/src:/app/src:cached
+      - ./frontend/public:/app/public:cached
+      - ./frontend/styles:/app/styles:cached
+      - frontend-data:/app/data
+    networks:
+      - mapas-dev
+
+  caddy:
+    image: caddy:2
+    container_name: mapas-dev-caddy
+    depends_on:
+      mapas:
+        condition: service_healthy
+      frontend:
+        condition: service_started
+    ports:
+      - "80:80"
+      - "8443:8443/tcp"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
     networks:
       - mapas-dev
 
@@ -108,6 +135,9 @@ volumes:
   mapas-assets:
   mapas-files:
   mapas-private:
+  caddy_data:
+  caddy_config:
+  frontend-data:
 
 networks:
   mapas-dev:

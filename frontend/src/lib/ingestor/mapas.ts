@@ -32,7 +32,7 @@ interface MapasSpace {
 }
 
 function getApiUrl(): string {
-  const url = process.env['PHP_API_URL'] ?? process.env['MAPAS_API_URL'] ?? 'http://localhost:8080'
+  const url = process.env['PHP_API_URL'] ?? process.env['MAPAS_API_URL'] ?? 'http://localhost'
   return url.replace(/\/$/, '')
 }
 
@@ -50,10 +50,10 @@ export async function fetchMapasSpaces(city: string = 'Fortaleza'): Promise<Mapa
       '@limit': String(limit),
       '@offset': String(offset),
       '@select': 'id,name,location,endereco,telefonePublico,telefone1,telefone2,emailPublico,site,acessibilidade',
-      'endereco.municipio': `ILIKE(${city})`,
+      'endereco.En_Municipio': `ILIKE(${city})`,
     })
 
-    const url = `${baseUrl}/api/espaco/find?${params}`
+    const url = `${baseUrl}/api/space/find?${params}`
 
     try {
       const res = await fetch(url, {

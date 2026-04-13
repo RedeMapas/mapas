@@ -1,20 +1,8 @@
-services:
-  caddy:
-    image: caddy:2
-    container_name: mapas-dev-caddy
-    depends_on:
-      mapas:
-        condition: service_healthy
-    ports:
-      - "8443:443"
-      - "8081:80"
-    volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile:ro
-      - caddy_data:/data
-      - caddy_config:/config
-    networks:
-      - mapas-dev
+# Development overrides
+# Frontend and Caddy services are defined in compose.yaml
+# Use this file for environment-specific overrides
 
-volumes:
-  caddy_data:
-  caddy_config:
+services:
+  mapas:
+    environment:
+      BASE_URL: "https://mapas.localhost:8443/"

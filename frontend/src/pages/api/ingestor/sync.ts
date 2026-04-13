@@ -44,7 +44,7 @@ export const POST: APIRoute = async () => {
 
     // Step 2: Spawn sympla sync as detached background process
     const scriptPath = resolve(SCRIPTS_DIR, 'sync-sympla.ts')
-    const nodePath = process.env['NODE_PATH'] || 'node'
+    const nodePath = process.execPath
 
     console.log(`[sync] Spawning node ${scriptPath}`)
 
