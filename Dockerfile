@@ -161,7 +161,6 @@ COPY --from=builder-composer /build/vendor ./vendor/
 # Copy application source
 COPY --chown=www-data:www-data config ./config/
 COPY --chown=www-data:www-data public ./html/
-COPY --chown=www-data:www-data health.php /var/www/html/health.php
 COPY --chown=www-data:www-data scripts ./scripts/
 COPY --chown=www-data:www-data src ./src/
 

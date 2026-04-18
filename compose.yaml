@@ -65,10 +65,10 @@ services:
     networks:
       - mapas-dev
     healthcheck:
-      test: ["CMD", "test", "-f", "/mapas-ready"]
+      test: ["CMD", "curl", "-fsS", "http://localhost/health.php"]
       interval: 10s
       timeout: 5s
-      retries: 5
+      retries: 3
       start_period: 30s
 
   postgres:

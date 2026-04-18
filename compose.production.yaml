@@ -27,6 +27,12 @@ services:
       - mapas-var:/var/www/var
       - mapas-files:/var/www/html/files
       - mapas-private:/var/www/var/private-files
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost/health.php"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 60s
     restart: unless-stopped
 
   postgres:
