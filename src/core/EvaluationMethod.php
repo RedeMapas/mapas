@@ -901,15 +901,21 @@ abstract class EvaluationMethod extends Module implements \JsonSerializable{
             }
         }
 
+        $has_no_filters = 
+            empty($evaluation_config->fetch->{$user->id}) && 
+            empty($evaluation_config->fetchCategories->{$user->id}) && 
+            empty($evaluation_config->fetchRanges->{$user->id}) && 
+            empty($evaluation_config->fetchProponentTypes->{$user->id}) && 
+            empty($evaluation_config->fetchSelectionFields->{$user->id}) && 
+            !$has_global_filter_configs;
+
+        $is_admin = $evaluation_config->opportunity->isUserAdmin($user) || $evaluation_config->opportunity->isUserAdmin($user, 'superAdmin');
+
         if (
             $is_same_as_evaluator || 
             (
-                empty($evaluation_config->fetch->{$user->id}) && 
-                empty($evaluation_config->fetchCategories->{$user->id}) && 
-                empty($evaluation_config->fetchRanges->{$user->id}) && 
-                empty($evaluation_config->fetchProponentTypes->{$user->id}) && 
-                empty($evaluation_config->fetchSelectionFields->{$user->id}) && 
-                !$has_global_filter_configs
+                $has_no_filters && 
+                !$is_admin
             )
         ) {
             return false;
