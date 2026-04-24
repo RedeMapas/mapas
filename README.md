@@ -17,6 +17,7 @@ Este fork mantém duas linhas de história paralelas:
 | `develop-minc` | [`culturagovbr/mapasculturais`](https://github.com/culturagovbr/mapasculturais) | Linha MinC, integra o histórico e as funcionalidades do Ministério da Cultura |
 
 **Convenção de sufixo:**
+
 - Branches **com** `-minc` (ex: `feat/algo-minc`) carregam o histórico da linha MinC.
 - Branches **sem** `-minc` (ex: `feat/algo`) estão na linha comunitária.
 
@@ -39,37 +40,125 @@ cd mapas
 docker compose up -d
 ```
 
-Serviços disponíveis:
+## Architecture
 
-| Serviço | URL |
-|---|---|
-| Aplicação | http://localhost:8080 |
-| MailPit (e-mail) | http://localhost:8025 |
-| PostgreSQL | `localhost:5432` (user: `mapas`, pass: `mapas-dev`) |
-
-O container principal espera o banco estar saudável antes de iniciar. As migrações de banco rodam automaticamente no entrypoint.
-
-### Override com Caddy (HTTPS local)
-
-Para desenvolver com HTTPS local (necessário para PWA/WebPush), ative o `compose.override.yml`:
-
-```bash
-# O Docker Compose já carrega compose.override.yml automaticamente
-docker compose up -d
+```
+Internet
+    ↓
+Caddy (mapas.localhost:443/80)
+    ├── /ingestor*, /api/ingestor* → Frontend (Astro:4321)
+    ├── /api/* → Backend (Symfony:80)
+    └── /* → Backend (Symfony:80)
 ```
 
-O override sobe um proxy Caddy com TLS interno:
+## Services
 
-| Serviço | URL |
-|---|---|
-| Aplicação (HTTPS) | https://mapas.localhost:8443 |
-| Aplicação (HTTP)  | http://mapas.localhost:8081 |
+- **Caddy**: Reverse proxy with local SSL certificate
+  - URL: `https://mapas.localhost:8443`
+  - Alternative: `https://localhost:8443`
+  - Ports: 80 (HTTP), 8443 (HTTPS)
+  
+- **Frontend**: Astro dev server
+  - Internal: `http://frontend:4321`
+  - Routes: `/ingestor*`, `/api/ingestor*`
+  
+- **Backend (mapas)**: Symfony application
+  - Internal: `http://mapas:80`
+  - Routes: `/api/*`, all other paths
+  
+- **PostgreSQL**: Database
+  - Internal: `postgres:5432`
+  - External: `localhost:5432`
+  
+- **Mailpit**: Email testing
+  - SMTP: `localhost:1025`
+  - UI: `http://localhost:8025`
 
-O Caddy emite um certificado local autoassinado. Para que o browser confie, instale a CA do Caddy no seu sistema:
+## Quick Start
 
 ```bash
-# Dentro do container caddy (após subir)
-docker compose exec caddy caddy trust
+# Start all services
+docker compose up -d
+
+# View logs
+docker compose logs -f caddy
+
+# Stop all services
+docker compose down
+
+# Reset everything (including data)
+docker compose down -v
+```
+
+## Access URLs
+
+- **Application**: <https://mapas.localhost:8443>
+- **Mailpit UI**: <http://localhost:8025>
+- **Database**: localhost:5432
+
+## SSL Certificate
+
+Caddy automatically generates a local SSL certificate for `mapas.localhost`.
+
+### How Port Configuration Works
+
+According to [Caddy documentation](https://caddyserver.com/docs/automatic-https):
+
+- **`http_port`** and **`https_port`** are **internal-only** settings
+- They tell Caddy which ports to expect traffic on (not client-facing ports)
+- Since Docker maps `8443→8443`, we set `https_port 8443`
+
+```caddy
+{
+ http_port 80      # Internal HTTP port (for redirects)
+ https_port 8443   # Internal HTTPS port (matches Docker mapping)
+}
+
+mapas.localhost:8443 {  # Site address matches client-facing port
+ tls internal
+ # ...
+}
+```
+
+### Trust the Certificate
+
+To avoid browser warnings:
+
+1. **Export the root CA**:
+
+   ```bash
+   docker compose exec caddy caddy trust
+   ```
+
+2. **Or manually trust** in your browser when prompted
+
+3. **Or use curl** with `-k` flag to skip verification (development only)
+
+## Network Configuration
+
+All services run on the `mapas-dev` network (bridge driver).
+
+## File Structure
+
+- `compose.yaml` - Main configuration with all services
+- `compose.override.yml` - Environment-specific overrides (BASE_URL)
+- `Caddyfile` - Caddy routing configuration
+
+## Adding New Routes
+
+Edit `Caddyfile` to add new route matchers:
+
+```caddy
+@newroute path /your-path/*
+handle @newroute {
+    reverse_proxy frontend:4321  # or mapas:80
+}
+```
+
+Then restart Caddy:
+
+```bash
+docker compose restart caddy
 ```
 
 ### Comandos úteis
@@ -211,13 +300,15 @@ echo "Subsite criado: " . $subsite->id;
 ## Instalações da rede
 
 ### Federal / Internacional
-- SNIIC — https://mapa.cultura.gov.br/
-- Cultura Viva — https://culturaviva.cultura.gov.br/
-- Rede das Artes — https://rededasartes.cultura.gov.br/
-- IberculturaViva — https://mapa.iberculturaviva.org/
-- Mapa Uruguai — https://culturaenlinea.uy/
+
+- SNIIC — <https://mapa.cultura.gov.br/>
+- Cultura Viva — <https://culturaviva.cultura.gov.br/>
+- Rede das Artes — <https://rededasartes.cultura.gov.br/>
+- IberculturaViva — <https://mapa.iberculturaviva.org/>
+- Mapa Uruguai — <https://culturaenlinea.uy/>
 
 ### Estaduais (seleção)
+
 Amapá, Ceará, Espírito Santo, Goiás, Maranhão, Mato Grosso, Pará, Pernambuco, Paraíba, Piauí, Tocantins — ver lista completa na [documentação da comunidade](https://mapasculturais.gitbook.io).
 
 ---

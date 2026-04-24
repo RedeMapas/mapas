@@ -1,0 +1,68 @@
+{{- if and .Values.frontend.enabled .Values.ingress.enabled -}}
+{{- $fullName := include "mapas.fullname" . -}}
+{{- $frontendPort := .Values.frontend.service.port -}}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ $fullName }}-frontend
+  labels:
+    {{- include "mapas.labels" . | nindent 4 }}
+    app.kubernetes.io/component: frontend
+  annotations:
+    {{- with .Values.ingress.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  {{- if .Values.ingress.className }}
+  ingressClassName: {{ .Values.ingress.className }}
+  {{- end }}
+  {{- if .Values.ingress.tls }}
+  tls:
+    {{- range .Values.ingress.tls }}
+    - hosts:
+        {{- range .hosts }}
+        - {{ . | quote }}
+        {{- end }}
+      secretName: {{ .secretName }}
+    {{- end }}
+  {{- end }}
+  rules:
+    {{- if .Values.ingress.hosts }}
+    {{- range .Values.ingress.hosts }}
+    - host: {{ .host | quote }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ $fullName }}-frontend
+                port:
+                  number: {{ $frontendPort }}
+    {{- end }}
+    {{- else }}
+    {{- $baseDomain := .Values.ingress.baseDomain | default "mapas.tec.br" }}
+    {{- $namespace := .Release.Namespace }}
+    {{- $useNamespacePrefix := .Values.ingress.namespacePrefix | default true }}
+    - host: {{ if $useNamespacePrefix }}{{ printf "%s.%s" $namespace $baseDomain | quote }}{{ else }}{{ printf "%s" $baseDomain | quote }}{{ end }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ $fullName }}-frontend
+                port:
+                  number: {{ $frontendPort }}
+    - host: {{ if $useNamespacePrefix }}{{ printf "funarte-%s.%s" $namespace $baseDomain | quote }}{{ else }}{{ printf "funarte.%s" $baseDomain | quote }}{{ end }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ $fullName }}-frontend
+                port:
+                  number: {{ $frontendPort }}
+    {{- end }}
+{{- end }}

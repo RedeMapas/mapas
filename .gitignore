@@ -33,3 +33,11 @@ tests/coverage/
 docs/
 data/
 frontend/.astro
+.claude-flow/
+.claude/
+.gitnexus/
+.opencode/
+frontend/dist/
+frontend/mapas_espacos_ce/
+frontend/mapas_eventos_ce/
+src/modules/Components/assets/js/
