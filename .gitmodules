@@ -15,7 +15,7 @@
 	url = https://github.com/culturagovbr/theme-MapaMinC.git
 [submodule "src/themes/Funarte"]
 	path = src/themes/Funarte
-	url = https://github.com/culturagovbr/theme-Funarte.git
+	url = https://github.com/redemapas/theme-Funarte.git
 [submodule "src/plugins/Metabase"]
 	path = src/plugins/Metabase
 	url = https://github.com/culturagovbr/plugin-Metabase
